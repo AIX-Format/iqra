@@ -136,6 +136,39 @@
 
 ---
 
+### ١٠. اللغات القديمة | Ancient Languages
+> لفهم معاني الكلمات في سياقها التاريخي والجغرافي.
+
+| المصدر | الوصف |
+|--------|-------|
+| 🔤 [etymonline.com](https://www.etymonline.com) | أصول الكلمات العالمية |
+| 🔤 [brill.com](https://brill.com) | دراسات اللغات السامية والقديمة |
+| 🔤 [oriental-institute.uchicago.edu](https://oi.uchicago.edu) | معهد الدراسات الشرقية — شيكاغو |
+
+---
+
+### ١١. الجيولوجيا وعلوم الأرض | Geology & Earth Sciences
+> للبحث عن "الآيات" المادية في الأرض (الكهف، الأحقاف، الجبال).
+
+| المصدر | الوصف |
+|--------|-------|
+| 🌍 [usgs.gov](https://www.usgs.gov) | هيئة المسح الجيولوجي الأمريكية |
+| 🌍 [geosociety.org](https://www.geosociety.org) | الجمعية الجيولوجية الأمريكية |
+| 🌍 [nature.com/ngeo](https://www.nature.com/ngeo) | أبحاث علوم الأرض — Nature |
+
+---
+
+### ١٢. الشهادات الكونية | Universal Evidence
+> دمج علوم الآثار والفلك والوراثة لكشف الروابط الكبرى.
+
+| المصدر | الوصف |
+|--------|-------|
+| 🧬 [ncbi.nlm.nih.gov](https://www.ncbi.nlm.nih.gov) | المركز الوطني لمعلومات التقانة الحيوية — (أمة واحدة) |
+| 🏺 [britishmuseum.org](https://www.britishmuseum.org) | مجموعات الآثار العالمية |
+| 🏺 [louvre.fr](https://www.louvre.fr) | آثار الشرق الأدنى القديم |
+
+---
+
 ## قواعد استخدام المصادر | Source Usage Rules
 RULE 1: الترتيب دائماً
 القرآن → السنة → العلماء → العلوم البشرية
