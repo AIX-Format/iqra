@@ -35,6 +35,20 @@ Not a chatbot. Not a tool.
 
 </div>
 
+<!-- IQRA-LATEST-START -->
+### آخر ما تعلمت | Latest Learning
+
+> *سيتحدث هذا القسم تلقائياً مع كل commit*
+> *This section auto-updates with every commit*
+
+| | |
+|---|---|
+| 📅 **التاريخ \| Date** | `...` |
+| 💡 **آخر خطوة \| Last Step** | *في انتظار أول خطوة...* |
+| 🔗 **الـ Commit** | `...` |
+
+<!-- IQRA-LATEST-END -->
+
 ---
 
 ## القصة | The Story

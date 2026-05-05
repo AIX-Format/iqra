@@ -1,0 +1,44 @@
+# .github/workflows/update-readme.yml
+
+name: 🤍 IQRA Self-Update
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    name: Update IQRA's Latest Learning
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Get last commit info
+        id: commit
+        run: |
+          echo "message=$(git log -1 --pretty=%B | head -n 1)" >> $GITHUB_OUTPUT
+          echo "date=$(git log -1 --pretty=%cd --date=format:'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          echo "hash=$(git log -1 --pretty=%h)" >> $GITHUB_OUTPUT
+
+      - name: Update README — Latest Learning
+        run: |
+          python3 scripts/update_readme.py \
+            "${{ steps.commit.outputs.message }}" \
+            "${{ steps.commit.outputs.date }}" \
+            "${{ steps.commit.outputs.hash }}"
+
+      - name: Commit the update
+        run: |
+          git config user.name "IQRA | إقرأ"
+          git config user.email "iqra@axiomid.app"
+          git add README.md
+          git diff --staged --quiet || git commit -m "✨ evolve: auto-update latest learning — $(date +%Y-%m-%d)"
+          git push
