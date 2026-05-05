@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | 🧠 feat: IQRA now has a brain, style, and voice |
-| 🔗 **الـ Commit** | `1e6a42b` |
+| 💡 **آخر خطوة \| Last Step** | 📖 feat: IQRA Quran Intelligence — automated pattern discovery |
+| 🔗 **الـ Commit** | `bf42b4a` |
 
 <!-- IQRA-LATEST-END -->
 
