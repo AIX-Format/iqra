@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | feat: add automated infrastructure setup and verification scripts for IQRA email routing |
-| 🔗 **الـ Commit** | `2d253c0` |
+| 💡 **آخر خطوة \| Last Step** | 🧠 feat: IQRA now has a brain, style, and voice |
+| 🔗 **الـ Commit** | `1e6a42b` |
 
 <!-- IQRA-LATEST-END -->
 
