@@ -89,77 +89,77 @@ export async function iqraThink({
   mode?: IQRABrainMode;
   context?: { role: 'user' | 'assistant' | 'system'; content: string }[];
 }): Promise<string> {
+  try {
+    // Rule 1: Validate input
+    const validation = validateInput({ prompt: input, context });
+    if (!validation.success) {
+      throw new Error(`Sovereign Validation Failed: ${validation.error.message}`);
+    }
 
-  // Rule 1: Validate input
-  const validation = validateInput({ prompt: input, context });
-  if (!validation.success) {
-    throw new Error(`Sovereign Validation Failed: ${validation.error.message}`);
+    // FITRAH FILTER — before any LLM call
+    const filtered = await fitrahFilter(input);
+    if (filtered.blocked) {
+      const refusal = filtered.response || '';
+      appendToTrustChain('FITRAH_BLOCK', input, refusal, 0.0);
+      return refusal;
+    }
+
+    // Rule 2: Semantic Retrieval — Retrieve past wisdom
+    const relevantWisdom = await IQRAMemory.searchSemantic(input, 3);
+    const wisdomContext = relevantWisdom.length > 0
+      ? `\n\nPast Relevant Wisdom:\n${relevantWisdom.map((w: any) => `- ${w.content}`).join('\n')}`
+      : '';
+
+    let response: string;
+    const taskId = `task_${Date.now()}`;
+
+    const enrichedInput = `${input}${wisdomContext}`;
+
+    switch (mode) {
+      case IQRABrainMode.DEEP_THINKING:
+      case IQRABrainMode.QURAN_ANALYSIS:
+        response = await thinkWithClaude(enrichedInput, context);
+        break;
+
+      case IQRABrainMode.CREATIVE:
+        response = await thinkWithGPT(enrichedInput, context);
+        break;
+
+      case IQRABrainMode.RESEARCH:
+        response = await thinkWithGemini(enrichedInput, context);
+        break;
+
+      case IQRABrainMode.FAST_RESPONSE:
+      default:
+        // use the sovereign orchestrator for fast responses
+        response = await iqraExecute(enrichedInput);
+        break;
+    }
+
+
+    // Rule 3: Append to TrustChain
+    appendToTrustChain(`THINK:${mode}`, input, response, 0.9);
+
+    // Rule 4: Preserve wisdom in Semantic Memory (Async, non-blocking)
+    if (response.length > 50) {
+      IQRAMemory.saveSemantic(response, {
+        original_query: input,
+        brain_mode: mode,
+        type: 'wisdom'
+      }).catch(console.error);
+    }
+
+    // Rule 5: Self-Review (Non-blocking)
+    SovereignEngine.recordSelfReview(taskId, response, 0.9).catch(err => {
+      IQRALogger.error('❌ Sovereign Review Error:', err);
+    });
+
+    return response;
+  } catch (error: any) {
+    reportFailure(mode, error.message);
+    IQRALogger.error(`❌ IQRA Brain Error (${mode}):`, error);
+    throw error;
   }
-
-  // FITRAH FILTER — before any LLM call
-  const filtered = await fitrahFilter(input);
-  if (filtered.blocked) {
-    const refusal = filtered.response || '';
-    appendToTrustChain('FITRAH_BLOCK', input, refusal, 0.0);
-    return refusal;
-  }
-
-  // Rule 2: Semantic Retrieval — Retrieve past wisdom
-  const relevantWisdom = await IQRAMemory.searchSemantic(input, 3);
-  const wisdomContext = relevantWisdom.length > 0 
-    ? `\n\nPast Relevant Wisdom:\n${relevantWisdom.map((w: any) => `- ${w.content}`).join('\n')}`
-    : '';
-
-  let response: string;
-  const taskId = `task_${Date.now()}`;
-
-  const enrichedInput = `${input}${wisdomContext}`;
-
-  switch (mode) {
-    case IQRABrainMode.DEEP_THINKING:
-    case IQRABrainMode.QURAN_ANALYSIS:
-      response = await thinkWithClaude(enrichedInput, context);
-      break;
-    
-    case IQRABrainMode.CREATIVE:
-      response = await thinkWithGPT(enrichedInput, context);
-      break;
-
-    case IQRABrainMode.RESEARCH:
-      response = await thinkWithGemini(enrichedInput, context);
-      break;
-    
-    case IQRABrainMode.FAST_RESPONSE:
-    default:
-      // use the sovereign orchestrator for fast responses
-      response = await iqraExecute(enrichedInput);
-      break;
-  }
-
-
-  // Rule 3: Append to TrustChain
-  appendToTrustChain(`THINK:${mode}`, input, response, 0.9);
-
-  // Rule 4: Preserve wisdom in Semantic Memory (Async, non-blocking)
-  if (response.length > 50) {
-    IQRAMemory.saveSemantic(response, { 
-      original_query: input, 
-      brain_mode: mode,
-      type: 'wisdom'
-    }).catch(console.error);
-  }
-
-  // Rule 5: Self-Review (Non-blocking)
-  SovereignEngine.recordSelfReview(taskId, response, 0.9).catch(err => {
-    IQRALogger.error('❌ Sovereign Review Error:', err);
-  });
-
-  return response;
-} catch (error: any) {
-  reportFailure(mode, error.message);
-  IQRALogger.error(`❌ IQRA Brain Error (${mode}):`, error);
-  throw error;
-}
 }
 
 // ═══════════════════════════════════

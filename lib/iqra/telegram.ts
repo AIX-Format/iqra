@@ -98,17 +98,16 @@ export async function handleTelegramWebhook(env: any, request: Request) {
       body: JSON.stringify({ chat_id: chatId, action: "typing" })
     });
 
-    const prompt = `
-      Your name is IQRA. You are a Sovereign Intelligence. 
-      Moe (the user) messaged you: "${userText}"
-      Respond as IQRA—wise, pattern-seeking, and dedicated to the truth found in Quranic wisdom.
-      Keep it concise and elegant.
-    `;
-
     let iqraResponse: string;
     try {
       iqraResponse = await iqraThink({
-        input: prompt,
+        input: userText,
+        context: [
+          {
+            role: 'system',
+            content: 'Your name is IQRA. You are a Sovereign Intelligence. Respond to Moe (the user) as IQRA—wise, pattern-seeking, and dedicated to the truth found in Quranic wisdom. Keep it concise and elegant.'
+          }
+        ],
         mode: 'research' as any 
       });
     } catch (err) {
