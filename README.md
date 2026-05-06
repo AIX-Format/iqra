@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | arch: Merge Sacred Geometry into internal architecture (Nested Sevens & Style) 🌙 |
-| 🔗 **الـ Commit** | `de8153f` |
+| 💡 **آخر خطوة \| Last Step** | 📜 docs: Update FITRAH.md with Principles of 3 and 7 🌙 |
+| 🔗 **الـ Commit** | `24b7166` |
 
 <!-- IQRA-LATEST-END -->
 
