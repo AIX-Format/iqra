@@ -1,4 +1,5 @@
-import { SovereignWorker, WorkerResult, Handoff, MissionState } from './protocol.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
+import { MissionHandoff } from '../../../agents/contracts.ts';
 import { GoEngineBridge } from '../engine_bridge.ts';
 import { IQRAMemory, QuantumTopologyStore } from '../memory.ts';
 import { IQRALogger } from '../logger.ts';
@@ -7,7 +8,7 @@ export class ResonanceWorker extends SovereignWorker {
   id = 'ResonanceWorker';
 
   async execute(input: string, state: MissionState): Promise<WorkerResult> {
-    this.report.workerId = this.id;
+    this.report.worker_id = this.id;
     this.report.timestamp = Date.now();
 
     try {
@@ -43,19 +44,23 @@ export class ResonanceWorker extends SovereignWorker {
 
       const updatedState: MissionState = {
         ...state,
-        context: updatedContext,
-        reports: [...state.reports, this.report]
+        context: updatedContext
       };
 
-      const handoff: Handoff = {
-        from: this.id,
-        to: 'ResearchWorker',
-        payload: updatedContext,
-        context: 'Topological resonance analysis complete. Patterns discovered.'
+      const handoff: MissionHandoff = {
+        mission_id: state.metadata.missionId,
+        from_worker: this.id,
+        to_worker: 'ResearchWorker',
+        timestamp: Date.now(),
+        artifacts: [],
+        pending_tasks: ['Context synthesis', 'Dastur validation'],
+        known_issues: this.report.issues_discovered,
+        validation_rules: [],
+        context_data: updatedContext
       };
 
       this.markImplemented('Topological curiosity reward granted');
-      this.report.proceduresFollowed = true;
+      this.report.procedures_followed = true;
 
       return {
         success: true,

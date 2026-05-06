@@ -4,23 +4,8 @@
  * Defines the structure for sovereign handoffs and reports.
  */
 
-export interface WorkerReport {
-  workerId: string;
-  implemented: string[];
-  undone: string[];
-  commands: { command: string; exitCode: number; output?: string }[];
-  issues: string[];
-  skillsUsed: string[]; // Skills active during this mission
-  proceduresFollowed: boolean;
-  timestamp: number;
-}
-
-export interface Handoff {
-  from: string;
-  to: string;
-  payload: any;
-  context: string;
-}
+import { WorkerReport, MissionHandoff } from '../../../agents/contracts.ts';
+import { Provider } from '../../../src/connectors/index.ts';
 
 export interface MissionState {
   initialInput: string;
@@ -38,11 +23,9 @@ export interface WorkerResult {
   data?: any;
   error?: string;
   report: WorkerReport;
-  nextHandoff?: Handoff;
+  nextHandoff?: MissionHandoff;
   updatedState?: MissionState;
 }
-
-import { Provider } from '../../../src/connectors/index.ts';
 
 export abstract class SovereignWorker {
   abstract id: string;
@@ -53,37 +36,44 @@ export abstract class SovereignWorker {
   constructor(provider: Provider = 'google') {
     this.provider = provider;
     this.report = {
-      workerId: '',
+      mission_id: '',
+      worker_id: '',
       implemented: [],
       undone: [],
-      commands: [],
-      issues: [],
-      skillsUsed: [],
-      proceduresFollowed: true,
+      commands_run: [],
+      issues_discovered: [],
+      skills_used: [],
+      procedures_followed: true,
       timestamp: Date.now()
     };
   }
 
+  setMissionId(missionId: string) {
+    this.report.mission_id = missionId;
+  }
+
   setProvider(provider: Provider) {
     this.provider = provider;
+    if (!this.report.model_metadata) this.report.model_metadata = { provider, model: 'unknown' };
+    else this.report.model_metadata.provider = provider;
   }
 
   setSkills(skills: string[]) {
-    this.report.skillsUsed = [...skills];
+    this.report.skills_used = [...skills];
   }
 
   protected assignSkill(skill: string) {
-    if (!this.report.skillsUsed.includes(skill)) {
-      this.report.skillsUsed.push(skill);
+    if (!this.report.skills_used.includes(skill)) {
+      this.report.skills_used.push(skill);
     }
   }
 
-  protected logCommand(command: string, exitCode: number, output?: string) {
-    this.report.commands.push({ command, exitCode, output });
+  protected logCommand(command: string, exit_code: number, output?: string) {
+    this.report.commands_run.push({ command, exit_code, output });
   }
 
   protected logIssue(issue: string) {
-    this.report.issues.push(issue);
+    this.report.issues_discovered.push(issue);
   }
 
   protected markImplemented(task: string) {
