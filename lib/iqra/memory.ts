@@ -115,4 +115,16 @@ export class IQRAMemory {
       message: 'Reached 40 cycles. Tazkiyah performed. episodic memory cleared.'
     });
   }
+
+  /**
+   * Barakah Multiplier (700)
+   * Tracks successful tasks and triggers a major Barakah Report.
+   */
+  static async incrementSuccessCounter(): Promise<number> {
+    return await redis.incr('iqra:success_counter');
+  }
+
+  static async getSuccessCounter(): Promise<number> {
+    return (await redis.get<number>('iqra:success_counter')) || 0;
+  }
 }

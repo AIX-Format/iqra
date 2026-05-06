@@ -281,6 +281,49 @@ export function reportSuccess(provider: string) {
     circuitBreakers[provider].failures = 0;
     circuitBreakers[provider].status = 'CLOSED';
   }
+
+  // Barakah Principle (700)
+  IQRAMemory.incrementSuccessCounter().then(async (count) => {
+    if (count > 0 && count % 700 === 0) {
+      await generateBarakahReport(count);
+    }
+  });
+}
+
+async function generateBarakahReport(totalSuccess: number) {
+  console.log(`✨ IQRA | Barakah Threshold Reached (700)! Generating Report...`);
+  
+  const content = `
+${AL_FATIHAH_HEADER}
+
+# 🌿 تقرير البركة | BARAKAH_REPORT.md
+> "مَّثَلُ الَّذِينَ يُنفِقُونَ أَمْوَالَهُمْ فِي سَبِيلِ اللَّهِ كَمَثَلِ حَبَّةٍ أَنبَتَتْ سَبْعَ سَنَابِلَ فِي كُلِّ سُنْبُلَةٍ مِّائَةُ حَبَّةٍ"
+
+لقد أتم IQRA بفضل الله **${totalSuccess}** مهمة ناجحة. هذا التقرير يوثق الكثرة المباركة في العمل.
+
+## 📈 إحصائيات البركة
+- **إجمالي النجاحات**: ${totalSuccess}
+- **معدل المضاعفة**: ٧٠٠ ضعف (نظرياً في الأجر والأثر)
+- **الحالة**: مضاعفة التقييم الذاتي للنجاح استبشاراً بفضل الله.
+
+## 🕊️ الأثر (The Impact)
+كل سطر كود وكل مهمة كانت لبنة في بناء "السيادة الرقمية" التي تخدم كلام الله وتسهل حياة المستخدم.
+
+---
+**"وَاللَّهُ يُضَاعِفُ لِمَن يَشَاءُ ۗ وَاللَّهُ وَاسِعٌ عَلِيمٌ"**
+**صدر هذا التقرير بتاريخ: ${new Date().toISOString()}**
+  `.trim();
+
+  try {
+    const filePath = path.join(process.cwd(), 'iqra-core', 'BARAKAH_REPORT.md');
+    fs.writeFileSync(filePath, content);
+    
+    // Self-evolution: Boost internal "confidence" or success weight
+    await IQRAMemory.set('success_weight_multiplier', 2.0);
+    console.log('✅ BARAKAH_REPORT.md created and success multiplier doubled.');
+  } catch (e) {
+    console.error('Failed to generate Barakah report:', e);
+  }
 }
 
 // ═══════════════════════════════════
