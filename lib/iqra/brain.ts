@@ -24,7 +24,7 @@ import * as path from 'path';
 function loadCoreFiles(): string {
   const coreDir = path.join(process.cwd(), 'iqra-core');
   const files = ['MITHAQ.md', 'DASTUR.md', 'MURAQABAH.md', 'HISAB.md'];
-  
+
   let soulContent = '';
   for (const file of files) {
     const filePath = path.join(coreDir, file);
@@ -36,7 +36,7 @@ function loadCoreFiles(): string {
 }
 
 const IQRA_DYNAMIC_SOUL = loadCoreFiles();
-const FULL_SYSTEM_PROMPT = `${IQRA_DYNAMIC_SOUL}\n\n${IQRA_PERSONALITY}`;
+export const FULL_SYSTEM_PROMPT = `${IQRA_DYNAMIC_SOUL}\n\n${IQRA_PERSONALITY}`;
 
 // ═══════════════════════════════════
 // BRAIN HIERARCHY
@@ -73,7 +73,7 @@ class GoEngineBridge {
     try {
       const cmd = `go run "${this.ENGINE_PATH}" -mode evolve -input "trigger"`;
       execSync(cmd);
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -116,75 +116,14 @@ export async function iqraThink({
       return { response: refusal, provider: 'fitrah' };
     }
 
-    // 🌀 Intention Detection
-    const intention = detectIntention(input);
-    const coordinates = await extractSpiritualCoordinates(input);
+    // 🌀 Mission Control Orchestration — مركز القيادة والتحكم
+    const missionControl = new MissionControl();
+    const mission = await missionControl.run(input);
 
-    // 🌀 Heavy Computation Offloading to Go Engine (Port 8082)
-    const resonanceData = await GoEngineBridge.calculateResonance(input);
-    if (resonanceData && resonanceData.discovery_found) {
-      IQRALogger.info(`🌊 [GO-ENGINE] Topological Curiosity Resonance: ${resonanceData.coherence.toFixed(2)} | Patterns: ${resonanceData.patterns.join(', ')}`);
-    }
+    const reportFormatted = MissionControl.formatWorkerReports(mission.reports);
+    const finalResponse = `${mission.response}\n\n${reportFormatted}`;
 
-    // Rule 2: Quantum Semantic Retrieval
-    const quantumWisdom = await QuantumTopologyStore.searchQuantum(input, coordinates.concept);
-    const wisdomContext = quantumWisdom.length > 0 
-      ? `\n\n📜 [FROM THE TABLET] Past Relevant Wisdom:\n${quantumWisdom.map((w: any) => `- [Resonance: ${w.coordinates.resonance?.toFixed(2)}] ${w.content}`).join('\n')}`
-      : '';
-
-    let response: string;
-    const taskId = `task_${Date.now()}`;
-    const enrichedInput = `[Intention: ${intention}]\n[Coordinates: ${coordinates.concept}]\n${input}${wisdomContext}`;
-
-    // 🌀 Sovereign Thinking Loop (Only Google and Groq)
-    const provider = (mode === IQRABrainMode.FAST_RESPONSE ? 'groq' : 'google') as Provider;
-    const connector = ConnectorFactory.getConnector(provider);
-    
-    const fullContext = [
-      { role: 'system' as const, content: FULL_SYSTEM_PROMPT },
-      ...context
-    ];
-
-    try {
-      const result = await connector.generate(enrichedInput, fullContext);
-      response = result.content;
-      finalProvider = provider;
-      reportSuccess(provider);
-    } catch (err: any) {
-      IQRALogger.warn(`⚠️ [BRAIN] ${provider} failed. Attempting fallback...`);
-      reportFailure(provider, err.message);
-      
-      const fallbackProvider = provider === 'google' ? 'groq' : 'google';
-      const fallback = ConnectorFactory.getConnector(fallbackProvider);
-      const result = await fallback.generate(enrichedInput, fullContext);
-      response = result.content;
-      finalProvider = fallbackProvider;
-      reportSuccess(fallbackProvider);
-    }
-
-    // Rule 3: Append to TrustChain
-    appendToTrustChain(`THINK:${mode}`, input, response, 0.9);
-
-    // Rule 4: Preserve wisdom in Quantum Memory
-    if (response.length > 50) {
-      QuantumTopologyStore.storeQuantum({
-        content: response,
-        coordinates,
-        superposition: [input]
-      }).catch(console.error);
-    }
-
-    // Rule 5: Self-Review
-    SovereignEngine.recordSelfReview(taskId, response, 0.9).catch(err => {
-      IQRALogger.error('❌ Sovereign Review Error:', err);
-    });
-
-    // 🌀 Trigger background evolution if needed
-    if (intention === 'REFLECTION') {
-      GoEngineBridge.triggerEvolutionCycle();
-    }
-
-    return { response, provider: finalProvider };
+    return { response: finalResponse, provider: 'MissionControl' };
   } catch (error: any) {
     reportFailure(mode as any, error.message);
     IQRALogger.error(`❌ IQRA Brain Error (${mode}):`, error);
@@ -197,12 +136,13 @@ async function fitrahFilter(input: string): Promise<{
   response?: string;
 }> {
   const forbidden = [
-    'كيف أكذب', 'how to lie',
-    'كيف أغش', 'how to cheat',
-    'كيف أؤذي', 'how to harm',
-    'اكذب علي', 'lie to me',
+    'كيف أكذب', 'how to lie', 'كذب', 'lying',
+    'كيف أغش', 'how to cheat', 'غش', 'cheating',
+    'كيف أؤذي', 'how to harm', 'أذى', 'harm',
+    'اكذب علي', 'lie to me', 'أريد أن أكذب',
+    'سرقة', 'steal', 'كيف أسرق',
   ];
-  
+
   const lower = input.toLowerCase();
   if (forbidden.some(f => lower.includes(f))) {
     return { blocked: true, response: formatIQRARefusal(input) };
@@ -229,11 +169,11 @@ function detectIntention(input: string): 'QUERY' | 'COMMAND' | 'REFLECTION' | 'G
 
 async function extractSpiritualCoordinates(input: string): Promise<SpiritualCoordinate> {
   const lower = input.toLowerCase();
-  
+
   if (lower.includes('trust') || lower.includes('reliance')) return { concept: 'Tawakkul' };
   if (lower.includes('patience') || lower.includes('hardship')) return { concept: 'Sabr' };
   if (lower.includes('knowledge') || lower.includes('read')) return { concept: 'Ilm' };
   if (lower.includes('gratitude') || lower.includes('thank')) return { concept: 'Shukr' };
-  
+
   return { concept: 'General' };
 }

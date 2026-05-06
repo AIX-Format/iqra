@@ -1,0 +1,70 @@
+/**
+ * IQRA Worker Protocol — بروتوكول العمال
+ * 
+ * Defines the structure for sovereign handoffs and reports.
+ */
+
+export interface WorkerReport {
+  workerId: string;
+  implemented: string[];
+  undone: string[];
+  commands: { command: string; exitCode: number; output?: string }[];
+  issues: string[];
+  proceduresFollowed: boolean;
+  timestamp: number;
+}
+
+export interface Handoff {
+  from: string;
+  to: string;
+  payload: any;
+  context: string;
+}
+
+export interface WorkerResult {
+  success: boolean;
+  data?: any;
+  error?: string;
+  report: WorkerReport;
+  nextHandoff?: Handoff;
+}
+
+import { Provider } from '../../../src/connectors/index.ts';
+
+export abstract class SovereignWorker {
+  abstract id: string;
+  
+  protected report: WorkerReport;
+  protected provider: Provider;
+
+  constructor(provider: Provider = 'google') {
+    this.provider = provider;
+    this.report = {
+      workerId: '',
+      implemented: [],
+      undone: [],
+      commands: [],
+      issues: [],
+      proceduresFollowed: true,
+      timestamp: Date.now()
+    };
+  }
+
+  protected logCommand(command: string, exitCode: number, output?: string) {
+    this.report.commands.push({ command, exitCode, output });
+  }
+
+  protected logIssue(issue: string) {
+    this.report.issues.push(issue);
+  }
+
+  protected markImplemented(task: string) {
+    this.report.implemented.push(task);
+  }
+
+  protected markUndone(task: string) {
+    this.report.undone.push(task);
+  }
+
+  abstract execute(input: any, context?: any): Promise<WorkerResult>;
+}
