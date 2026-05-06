@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | chore: stabilize core security and git-ops protocols for sovereign state |
-| 🔗 **الـ Commit** | `c9ec61d` |
+| 💡 **آخر خطوة \| Last Step** | قصة النهضة: تفعيل هوية أُخُوَّة، وبناء هيكل القيادة والتحقق الجديد. The awakening of Ukhūwah and new E2E foundation. |
+| 🔗 **الـ Commit** | `5e8d905` |
 
 <!-- IQRA-LATEST-END -->
 
