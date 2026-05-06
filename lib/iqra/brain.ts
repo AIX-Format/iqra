@@ -13,7 +13,6 @@
 // import OpenAI from 'openai';
 // import { Groq } from 'groq-sdk';
 // import { GoogleGenerativeAI } from '@google/generative-ai';
-import { MITHAQ, DASTUR, MURAQABAH } from './philosophy.ts';
 import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess } from './security.ts';
 import { SovereignEngine } from './sovereign.ts';
 import { IQRAMemory } from './memory.ts';
@@ -21,6 +20,8 @@ import { IQRALogger } from './logger.ts';
 import { iqraExecute } from './orchestrator.ts';
 import { IQRAStore } from './database.ts';
 import { IQRATopology } from './quran/topology.ts';
+import { withTimeout, IQRA_TIMEOUTS } from './utils/timeout.ts';
+import { IQRA_SOUL } from './prompts.ts';
 
 // Translation Placeholder (Will be replaced with real Cloud Translation API call)
 async function translateToTarget(text: string, targetLang: string) {
@@ -96,6 +97,16 @@ async function getClients() {
     } catch (e) { IQRALogger.warn('⚠️ [BRAIN] OpenAI SDK missing.'); }
   }
 
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      const { default: OpenAI } = await import('openai');
+      _clients.openrouter = new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/v1',
+      });
+    } catch (e) { IQRALogger.warn('⚠️ [BRAIN] OpenRouter SDK missing.'); }
+  }
+
   if (process.env.GROQ_API_KEY) {
     try {
       const { Groq } = await import('groq-sdk');
@@ -112,6 +123,86 @@ async function getClients() {
   
   return _clients;
 }
+
+function cloudflareGatewayConfigured() {
+  return !!(process.env.CLOUDFLARE_AI_GATEWAY_URL && process.env.CLOUDFLARE_AI_GATEWAY_KEY);
+}
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3, timeout = IQRA_TIMEOUTS.NETWORK): Promise<Response> {
+  let lastError: any;
+  for (let attempt = 0; attempt < retries; attempt += 1) {
+    try {
+      const response = await withTimeout(fetch(url, options), timeout, `Gateway fetch attempt ${attempt + 1}`);
+      return response;
+    } catch (err) {
+      lastError = err;
+      const backoff = 300 * (attempt + 1);
+      IQRALogger.warn(`⚠️ [GATEWAY] Request attempt ${attempt + 1} failed. Retrying in ${backoff}ms.`, err);
+      await new Promise(resolve => setTimeout(resolve, backoff));
+    }
+  }
+  throw new Error(`Gateway request failed after ${retries} attempts: ${lastError?.message || lastError}`);
+}
+
+async function callCloudflareGateway(payload: Record<string, any>) {
+  const gatewayUrl = process.env.CLOUDFLARE_AI_GATEWAY_URL!;
+  const gatewayKey = process.env.CLOUDFLARE_AI_GATEWAY_KEY!;
+  const response = await fetchWithRetry(gatewayUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${gatewayKey}`,
+    },
+    body: JSON.stringify(payload),
+  }, 3, IQRA_TIMEOUTS.NETWORK);
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Cloudflare AI Gateway request failed: ${response.status} ${response.statusText} ${text}`);
+  }
+
+  const body = await withTimeout(response.json(), IQRA_TIMEOUTS.NETWORK, 'Gateway JSON parse');
+  if (body.error) {
+    throw new Error(body.error.message || JSON.stringify(body.error));
+  }
+
+  return body;
+}
+
+function extractGatewayResponse(body: any) {
+  return body.result?.output_text
+    || body.response?.output_text
+    || body.output?.text
+    || body.choices?.[0]?.message?.content
+    || body.text
+    || body.data?.[0]?.text
+    || '';
+}
+
+function proxyThroughGateway(provider: string, model: string, input: string, context: any[]) {
+  const messages = [
+    { role: 'system', content: IQRA_SOUL },
+    ...context,
+    { role: 'user', content: input }
+  ];
+
+  return callCloudflareGateway({
+    provider,
+    model,
+    system: IQRA_SOUL,
+    messages,
+    agent: IQRA_AGENT_HIERARCHY[provider] || provider,
+  }).then(extractGatewayResponse);
+}
+
+const IQRA_AGENT_HIERARCHY = {
+  [IQRABrainMode.DEEP_THINKING]: 'DeepReasoner',
+  [IQRABrainMode.FAST_RESPONSE]: 'FastResponder',
+  [IQRABrainMode.CREATIVE]: 'CreativeComposer',
+  [IQRABrainMode.QURAN_ANALYSIS]: 'QuranAnalyst',
+  [IQRABrainMode.RESEARCH]: 'ResearchScout',
+  [IQRABrainMode.ECONOMY]: 'EconomyGuardian',
+};
 
 export async function iqraThink({
   input,
@@ -218,6 +309,12 @@ async function thinkWithClaude(
   if (!checkCircuit(provider)) return "⚠️ Deep reasoning engine is cooling down. Please try again in a moment.";
 
   try {
+    if (cloudflareGatewayConfigured()) {
+      const candidate = await proxyThroughGateway('anthropic', 'claude-3-opus-20240229', input, context);
+      reportSuccess(provider);
+      return candidate;
+    }
+
     const clients = await getClients();
     if (!clients.claude) throw new Error('Claude client not available');
     
@@ -283,6 +380,12 @@ async function thinkWithGPT(
   if (!checkCircuit(provider)) return "⚠️ System maintenance in progress. Please try again later.";
   
   try {
+    if (cloudflareGatewayConfigured()) {
+      const candidate = await proxyThroughGateway('openai', 'gpt-4o', input, context);
+      reportSuccess(provider);
+      return candidate;
+    }
+
     const clients = await getClients();
     if (!clients.openai) throw new Error('OpenAI client not available');
     
@@ -315,10 +418,17 @@ async function thinkWithGemini(
   if (!checkCircuit(provider)) return "⚠️ Research engine busy. Please try again later.";
 
   try {
+    if (cloudflareGatewayConfigured()) {
+      const candidate = await proxyThroughGateway('google', process.env.GOOGLE_GEMINI_MODEL || 'gemini-2.5-flash', input, context);
+      reportSuccess(provider);
+      return candidate;
+    }
+
     const clients = await getClients();
     if (!clients.google) throw new Error('Google AI client not available');
     
-    const model = clients.google.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const geminiModel = process.env.GOOGLE_GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = clients.google.getGenerativeModel({ model: geminiModel });
     const chat = model.startChat({
       history: context.map(c => ({
         role: c.role === 'user' ? 'user' : 'model',
@@ -333,6 +443,37 @@ async function thinkWithGemini(
     const response = await result.response;
     reportSuccess(provider);
     return response.text();
+  } catch (e: any) {
+    reportFailure(provider, e.message);
+    // Fallback to OpenRouter if Gemini is unavailable and OpenRouter is configured
+    if (process.env.OPENROUTER_API_KEY) {
+      return thinkWithOpenRouter(input, context, 'gemini-2.5-flash');
+    }
+    throw e;
+  }
+}
+
+async function thinkWithOpenRouter(input: string, context: any[], modelName: string): Promise<string> {
+  const provider = 'openrouter';
+  if (!checkCircuit(provider)) return '⚠️ OpenRouter is cooling down. Please try again later.';
+
+  try {
+    const clients = await getClients();
+    const openrouterClient = clients.openrouter;
+    if (!openrouterClient) throw new Error('OpenRouter client not available');
+
+    const response = await openrouterClient.chat.completions.create({
+      model: process.env.OPENROUTER_MODEL || modelName,
+      messages: [
+        { role: 'system', content: IQRA_SOUL },
+        ...context,
+        { role: 'user', content: input }
+      ],
+      max_tokens: 1500,
+    });
+
+    reportSuccess(provider);
+    return response.choices[0]?.message?.content ?? '';
   } catch (e: any) {
     reportFailure(provider, e.message);
     throw e;
@@ -352,11 +493,20 @@ async function thinkWithEconomy(
 
   try {
     const { callEconomyModel } = await import('./llm/economy.ts');
+    if (cloudflareGatewayConfigured()) {
+      const candidate = await proxyThroughGateway('economy', process.env.GLM_MODEL || process.env.GLM_MODEL || 'glm-4.7-flash', input, context);
+      reportSuccess(provider);
+      return candidate;
+    }
     const response = await callEconomyModel(input, context);
     reportSuccess(provider);
     return response;
   } catch (e: any) {
     reportFailure(provider, e.message);
+    // Fallback to OpenRouter if available for budget models
+    if (process.env.OPENROUTER_API_KEY) {
+      return thinkWithOpenRouter(input, context, process.env.OPENROUTER_MODEL || 'llama-3.3-70b');
+    }
     throw e;
   }
 }

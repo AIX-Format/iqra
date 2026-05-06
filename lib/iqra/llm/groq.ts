@@ -11,17 +11,19 @@ let _groq: any = null;
 
 async function getGroq() {
   if (_groq) return _groq;
-  if (process.env.GROQ_API_KEY) {
-    try {
-      const { Groq } = await import('groq-sdk');
-      _groq = new Groq({
-        apiKey: process.env.GROQ_API_KEY,
-      });
-    } catch (e) {
-      IQRALogger.warn('⚠️ [GROQ] SDK missing. Falling back to mock mode.');
-    }
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is required for real Groq resonance inference.');
   }
-  return _groq;
+
+  try {
+    const { Groq } = await import('groq-sdk');
+    _groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+    return _groq;
+  } catch (e) {
+    throw new Error('Groq SDK is missing or failed to initialize: ' + (e instanceof Error ? e.message : String(e)));
+  }
 }
 
 /**
@@ -57,10 +59,6 @@ export async function callGroqForResonance(ayah: string, newData: string, env: a
     `;
 
     const groq = await getGroq();
-    if (!groq) {
-        IQRALogger.warn("⚠️ [GROQ] No Client available. Returning mock resonance.");
-        return { type: 'Spiritual', reason: 'Mock resonance for development.', confidence: 0.5, isTrivial: false };
-    }
 
     for (let i = 0; i < PRIME_DELAYS.length; i++) {
         try {
@@ -116,9 +114,6 @@ export async function callGroqForTruthValidation(ayah: string, newData: string, 
     `;
 
     const groq = await getGroq();
-    if (!groq) {
-        return { isTrue: true, critique: 'Bypassing validation in mock mode.', strengthOfCounterArgument: 0.1 };
-    }
 
     try {
         const completion = await withTimeout(

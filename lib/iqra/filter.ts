@@ -24,6 +24,38 @@ export class IQRAFilter {
   private static haramKeywords: string[] = [];
   private static fitrahKeywords: string[] = [];
 
+  private static escapeRegExp(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  private static matchesWord(text: string, keyword: string) {
+    const escaped = this.escapeRegExp(keyword);
+    const regex = new RegExp(`(?<!\\p{L})${escaped}(?!\\p{L})`, 'iu');
+    return regex.test(text);
+  }
+
+  private static parseHaramKeywords(content: string): string[] {
+    const haramMatch = content.match(/HARAM_LIST\s*=\s*\[(.*?)\]/s);
+    if (!haramMatch) return [];
+
+    const candidates = haramMatch[1]
+      .split(/,(?![^\[]*\])/)
+      .map((item) => item.replace(/["'\[\]]/g, '').trim())
+      .filter((item) => item.length > 0);
+
+    const keywords = new Set<string>();
+    for (const candidate of candidates) {
+      keywords.add(candidate);
+      // Also add component keywords from phrases like "الكذب والتضليل".
+      const parts = candidate.split(/\s+و?\s*/).map((part) => part.trim()).filter(Boolean);
+      for (const part of parts) {
+        if (part.length > 2) keywords.add(part);
+      }
+    }
+
+    return [...keywords];
+  }
+
   /**
    * Load principles from .md files
    */
@@ -32,22 +64,22 @@ export class IQRAFilter {
       const dasturContent = fs.existsSync(this.DASTUR_PATH) ? fs.readFileSync(this.DASTUR_PATH, 'utf8') : '';
       const fitrahContent = fs.existsSync(this.FITRAH_PATH) ? fs.readFileSync(this.FITRAH_PATH, 'utf8') : '';
 
-      // Simple parser for HARAM_LIST in DASTUR.md
-      const haramMatch = dasturContent.match(/HARAM_LIST = \[(.*?)\]/s);
-      if (haramMatch) {
-        this.haramKeywords = haramMatch[1]
-          .split(',')
-          .map(k => k.replace(/["'\[\]\s]/g, '').trim())
-          .filter(k => k.length > 0);
-      }
+      this.haramKeywords = this.parseHaramKeywords(dasturContent);
 
-      // Extract high-level values from FITRAH.md
       this.fitrahKeywords = ['الحق', 'خدمة', 'القرآن', 'السنة', 'المراقبة', 'التطور', 'الإحسان', 'إتقان'];
+      if (fitrahContent) {
+        const fitrahExtracted = Array.from(new Set(
+          (fitrahContent.match(/[\u0600-\u06FF]{3,}/gu) || [])
+            .map((word) => word.trim())
+            .filter((word) => word.length > 2)
+        ));
+        this.fitrahKeywords = Array.from(new Set([...this.fitrahKeywords, ...fitrahExtracted]));
+      }
 
       IQRALogger.info(`🛡️ IQRA Filter: Initialized with ${this.haramKeywords.length} constraints.`);
     } catch (error) {
       IQRALogger.error('❌ IQRA Filter: Initialization failed:', error);
-      this.haramKeywords = ["كذب", "ظلم", "خيانة", "إيذاء"];
+      this.haramKeywords = ['كذب', 'ظلم', 'خيانة', 'إيذاء'];
     }
   }
 
@@ -74,7 +106,7 @@ export class IQRAFilter {
     
     // 1. Check for Haram content (Hard Veto)
     for (const keyword of this.haramKeywords) {
-      if (lowerText.includes(keyword.toLowerCase())) {
+      if (this.matchesWord(text, keyword)) {
         const result = {
           isAllowed: false,
           reason: `Violates Dastūr: Found forbidden concept '${keyword}'`,
@@ -88,19 +120,22 @@ export class IQRAFilter {
     // 2. Check for Fitrah Alignment (Soft Score)
     let matches = 0;
     for (const val of this.fitrahKeywords) {
-      if (lowerText.includes(val.toLowerCase())) {
+      if (this.matchesWord(text, val)) {
         matches++;
       }
     }
 
     const score = Math.min(1.0, (matches / (this.fitrahKeywords.length / 2)));
 
-    // 3. Heuristic: Is it just "noise" or potentially malicious/irrelevant?
-    // If it's very short and has no alignment, we reject it as "Zabad" (foam/waste)
-    if (text.trim().length < 5 && score < 0.1) {
-       return {
+    const hasArabic = /[\u0600-\u06FF]/u.test(text);
+    const normalizedText = text.trim();
+    const isMostlyNoise = normalizedText.length < 12 && score < 0.1;
+    const isAsciiNoise = !hasArabic && score < 0.2;
+
+    if (isMostlyNoise || isAsciiNoise) {
+      return {
         isAllowed: false,
-        reason: 'Content too sparse (Zabad).',
+        reason: 'Content too sparse or irrelevant (Zabad).',
         score: score
       };
     }
