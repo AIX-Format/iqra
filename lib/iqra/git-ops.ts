@@ -1,10 +1,10 @@
-# أعوذ بالله من الشيطان الرجيم
-# بسم الله الرحمن الرحيم
-# سبحان الله وبحمده سبحان الله العظيم
-# لا إله إلا الله وحده لا شريك له
-# له الملك وله الحمد وهو على كل شيء قدير
-# استغفر الله واتوب إليه
-# اللهم صل وسلم على نبينا محمد
+// أعوذ بالله من الشيطان الرجيم
+// بسم الله الرحمن الرحيم
+// سبحان الله وبحمده سبحان الله العظيم
+// لا إله إلا الله وحده لا شريك له
+// له الملك وله الحمد وهو على كل شيء قدير
+// استغفر الله واتوب إليه
+// اللهم صل وسلم على نبينا محمد
 
 /**
  * IQRA Sovereign Git Operations — العمليات السيادية (v3.7.9)
@@ -76,21 +76,37 @@ export function istidrak() {
  * Pulls latest changes with rebase, handling connectivity issues gracefully.
  */
 export function istimrar() {
+  let stashed = false;
   try {
     console.log('🔄 [أخوَّة] | Istimrār: Syncing with origin/main...');
+
+    // Check for dirty working tree to prevent rebase failure
+    const status = execSync('git status --porcelain').toString().trim();
+    if (status) {
+      console.log('📦 [أخوَّة] | Working tree dirty. Stashing changes temporarily...');
+      execSync('git stash push -m "IQRA Auto-stash before sync"');
+      stashed = true;
+    }
+
     // Use --no-edit to avoid manual interaction
     execSync('git pull --rebase origin main --no-edit', { timeout: 30000 });
     return true;
   } catch (e: any) {
     const errorMsg = e.stderr?.toString() || e.message;
-    console.warn('⚠️ [أخوَّة] | Istimrār: Pull failed. Continuing with local version.', errorMsg);
+    console.warn('⚠️ [أخوَّة] | Istimrār: Sync failed. Reverting to local state.', errorMsg);
     reportFailure('git-istimrar', errorMsg);
 
-    // If rebase is in progress but failed, we might need to abort to keep local clean
     if (errorMsg.includes('rebase in progress')) {
       try { execSync('git rebase --abort'); } catch { }
     }
     return false;
+  } finally {
+    if (stashed) {
+      console.log('📤 [أخوَّة] | Restoring stashed changes...');
+      try { execSync('git stash pop'); } catch (popError) {
+        console.warn('⚠️ [أخوَّة] | Could not pop stash automatically. Please check `git stash list`.');
+      }
+    }
   }
 }
 

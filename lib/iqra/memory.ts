@@ -6,12 +6,10 @@
  * Powered by Upstash Redis, Supabase, and Qdrant.
  */
 
-// Dynamic imports will be handled lazily to allow Sovereign Mode (No node_modules)
-// import { Redis } from '@upstash/redis';
-// import { createClient } from '@supabase/supabase-js';
-// import { QdrantClient } from '@qdrant/js-client-rest';
-// import { GoogleGenerativeAI } from '@google/generative-ai';
+// Dynamic imports are handled lazily within methods to allow Sovereign Mode (No node_modules required)
 import { IQRALogger } from './logger.ts';
+import { IQRAFilter } from './filter.ts';
+import { IQRAConsciousness } from './consciousness.ts';
 import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -334,6 +332,19 @@ export class IQRAMemory {
   }
 
   /**
+   * Muraqabah Layer: Ensure memory is pure before storage
+   */
+  private static async muraqabahCheck(content: string, type: string): Promise<boolean> {
+    const result = await IQRAConsciousness.muraqabahCheck(content, type);
+    if (!result.isAllowed) {
+      IQRALogger.warn(`🕋 [MURĀQABAH] Blocked ${type} storage: ${result.reason}`);
+      this.logBlockedMemory(type, content, result.reason);
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Save to Long-term Memory (Supabase/PostgreSQL)
    */
   static async saveLongTerm(table: string, data: any) {
@@ -342,14 +353,15 @@ export class IQRAMemory {
       IQRALogger.warn('⚠️ Supabase not configured. Falling back to local logs.');
       return;
     }
-    const { error } = await withTimeout(supabase.from(table).insert([data]), IQRA_TIMEOUTS.NETWORK, `Supabase INSERT ${table}`);
+    const content = typeof data === 'string' ? data : JSON.stringify(data);
+    if (!await this.muraqabahCheck(content, 'long-term')) return;
 
+    const { error } = await withTimeout(supabase.from(table).insert([data]), IQRA_TIMEOUTS.NETWORK, `Supabase INSERT ${table}`);
     if (error) IQRALogger.error(`❌ Long-term memory error (${table}):`, error);
   }
 
   /**
    * Save to Semantic Memory (Qdrant Cloud / Vector DB)
-   * "وَمَا نُنَزِّلُهُ إِلَّا بِقَدَرٍ مَّعْلُومٍ"
    */
   static async saveSemantic(text: string, metadata: any) {
     const qdrant = await this.getQdrant();
@@ -359,6 +371,8 @@ export class IQRAMemory {
       IQRALogger.warn('⚠️ Semantic memory offline: Qdrant/Google AI not configured.');
       return;
     }
+
+    if (!await this.muraqabahCheck(text, 'semantic')) return;
 
     try {
       const model = googleAI.getGenerativeModel({ model: "text-embedding-004" });
@@ -374,7 +388,7 @@ export class IQRAMemory {
             content: text, 
             ...metadata, 
             iqra_version: '1.0',
-            timestamp: Date.now() 
+            timestamp: Date.now()
           }
         }]
       }), IQRA_TIMEOUTS.NETWORK, 'Qdrant UPSERT');
@@ -388,6 +402,15 @@ export class IQRAMemory {
       IQRALogger.error('❌ Qdrant Save Error:', error);
     }
   }
+
+  /**
+   * Log blocked memory attempts for audit
+   */
+  private static logBlockedMemory(type: string, content: string, reason?: string) {
+    const log = `\n### 🛡️ [POLLUTION_PREVENTED] ${new Date().toISOString()}\n- **Type**: ${type}\n- **Reason**: ${reason}\n- **Content Snippet**: ${content.substring(0, 100)}...\n`;
+    fs.appendFileSync(path.join(process.cwd(), 'iqra-core/FAILURES.md'), log);
+  }
+
 
   /**
    * Search Semantic Memory

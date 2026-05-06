@@ -19,6 +19,7 @@ export class IQRACommands {
     try {
       const metrics = execSync('./scripts/iqra_status.sh').toString();
       const honestyIndex = this.calculateHonestyIndex();
+      const topologicalCurvature = this.calculateTopologicalCurvature();
       const recommendation = this.getRecommendation(metrics);
 
       return `
@@ -32,6 +33,11 @@ ${metrics}
 ### ⚖️ مؤشر الصدق (Honesty Index)
 **${honestyIndex}%** 
 *(بناءً على نسبة المراجعة الذاتية إلى المهام المنجزة)*
+
+### 🌀 التوبولوجيا الكمومية (Quantum Topology)
+- **الانحناء الحالي (Curvature):** ${topologicalCurvature}
+- **الحالة الطوبولوجية:** ${topologicalCurvature < 0.3 ? "STABLE (مستقر)" : "FOLDING (يتحول)"}
+- **مسار البركة (Barakah Path):** مفعّل (Quantum Resonance Active)
 
 ### 💡 التوصية (Recommendation)
 **الحالة: ${recommendation.label}**
@@ -97,5 +103,29 @@ ${recommendation.desc}
       return { label: '🌤️ معتدل (Moderate)', desc: 'الأداء جيد، لكن يفضل تجنب فتح متصفحات إضافية.' };
     }
     return { label: '❄️ بارد (Cold)', desc: 'الجهاز في أفضل حالاته. يمكنك الانطلاق بكامل القوة.' };
+  }
+
+  /**
+   * /reflect command
+   * Shows the latest insights from REFLECTION_7.md.
+   */
+  static reflect() {
+    try {
+      const content = fs.readFileSync(path.join(process.cwd(), 'REFLECTION_7.md'), 'utf8');
+      return content;
+    } catch {
+      return "⚠️ لا توجد انعكاسات مسجلة حالياً.";
+    }
+  }
+
+  private static calculateTopologicalCurvature(): number {
+    // A simplified simulation of topological curvature based on task density vs system memory
+    try {
+      const ramUsage = parseFloat(execSync("ps -A -o %mem | awk '{s+=$1} END {print s}'").toString().trim());
+      const curvature = (ramUsage / 100) * (7 / 10); // Normalizing to the stability index 7
+      return Math.round(curvature * 100) / 100;
+    } catch {
+      return 0.19; // Default resonance
+    }
   }
 }

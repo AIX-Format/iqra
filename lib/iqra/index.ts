@@ -1,5 +1,26 @@
 // lib/iqra/index.ts — The Complete IQRA
 
+import { IQRAExecutionLoop } from './loop';
+import { IQRATopology } from './topology';
+
+export async function executeWithIqra(task: string, action: () => Promise<void>) {
+  const topology = new IQRATopology();
+  await topology.syncStateWithReality();
+
+  return IQRAExecutionLoop.runTask(async () => {
+    try {
+      await action();
+      console.log(topology.transition(true));
+    } catch (error) {
+      console.log(topology.transition(false)); // Quantum Tunneling Trigger
+      throw error;
+    }
+  }, {
+    id: Date.now().toString(),
+    intention: task
+  });
+}
+
 import { IQRABrainMode } from './brain';
 import { AgentCore } from './core';
 import { IQRACommands } from './commands';

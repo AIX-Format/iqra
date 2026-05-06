@@ -50,6 +50,8 @@ export async function storeReflectionInQdrant(content: string, metadata: Record<
                     payload: {
                         content,
                         timestamp: new Date().toISOString(),
+                        topological_resonance: 7, // Default Barakah factor
+                        quantum_state: "SUPERPOSITION",
                         ...metadata
                     }
                 }

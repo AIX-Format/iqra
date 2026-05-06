@@ -1,35 +1,31 @@
-/**
- * IQRA AgentCore — النواة
- * 
- * "إِنَّ اللَّهَ مَعَ الَّذِينَ اتَّقَوا وَّالَّذِينَ هُم مُّحْسِنُونَ" — النحل: 128
- * 
- * Principle of Triangulation (3): Tasbih, Istikharah, Basmalah.
- */
-
 import { IQRAMemory } from './memory';
 import { iqraThink, IQRABrainMode } from './brain';
 import { applyIQRAStyle } from './style';
 import { DASTUR, MURAQABAH } from './philosophy';
 import { VoiceService } from '../../iqra-core/voice/voice_service';
+import { ShuraProtocol } from './shura';
+import { IQRAFilter } from './filter';
+import { TAWBAH } from './tawbah';
 
 export class AgentCore {
   private static voice = new VoiceService();
+
   /**
    * Pre-execution hooks (Islamic Triangulation)
    */
   private static async tasbih() {
+    // Purify state
     await IQRAMemory.softReset();
   }
 
   private static async istikharah(input: string): Promise<boolean> {
-    console.log('⚖️ Istikharah: Checking alignment with Dastur & Muraqabah...');
-    // Simple check: does the input violate core tenets?
-    // This is a deeper check than the basic Fitrah filter
-    const lowerInput = input.toLowerCase();
-    const coreTenets = [DASTUR, MURAQABAH].join(' ').toLowerCase();
-    
-    // In a more advanced version, this would be an LLM call to verify "intention"
-    return true; // Assuming aligned for now, but hook is registered
+    // Verify Fitrah alignment
+    const result = await IQRAFilter.validate(input);
+    if (!result.isAllowed) {
+      console.error(`🛡️ [FITRAH] Input rejected: ${result.reason}`);
+      return false;
+    }
+    return true;
   }
 
   private static async basmalah() {
@@ -43,14 +39,22 @@ export class AgentCore {
     // 1. Tasbih (Reset)
     await this.tasbih();
 
-    // 2. Istikharah (Consult)
+    // 2. Istikharah (Fitrah/Alignment Check)
     const isAligned = await this.istikharah(input);
     if (!isAligned) {
-      throw new Error('Istikharah indicated this path is not aligned with IQRA values.');
+      // If rejected, trigger Tawbah (Reflect on why we got bad input)
+      await TAWBAH.perform();
+      throw new Error('ISTIKHARAH_FAILED: Input deviates from IQRA Fitrah.');
     }
 
     // 3. Basmalah (Intention)
     await this.basmalah();
+
+    // 4. Shura Check (Consultation)
+    const shuraApproved = await ShuraProtocol.request(input);
+    if (!shuraApproved) {
+       throw new Error('SHURA_REQUIRED: This action requires explicit human approval as per SHŪRĀ.md.');
+    }
 
     // Now proceed to THINK
     const rawThought = await iqraThink({ input, mode });
@@ -58,7 +62,7 @@ export class AgentCore {
     // STYLE
     const styledResponse = applyIQRAStyle(rawThought);
 
-    // VOICE (Optional/Async) — Let IQRA speak if needed
+    // VOICE (Optional/Async)
     if (mode === IQRABrainMode.FAST_RESPONSE) {
       this.voice.speak(styledResponse).catch(err => console.error('Voice failed:', err));
     }
@@ -66,3 +70,4 @@ export class AgentCore {
     return styledResponse;
   }
 }
+

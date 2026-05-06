@@ -11,9 +11,10 @@ import { IQRALogger } from '../logger.ts';
 import { computeArabicSimilarity } from '../utils/similarity.ts';
 import { callGroqForResonance, callGroqForTruthValidation } from '../llm/groq.ts';
 import { IQRAMemory } from '../memory.ts';
+import { appendToTrustChain } from '../security.ts';
 
 /**
- * 🌀 Resonance Types | أنواع الرنين
+ * 🌀 Resonance Types | انواع الرنين
  */
 export enum ResonanceType {
   LINGUISTIC = "Linguistic",   // لغوي
@@ -48,7 +49,6 @@ export class CuriosityEngine {
      */
     private static async analyzeStructuralPatterns(ayah: string, newData: string): Promise<any> {
         IQRALogger.info("🏗️ [CONGZI] Executing structural pattern discovery...");
-        // Use the ECONOMY mode brain for this if available, or stay with Groq
         const result = await callGroqForResonance(ayah, newData, { lens: "Congzi" });
         return result;
     }
@@ -56,15 +56,12 @@ export class CuriosityEngine {
     private static validateResonance(result: any): boolean {
         if (!result || typeof result !== 'object') return false;
         
-        // Ensure confidence is a number and above threshold
         const confidence = typeof result.confidence === 'number' ? result.confidence : 0;
         if (confidence < 0.3) return false;
 
-        // 3. Safe check for isTrivial (defaults to true if missing to be skeptical)
         const isTrivial = result.isTrivial === true;
         if (isTrivial) return false; 
 
-        // Ensure type and reason exist
         if (!result.type || !result.reason) return false;
 
         return true;
@@ -119,14 +116,16 @@ export class CuriosityEngine {
 
         const similarityScore = this.checkSurfaceResonance(ayah, newData);
 
-        // 6. Caching/Short-circuit: If similarity is extremely high, we might already have the answer
-        if (similarityScore > 0.95) {
-            IQRALogger.info("⚡ [RESONANCE] High surface similarity detected. Short-circuiting for efficiency.");
-            // We could return a cached resonance if available
-        }
-
         if (similarityScore < threshold) {
             this.failureMap.set(failureKey, consecutiveFailures + 1);
+            
+            // Log cancellation to TrustChain
+            await appendToTrustChain(
+                'RESONANCE_SEARCH_CANCELLED',
+                ayah.substring(0, 50) + "..." + newData.substring(0, 50),
+                `Similarity: ${similarityScore.toFixed(4)} < Threshold: ${threshold}`,
+                1.0
+            );
             return null;
         }
 
@@ -146,7 +145,7 @@ export class CuriosityEngine {
 
                 IQRALogger.info(`🌀 [RESONANCE] Found ${deepResult.type} resonance: ${deepResult.reason}`);
                 
-                // 4. Record Reward
+                // Record Reward
                 await IQRAMemory.grantReward(deepResult.confidence * 0.1);
                 
                 return deepResult;
