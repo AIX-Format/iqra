@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&family=Amiri:wght@400;700&display=swap');
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+  --accent-gold: #d4af37;
+  --accent-gold-bright: #f9d71c;
+  --glass-bg: rgba(20, 20, 20, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .brand-font {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.arabic-font {
+  font-family: 'Amiri', serif;
+  direction: rtl;
+}
+
+/* ── LAYOUT ────────────────────────────────────────────────────────────────── */
+
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ── GLASSMORPHISM ─────────────────────────────────────────────────────────── */
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+/* ── ANIMATIONS ────────────────────────────────────────────────────────────── */
+
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+.pulse-button {
+  background: linear-gradient(135deg, var(--accent-gold), #8a6d3b);
+  color: #000;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  animation: pulse-gold 2s infinite;
+  transition: all 0.3s ease;
+}
+
+.pulse-button:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+}
+
+/* ── QURANIC STYLES ────────────────────────────────────────────────────────── */
+
+.ayah-box {
+  border-right: 4px solid var(--accent-gold);
+  padding-right: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ayah-arabic {
+  font-size: 2.2rem;
+  color: var(--accent-gold-bright);
+  margin-bottom: 1rem;
+}
+
+.ayah-english {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* ── SEVEN SYSTEM GRID ──────────────────────────────────────────────────────── */
+
+.seven-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.seven-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.seven-cell.highlight {
+  background: var(--accent-gold);
+  color: #000;
+}

@@ -29,6 +29,15 @@ export class IQRAMemory {
   }
 
   /**
+   * Get a range of items from a list
+   * Used by sovereign meta-loop for self-review and discovery
+   */
+  static async getList<T>(key: string, start: number, end: number): Promise<T[]> {
+    const result = await redis.lrange(`iqra:list:${key}`, start, end);
+    return (result || []) as T[];
+  }
+
+  /**
    * Append to a list (for TrustChain)
    */
   static async appendList(key: string, value: any) {

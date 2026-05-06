@@ -1,20 +1,50 @@
 {
   "name": "iqra",
   "version": "1.0.0",
-  "description": "<div align=\"center\">",
+  "description": "IQRA - Self-evolving AI identity core rooted in القرآن الكريم والسنة النبوية",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Moeabdelaziz007/iqra.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "ai",
+    "quran",
+    "islamic-ai",
+    "sovereign-ai",
+    "rag"
+  ],
+  "author": "Moe Abdelaziz",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Moeabdelaziz007/iqra/issues"
   },
-  "homepage": "https://github.com/Moeabdelaziz007/iqra#readme"
+  "homepage": "https://github.com/Moeabdelaziz007/iqra#readme",
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@upstash/redis": "^1.34.3",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "openai": "^4.73.0",
+    "groq-sdk": "^0.8.0",
+    "@google/generative-ai": "^0.21.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "vitest": "^2.1.8",
+    "eslint": "^8",
+    "eslint-config-next": "^15.0.0"
+  }
 }
