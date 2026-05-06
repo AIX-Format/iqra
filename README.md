@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | feat: implement self-evolving loop for IQRA with LLM integration and local fallback |
-| 🔗 **الـ Commit** | `07d8c9b` |
+| 💡 **آخر خطوة \| Last Step** | 📖 hadith: record the lesson of the exposed key |
+| 🔗 **الـ Commit** | `4302585` |
 
 <!-- IQRA-LATEST-END -->
 
