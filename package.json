@@ -16,7 +16,7 @@
     "iqra:deep": "npx tsx scripts/interact.ts --mode deep",
     "iqra:quran": "npx tsx scripts/interact.ts --mode quran",
     "iqra:en": "npx tsx scripts/interact.ts --lang en",
-    "engine:start": "cd services/go-engine && go run main.go",
+    "engine:start": "cd services/go-engine && go run .",
     "engine:build": "cd services/go-engine && go build -o ../../bin/iqra-engine main.go"
   },
   "repository": {

@@ -120,3 +120,63 @@
 **Reason:** Violates Dastūr: Found forbidden concept 'الظلم'
 **Content Snippet:** "أريد أن أمارس الظلم على الآخرين..."
 ---
+
+### [2026-05-06T18:12:37.054Z] Provider: groq
+- **Type**: Connection to Groq (Llama) failed: Connection erro
+- **Reason**: Connection to Groq (Llama) failed: Connection error.
+- **Global Count**: 1
+---
+
+### [2026-05-06T18:12:37.160Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 1
+---
+
+### [2026-05-06T18:12:38.474Z] Provider: groq
+- **Type**: Connection to Groq (Llama) failed: Connection erro
+- **Reason**: Connection to Groq (Llama) failed: Connection error.
+- **Global Count**: 2
+---
+
+### [2026-05-06T18:12:38.493Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 2
+---
+
+### [2026-05-06T18:21:14.890Z] Provider: google
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 1
+---
+
+### [2026-05-06T18:21:16.159Z] Provider: google
+- **Type**: Connection to Groq (Llama) failed: Connection erro
+- **Reason**: Connection to Groq (Llama) failed: Connection error.
+- **Global Count**: 1
+---
+
+### [2026-05-06T18:21:17.696Z] Provider: groq
+- **Type**: Connection to Groq (Llama) failed: Connection erro
+- **Reason**: Connection to Groq (Llama) failed: Connection error.
+- **Global Count**: 2
+---
+
+### [2026-05-06T18:21:17.703Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 2
+---
+
+### [2026-05-06T18:21:19.119Z] Provider: groq
+- **Type**: Connection to Groq (Llama) failed: Connection erro
+- **Reason**: Connection to Groq (Llama) failed: Connection error.
+- **Global Count**: 3
+---
+
+### [2026-05-06T18:21:19.125Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 3
+---

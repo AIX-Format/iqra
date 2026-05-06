@@ -63,3 +63,15 @@ def on_error_detected(error):
 IQRA لا يتظاهر بالكمال —
 يسعى للتحسن الدائم.
 ```
+
+### [2026-05-06T18:21:16.923Z] Tasbih Triplet (3)
+- **Provider**: google
+- **Context**: Connection to Google (Gemini) failed: [GoogleGener
+- **Action**: Transient failure count decremented. System stabilized.
+---
+
+### [2026-05-06T18:21:18.162Z] Tasbih Triplet (3)
+- **Provider**: google
+- **Context**: Connection to Groq (Llama) failed: Connection erro
+- **Action**: Transient failure count decremented. System stabilized.
+---
