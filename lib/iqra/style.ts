@@ -45,3 +45,24 @@ export const SacredGeometry = {
     return Math.round(value / 7) * 7;
   }
 };
+
+/**
+ * Rule 6: Apply IQRA Signature and Styling
+ */
+export function applyIQRAStyle(content: string): string {
+  // 1. Ensure signature if missing
+  const signature = "\n\n**تم بحمد الله | Completed by the Grace of Allah**";
+  let styled = content;
+  
+  if (!styled.includes("تم بحمد الله")) {
+    styled += signature;
+  }
+
+  // 2. Add timestamp
+  const timestamp = `\n**آخر تحديث | Last Updated:** ${new Date().toLocaleString('ar-EG')} | ${new Date().toLocaleString('en-US')}`;
+  if (!styled.includes("آخر تحديث")) {
+    styled += timestamp;
+  }
+
+  return styled;
+}

@@ -147,8 +147,8 @@ async function thinkWithClaude(
     reportSuccess(provider);
     return response.content[0].type === 'text' 
       ? response.content[0].text : '';
-  } catch (e) {
-    reportFailure(provider);
+  } catch (e: any) {
+    reportFailure(provider, e.message);
     throw e;
   }
 }
@@ -176,8 +176,8 @@ async function thinkWithGroq(
     });
     reportSuccess(provider);
     return response.choices[0]?.message?.content ?? '';
-  } catch (e) {
-    reportFailure(provider);
+  } catch (e: any) {
+    reportFailure(provider, e.message);
     throw e;
   }
 }
@@ -205,8 +205,8 @@ async function thinkWithGPT(
     });
     reportSuccess(provider);
     return response.choices[0]?.message?.content ?? '';
-  } catch (e) {
-    reportFailure(provider);
+  } catch (e: any) {
+    reportFailure(provider, e.message);
     throw e;
   }
 }
@@ -238,8 +238,8 @@ async function thinkWithGemini(
     const response = await result.response;
     reportSuccess(provider);
     return response.text();
-  } catch (e) {
-    reportFailure(provider);
+  } catch (e: any) {
+    reportFailure(provider, e.message);
     throw e;
   }
 }

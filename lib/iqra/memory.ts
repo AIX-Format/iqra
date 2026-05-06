@@ -44,6 +44,13 @@ export class IQRAMemory {
     return await redis.rpush(`iqra:list:${key}`, value);
   }
 
+  static async getRecentList<T>(key: string, count: number): Promise<T[]> {
+    const total = await redis.llen(`iqra:list:${key}`);
+    const start = Math.max(0, total - count);
+    const result = await redis.lrange(`iqra:list:${key}`, start, total - 1);
+    return (result || []) as T[];
+  }
+
   /**
    * Save curiosity score
    */

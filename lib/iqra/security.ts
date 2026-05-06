@@ -12,6 +12,15 @@
 
 import { z } from 'zod';
 import { createHash, randomBytes } from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+export const AL_FATIHAH_HEADER = `
+# أعوذ بالله من الشيطان الرجيم
+# بسم الله الرحمن الرحيم
+# سبحان الله والحمد لله ولا إله إلا الله والله أكبر
+
+`.trim();
 
 // ═══════════════════════════════════
 // TRUSTCHAIN — سجل الثقة
@@ -92,7 +101,9 @@ export function checkCircuit(provider: string): boolean {
   return true;
 }
 
-export function reportFailure(provider: string) {
+const globalFailures: Record<string, number> = {};
+
+export function reportFailure(provider: string, reason?: string) {
   if (!circuitBreakers[provider]) {
     circuitBreakers[provider] = { failures: 0, lastFailure: 0, status: 'CLOSED' };
   }
@@ -102,6 +113,78 @@ export function reportFailure(provider: string) {
   if (state.failures >= 3) {
     state.status = 'OPEN';
     console.warn(`⚠️ CIRCUIT BREAKER OPEN: ${provider}`);
+  }
+
+  // Principle of Nine (9) — Humility Threshold
+  if (reason) {
+    const errorType = reason.substring(0, 50); // Simple categorization
+    globalFailures[errorType] = (globalFailures[errorType] || 0) + 1;
+    
+    console.error(`❌ Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
+
+    // Log to FAILURES.md
+    logToIQRAFile('FAILURES.md', `
+### [${new Date().toISOString()}] Provider: ${provider}
+- **Type**: ${errorType}
+- **Reason**: ${reason}
+- **Global Count**: ${globalFailures[errorType]}
+---
+`.trim());
+
+    if (globalFailures[errorType] >= 9) {
+      triggerHumanIntervention(errorType, reason);
+    }
+  }
+}
+
+/**
+ * Helper to append content to files in the iqra-core directory
+ */
+export function logToIQRAFile(fileName: string, content: string) {
+  try {
+    const filePath = path.join(process.cwd(), 'iqra-core', fileName);
+    const fileExists = fs.existsSync(filePath);
+    
+    let finalContent = content;
+    if (!fileExists) {
+      finalContent = `${AL_FATIHAH_HEADER}\n\n${content}`;
+    }
+    
+    fs.appendFileSync(filePath, `\n${finalContent}\n`);
+  } catch (e) {
+    console.error(`Failed to log to ${fileName}:`, e);
+  }
+}
+
+async function triggerHumanIntervention(errorType: string, fullError: string) {
+  console.log('🛑 Humility Threshold Reached (9). Requesting Human Intervention...');
+  
+  const content = `
+${AL_FATIHAH_HEADER}
+
+# نداء للمساعدة البشرية | ASK_HUMAN.md
+> "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ" — النحل: 43
+
+لقد استنفذ IQRA حد الإتقان (9 محاولات) وفشل في حل هذه المشكلة بشكل مستقل.
+
+## تفاصيل الخطأ (Error Details)
+- **النوع**: ${errorType}
+- **الرسالة الكاملة**: ${fullError}
+- **عدد المحاولات**: 9
+
+## المطلوب (Requested Action)
+يرجى من المطور البشري مراجعة الكود أو الإعدادات الخاصة بـ ${errorType} لأنها تجاوزت قدرة المعالجة الذاتية الحالية.
+
+---
+**تم تسجيل هذا النداء بتاريخ: ${new Date().toISOString()}**
+  `.trim();
+
+  try {
+    const filePath = path.join(process.cwd(), 'iqra-core', 'ASK_HUMAN.md');
+    fs.writeFileSync(filePath, content);
+    console.error(`📝 ASK_HUMAN.md created at: ${filePath}`);
+  } catch (e) {
+    console.error('Failed to create ASK_HUMAN.md:', e);
   }
 }
 
