@@ -11,18 +11,17 @@ export class ExecutionWorker extends SovereignWorker {
     this.report.timestamp = Date.now();
 
     try {
-      const { input: rawInput, resonance, novelty, reward } = context.payload;
-      const researchData = context.payload.research;
+      const { input: rawInput, resonance, novelty, reward, research } = context.payload;
       
       const curiosity = await IQRAMemory.getCuriosity();
       
       let enrichedInput = `[Curiosity: ${curiosity.toFixed(2)}][Resonance: ${resonance?.coherence?.toFixed(2)}][Novelty: ${novelty?.toFixed(2)}]\n`;
       
-      if (researchData) {
-        enrichedInput += `[RESEARCH_CONTEXT]: ${researchData.discoveries.substring(0, 500)}...\n`;
+      if (research) {
+        enrichedInput += `[RESEARCH_CONTEXT]: ${research.discoveries.substring(0, 300)}...\n`;
       }
       
-      enrichedInput += rawInput;
+      enrichedInput += `[PROMPT]: ${rawInput}`;
 
       const connector = ConnectorFactory.getConnector(this.provider); 
       const messages = [
@@ -31,8 +30,9 @@ export class ExecutionWorker extends SovereignWorker {
       ];
 
       const result = await connector.generate(enrichedInput, messages);
-      this.markImplemented('Final response generation with enriched context');
-      this.markImplemented(`Provider used: ${result.provider}`);
+      this.markImplemented('Final response generation with enriched serial context');
+      this.markImplemented(`Model specialized: ${this.provider} (Execution Optimization)`);
+      this.report.proceduresFollowed = true;
 
       return {
         success: true,

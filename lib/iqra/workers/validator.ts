@@ -45,6 +45,7 @@ export class ValidationWorker extends SovereignWorker {
       }
 
       this.markImplemented('Input keywords validated against full Dastur HARAM_LIST');
+      this.report.proceduresFollowed = true;
       
       return {
         success: true,
@@ -53,7 +54,10 @@ export class ValidationWorker extends SovereignWorker {
         nextHandoff: {
           from: this.id,
           to: 'ExecutionWorker',
-          payload: input,
+          payload: {
+            ...context.payload,
+            validation: { success: true, timestamp: Date.now() }
+          },
           context: 'Validation complete. Safe to proceed under Muraqabah.'
         }
       };

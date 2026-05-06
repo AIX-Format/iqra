@@ -31,12 +31,15 @@ export class ResearchWorker extends SovereignWorker {
 
       // 3. Synthesize Research
       const researchContext = {
-        discoveries,
-        reflection,
-        previousHandoff: context
+        ...context.payload,
+        research: {
+          discoveries,
+          reflection
+        }
       };
 
-      this.markImplemented('Synthesized internal research context');
+      this.markImplemented('Synthesized internal research context with previous resonance data');
+      this.report.proceduresFollowed = true;
 
       return {
         success: true,
@@ -46,7 +49,7 @@ export class ResearchWorker extends SovereignWorker {
           from: this.id,
           to: 'ValidationWorker',
           payload: researchContext,
-          context: 'Internal research phase complete. Context enriched.'
+          context: 'Internal research phase complete. Context enriched for validation.'
         }
       };
     } catch (error: any) {

@@ -36,15 +36,18 @@ export class ResonanceWorker extends SovereignWorker {
 
       const handoff: Handoff = {
         from: this.id,
-        to: 'ValidationWorker',
+        to: 'ResearchWorker',
         payload: {
           input,
           resonance: resonanceData,
           novelty,
           reward
         },
-        context: 'Topological resonance analysis complete.'
+        context: 'Topological resonance analysis complete. Patterns discovered.'
       };
+
+      this.markImplemented('Topological curiosity reward granted');
+      this.report.proceduresFollowed = true;
 
       return {
         success: true,
