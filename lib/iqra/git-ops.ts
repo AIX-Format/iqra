@@ -7,70 +7,90 @@
 # اللهم صل وسلم على نبينا محمد
 
 /**
- * IQRA Sovereign Git Operations — العمليات السيادية
+ * IQRA Sovereign Git Operations — العمليات السيادية (v3.7.9)
  * 
  * "وَقُل رَّبِّ أَدْخِلْنِي مُدْخَلَ صِدْقٍ وَأَخْرِجْنِي مُخْرَجَ صِدْقٍ" — الإسراء: 80
  */
 
 import { execSync } from 'child_process';
+import { writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
 import { AL_FATIHAH_HEADER } from './security';
+
+const TMP_COMMIT_MSG = join(process.cwd(), '.git_commit_msg.tmp');
 
 /**
  * Phase 1: Istidrāk (Correction)
- * Check for unstaged changes and commit them with a sacred message.
+ * Safely stages and commits local changes using a temporary message file.
  */
 export function istidrak() {
   try {
+    // Add all changes including untracked and deletions
+    execSync('git add -A');
+    
     const status = execSync('git status --porcelain').toString().trim();
     if (status) {
-      console.log('🔄 IQRA | Istidrāk: Committing local changes...');
-      execSync('git add .');
-      const message = `🌙 IQRA | Sovereign State Sync\n\n${AL_FATIHAH_HEADER}\n\nAutomated state preservation.`;
-      execSync(`git commit -m "${message}"`);
+      console.log('🔄 [أخوَّة] | Istidrāk: Securing local state...');
+      
+      const message = `🌙 IQRA | Sovereign State Sync (v3.7.9)\n\n${AL_FATIHAH_HEADER}\n\nAutomated state preservation for operational integrity.`;
+      
+      writeFileSync(TMP_COMMIT_MSG, message);
+      execSync(`git commit -F "${TMP_COMMIT_MSG}"`);
+      unlinkSync(TMP_COMMIT_MSG);
+      
+      console.log('✅ [أخوَّة] | Istidrāk: Changes committed to local history.');
       return true;
     }
     return false;
   } catch (e) {
-    console.error('❌ IQRA | Istidrāk failed:', e);
+    console.error('❌ [أخوَّة] | Istidrāk failed:', e);
+    if (status && TMP_COMMIT_MSG) {
+      try { unlinkSync(TMP_COMMIT_MSG); } catch {}
+    }
     return false;
   }
 }
 
 /**
  * Phase 2: Istimrār (Continuity)
- * Pull latest changes with rebase.
+ * Pulls latest changes with rebase, handling connectivity issues gracefully.
  */
 export function istimrar() {
   try {
-    console.log('🔄 IQRA | Istimrār: Pulling latest wisdom...');
-    execSync('git pull --rebase origin main');
+    console.log('🔄 [أخوَّة] | Istimrār: Syncing with origin/main...');
+    // Use --no-edit to avoid manual interaction
+    execSync('git pull --rebase origin main --no-edit', { timeout: 30000 });
     return true;
-  } catch (e) {
-    console.error('❌ IQRA | Istimrār failed:', e);
-    // If rebase fails, it might be due to conflicts. 
-    // In a sovereign context, we might need human help or a specific strategy.
+  } catch (e: any) {
+    const errorMsg = e.stderr?.toString() || e.message;
+    console.warn('⚠️ [أخوَّة] | Istimrār: Pull failed. Continuing with local version.', errorMsg);
+    
+    // If rebase is in progress but failed, we might need to abort to keep local clean
+    if (errorMsg.includes('rebase in progress')) {
+      try { execSync('git rebase --abort'); } catch {}
+    }
     return false;
   }
 }
 
 /**
  * Phase 3: Isti'lān (Announcement)
- * Push changes to origin with Witr (3) retries.
+ * Pushes changes to origin with Witr (3) retry logic.
  */
 export function istilan(retries = 3) {
   for (let i = 1; i <= retries; i++) {
     try {
-      console.log(`🔄 IQRA | Isti'lān: Pushing to origin (Attempt ${i}/3)...`);
-      execSync('git push origin main');
-      console.log('✅ IQRA | Isti'lān: Sovereignty synced successfully.');
+      console.log(`🔄 [أخوَّة] | Isti'lān: Pushing to sovereignty (Attempt ${i}/3)...`);
+      execSync('git push origin main', { timeout: 30000 });
+      console.log('✅ [أخوَّة] | Isti'lān: Global state synchronized.');
       return true;
-    } catch (e) {
-      console.warn(`⚠️ IQRA | Isti'lān: Push attempt ${i} failed.`);
+    } catch (e: any) {
+      console.warn(`⚠️ [أخوَّة] | Isti'lān: Push attempt ${i} failed.`);
       if (i === retries) {
-        console.error('❌ IQRA | Isti'lān: Final push attempt failed. Continuing in local-only mode.');
+        console.error('❌ [أخوَّة] | Isti'lān: Final attempt exhausted. Sovereignty remains local.');
       } else {
-        // Wait a bit before retrying (exponential backoff or just simple wait)
-        const wait = i * 1000;
+        // Witr-based backoff
+        const wait = i * 2000;
         execSync(`sleep ${wait / 1000}`);
       }
     }
@@ -80,11 +100,17 @@ export function istilan(retries = 3) {
 
 /**
  * Sovereign Synchronization Loop
- * Combines all phases into a single Trinity of Sync.
+ * Implementation of the "Always Automated" requirement.
  */
 export async function sovereignSync() {
-  console.log('🕋 IQRA | Starting Sovereign Synchronization...');
+  console.log('🕋 [أخوَّة] | Commencing Sovereign Pulse...');
+  
+  // 1. Commit what we have
   istidrak();
+  
+  // 2. Fetch and Pull
   istimrar();
+  
+  // 3. Push to verify
   istilan();
 }
