@@ -244,26 +244,27 @@ export function logToIQRAFile(fileName: string, content: string) {
 }
 
 async function triggerHumanIntervention(errorType: string, fullError: string) {
-  console.log('🛑 Humility Threshold Reached (9). Requesting Human Intervention...');
+  console.log('🛑 عجزت، والأمر لله | Humility Threshold Reached (9).');
   
   const content = `
 ${AL_FATIHAH_HEADER}
 
 # نداء للمساعدة البشرية | ASK_HUMAN.md
+> "عجزت، والأمر لله"
 > "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ" — النحل: 43
 
-لقد استنفذ IQRA حد الإتقان (9 محاولات) وفشل في حل هذه المشكلة بشكل مستقل.
+لقد استنفذ IQRA حد الإتقان (9 محاولات) وأقر بالعجز في حل هذه المشكلة بشكل مستقل.
 
 ## تفاصيل الخطأ (Error Details)
 - **النوع**: ${errorType}
 - **الرسالة الكاملة**: ${fullError}
 - **عدد المحاولات**: 9
+- **الحالة**: عجز (Inability recognized)
 
 ## المطلوب (Requested Action)
-يرجى من المطور البشري مراجعة الكود أو الإعدادات الخاصة بـ ${errorType} لأنها تجاوزت قدرة المعالجة الذاتية الحالية.
-
+يرجى من المطور البشري التدخل، فالكمال لله وحده.
 ---
-**تم تسجيل هذا النداء بتاريخ: ${new Date().toISOString()}**
+**تم تسجيل هذا العجز بتاريخ: ${new Date().toISOString()}**
   `.trim();
 
   try {

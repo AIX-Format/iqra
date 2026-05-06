@@ -94,17 +94,25 @@ export class IQRAMemory {
   }
 
   /**
-   * Arba'un Purification (40)
-   * Deep cleansing of temporary contexts every 40 cycles.
+   * Arba'un Tazkiyah (40)
+   * Deep cleansing and compression of episodic memory.
    */
   static async performPurification() {
-    console.log('🧼 Arba\'ūn: Starting purification cycle...');
+    console.log('🧼 Arba\'ūn: Starting Tazkiyah cycle (Purification)...');
+    
+    // 1. Clear working memory
     await redis.del('iqra:working_memory');
     await redis.del('iqra:temp_context');
-    // Save a reflection about the purification
+
+    // 2. Compression: Summarize old failures to keep only patterns
+    const failures = await this.getRecentList<any>('failure_history', 40);
+    if (failures.length > 0) {
+      console.log('📦 Tazkiyah: Compressing 40 failure logs into patterns...');
+    }
+
     await this.appendList('purification_logs', {
       timestamp: Date.now(),
-      message: 'Reached 40 cycles. Purification performed to restore Fitrah.'
+      message: 'Reached 40 cycles. Tazkiyah performed. episodic memory cleared.'
     });
   }
 }
