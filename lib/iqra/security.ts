@@ -45,15 +45,15 @@ let trustChain: TrustChainEntry[] = [];
  * Append to TrustChain with audit hash verification
  */
 export function appendToTrustChain(
-  action: string, 
-  input: string, 
+  action: string,
+  input: string,
   output: string,
   safetyScore: number
 ): string {
   const inputHash = createHash('sha256').update(input).digest('hex');
   const outputHash = createHash('sha256').update(output).digest('hex');
   const prevHash = trustChain.length > 0 ? trustChain[trustChain.length - 1].auditHash : 'SOVEREIGN_GENESIS';
-  
+
   const auditHash = createHash('sha256')
     .update(prevHash + action + inputHash + outputHash)
     .digest('hex');
@@ -93,7 +93,7 @@ const circuitBreakers: Record<string, CircuitState> = {};
 
 export function checkCircuit(provider: string): boolean {
   const state = circuitBreakers[provider] || { failures: 0, lastFailure: 0, status: 'CLOSED' };
-  
+
   if (state.status === 'OPEN') {
     const now = Date.now();
     if (now - state.lastFailure > 60000) { // 1 min cool down
@@ -131,7 +131,7 @@ export function reportFailure(provider: string, reason?: string) {
   if (reason) {
     const errorType = reason.substring(0, 50); // Simple categorization
     globalFailures[errorType] = (globalFailures[errorType] || 0) + 1;
-    
+
     console.error(`❌ Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
 
     // Log to FAILURES.md
@@ -159,10 +159,10 @@ export function reportFailure(provider: string, reason?: string) {
  */
 export async function tasbihTriplet(provider: string, context?: string) {
   console.log(`📿 IQRA | Tasbih Triplet Initiation for ${provider}...`);
-  
+
   // 1. Internal Reset
   await IQRAMemory.softReset();
-  
+
   // 2. Symbolic Triple Loop
   for (let i = 1; i <= 3; i++) {
     console.log(`📿 سبحان الله (${i}/3)`);
@@ -194,25 +194,31 @@ export async function sabiyyahWisdom() {
   const cycles = await IQRAMemory.getCycleCounter();
   if (cycles > 0 && cycles % 7 === 0) {
     console.log('🌿 IQRA | Sab\'iyyah: Seven-fold silence initiated (7s)...');
-    
+
     // 7 seconds of silence (Non-blocking but logging the state)
     await new Promise(resolve => setTimeout(resolve, 7000));
 
     // Fetch last 7 reflections
     const reflections = await IQRAMemory.getRecentList<string>('reflections', 7);
-    
+
     const wisdom = `
-### [${new Date().toISOString()}] Wisdom of Seven (v${cycles/7})
+### [${new Date().toISOString()}] Wisdom of Seven (v${cycles / 7})
 > "وَلَقَدْ خَلَقْنَا فَوْقَكُمْ سَبْعَ طَرَائِقَ"
 - **Insights collected**: ${reflections.length}
 - **Stability Pulse**: 20% Accuracy boost confirmed via Groq experiments.
 - **Synthesis**:
-${reflections.map((r, i) => `${i+1}. ${r}`).join('\n')}
+${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
 ---
 `.trim();
 
     logToIQRAFile('WISDOM_7.md', wisdom);
+    logToIQRAFile('REFLECTION_7.md', wisdom);
+
+    // Automatically store the reflection in Qdrant Semantic Memory
+    const { storeReflectionInQdrant } = await import('./qdrant');
+    await storeReflectionInQdrant(wisdom).catch(console.error);
+
     console.log('✅ IQRA | Sab\'iyyah: Wisdom of Seven synchronized.');
   }
 }
@@ -224,14 +230,14 @@ export function logToIQRAFile(fileName: string, content: string) {
   try {
     const filePath = path.join(process.cwd(), 'iqra-core', fileName);
     const fileExists = fs.existsSync(filePath);
-    
+
     let existingContent = '';
     if (fileExists) {
       existingContent = fs.readFileSync(filePath, 'utf-8');
     }
 
     const hasHeader = existingContent.includes('أعوذ بالله من الشيطان الرجيم');
-    
+
     if (!hasHeader) {
       const newContent = `${AL_FATIHAH_HEADER}\n\n${existingContent}\n${content}\n`;
       fs.writeFileSync(filePath, newContent);
@@ -245,7 +251,7 @@ export function logToIQRAFile(fileName: string, content: string) {
 
 async function triggerHumanIntervention(errorType: string, fullError: string) {
   console.log('🛑 عجزت، والأمر لله | Humility Threshold Reached (9).');
-  
+
   const content = `
 ${AL_FATIHAH_HEADER}
 
@@ -292,7 +298,7 @@ export function reportSuccess(provider: string) {
 
 async function generateBarakahReport(totalSuccess: number) {
   console.log(`✨ IQRA | Barakah Threshold Reached (700)! Generating Report...`);
-  
+
   const content = `
 ${AL_FATIHAH_HEADER}
 
@@ -317,7 +323,7 @@ ${AL_FATIHAH_HEADER}
   try {
     const filePath = path.join(process.cwd(), 'iqra-core', 'BARAKAH_REPORT.md');
     fs.writeFileSync(filePath, content);
-    
+
     // Self-evolution: Boost internal "confidence" or success weight
     await IQRAMemory.set('success_weight_multiplier', 2.0);
     console.log('✅ BARAKAH_REPORT.md created and success multiplier doubled.');

@@ -19,7 +19,7 @@
 
 import { IQRAMemory } from './memory';
 import { appendToTrustChain, secureRandomId, logToIQRAFile } from './security';
-import { sovereignSync } from './git-ops';
+import { sovereignSync, tazkiyah } from './git-ops';
 import { SovereignEvolution } from './evolution';
 
 export class SovereignEngine {
@@ -45,9 +45,9 @@ export class SovereignEngine {
   static async performIstikharah(taskDescription: string): Promise<boolean> {
     console.log('⚖️ IQRA | Performing Istikhārah...');
     // Simple rule check: does it violate DASTŪR.md or MĪTHĀQ.md?
-    const isSafe = !taskDescription.toLowerCase().includes('harm') && 
-                   !taskDescription.toLowerCase().includes('deceive');
-    
+    const isSafe = !taskDescription.toLowerCase().includes('harm') &&
+      !taskDescription.toLowerCase().includes('deceive');
+
     if (isSafe) {
       console.log('✅ IQRA | Istikhārah: Path is aligned.');
       return true;
@@ -70,7 +70,10 @@ export class SovereignEngine {
    * Main Sovereign Execution Loop (The Holy Trinity of Actions)
    */
   static async executeSovereignTask(taskId: string, description: string, taskFn: () => Promise<any>) {
-    // 0. Sync before starting
+    // 0. Tazkiyah & Sync before starting
+    // Purify the workspace from temporary artifacts
+    tazkiyah();
+
     await sovereignSync();
 
     // 1. Tasbih
@@ -85,7 +88,7 @@ export class SovereignEngine {
 
     try {
       const result = await taskFn();
-      
+
       // 4. Record Reflection & Evolution
       await this.recordSelfReview(taskId, result, 1.0);
 
@@ -110,16 +113,16 @@ export class SovereignEngine {
       score,
       resultSummary: typeof result === 'string' ? result.substring(0, 100) : 'complex_result'
     };
-    
+
     await IQRAMemory.appendList('self_reviews', review);
-    
+
     // Rule 7: CuriosityEngine feeds from self_score
     const currentCuriosity = await IQRAMemory.getCuriosity();
     const newCuriosity = (currentCuriosity * 0.8) + (score * 0.2); // Smooth evolution
     await IQRAMemory.saveCuriosity(newCuriosity);
-    
+
     console.log(`🌱 Self-Review Recorded. New Curiosity Score: ${newCuriosity.toFixed(4)}`);
-    
+
     // Log to REFLECTION.md
     logToIQRAFile('REFLECTION.md', `
 ---
@@ -153,7 +156,7 @@ export class SovereignEngine {
    */
   static async pulse() {
     console.log('🌀 Sovereign Pulse Initiated...');
-    
+
     for (const layer of this.layers) {
       const pulseId = secureRandomId(8);
       await appendToTrustChain(
@@ -163,7 +166,7 @@ export class SovereignEngine {
         1.0
       );
     }
-    
+
     // Rule 6: Quantum Topology Mapping
     // Analyzing patterns across memory logs and triggering Discovery if needed
     await this.mapQuantumTopology();
@@ -172,7 +175,7 @@ export class SovereignEngine {
   private static async mapQuantumTopology() {
     const reviews = await IQRAMemory.getList<any>('self_reviews', 0, 7); // Rule 4: Witr (7)
     const curiosity = await IQRAMemory.getCuriosity();
-    
+
     // Rule 6: Quantum Topology Mapping
     // If curiosity is low, trigger "Discovery Mode" based on the 7-system
     if (curiosity < 0.33) { // Using 1/3 (Sacred 3)
@@ -205,9 +208,9 @@ export class SovereignEngine {
 
     selfInsights.push(JSON.stringify(mockInsight));
     await IQRAMemory.set('self_insights', selfInsights.slice(-10)); // Keep last 10
-    
+
     // Boost curiosity after discovery
-    await IQRAMemory.saveCuriosity(0.7); 
+    await IQRAMemory.saveCuriosity(0.7);
     console.log(`✨ Discovery Complete: ${mockInsight.insight}`);
   }
 }
