@@ -106,8 +106,7 @@ export async function searchMemory(query: string, limit: number = DEFAULT_LIMIT)
 
 async function generateEmbedding(text: string): Promise<number[]> {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-        console.warn('⚠️ [أخوَّة] | No Gemini API Key found. Using mock embeddings.');
-        return Array.from({ length: 768 }, () => Math.random() - 0.5);
+        throw new Error('❌ [MĪTHĀQ Violation] | GOOGLE_GENERATIVE_AI_API_KEY is required. Mocks are forbidden.');
     }
 
     try {
@@ -115,6 +114,6 @@ async function generateEmbedding(text: string): Promise<number[]> {
         return result.embedding.values;
     } catch (error) {
         console.error('❌ [أخوَّة] | Embedding Generation Failed:', error);
-        return Array.from({ length: 768 }, () => Math.random() - 0.5);
+        throw error; // No fallback allowed
     }
 }

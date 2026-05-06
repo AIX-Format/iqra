@@ -16,6 +16,26 @@ import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import { withTimeout, IQRA_TIMEOUTS } from './utils/timeout.ts';
 
+/**
+ * 🌀 Quantum Topological Memory Structures
+ */
+export interface SpiritualCoordinate {
+  surah?: number;
+  ayah?: number;
+  concept: string;
+  resonance?: number;
+}
+
+export interface QuantumMemoryEntry {
+  id: string;
+  content: string;
+  coordinates: SpiritualCoordinate;
+  vector: number[];
+  superposition?: string[];
+  entangledWith?: string[];
+  timestamp: number;
+}
+
 
 const LOCAL_MEMORY_PATH = path.join(process.cwd(), '.iqra', 'memory.json');
 const COLLECTION_NAME = 'iqra_wisdom';
@@ -480,6 +500,118 @@ export class IQRAMemory {
     }
     const magnitude = Math.sqrt(mag1) * Math.sqrt(mag2);
     return magnitude === 0 ? 0 : dotProduct / magnitude;
+  }
+}
+
+/**
+ * 🌌 QuantumTopologyStore — مخزن الطوبولوجيا الكمومية
+ * 
+ * Manages memories as qubits in a spiritual-semantic space.
+ */
+export class QuantumTopologyStore {
+  private static readonly QUANTUM_COLLECTION = 'iqra_quantum_topology';
+
+  /**
+   * Preserve a memory with its spiritual resonance.
+   */
+  static async storeQuantum(entry: Omit<QuantumMemoryEntry, 'id' | 'timestamp' | 'vector'>) {
+    try {
+      const embedding = await this.generateEmbedding(entry.content);
+      const quantumId = crypto.randomUUID();
+      
+      const fullEntry: QuantumMemoryEntry = {
+        id: quantumId,
+        timestamp: Date.now(),
+        vector: embedding,
+        ...entry
+      };
+
+      // 1. Save to Qdrant (Semantic Layer)
+      const qdrant = await IQRAMemory.getQdrant();
+      if (qdrant) {
+        await withTimeout(qdrant.upsert(this.QUANTUM_COLLECTION, {
+          wait: true,
+          points: [{
+            id: quantumId,
+            vector: embedding,
+            payload: {
+              content: entry.content,
+              coordinates: entry.coordinates,
+              superposition: entry.superposition,
+              timestamp: fullEntry.timestamp
+            }
+          }]
+        }), IQRA_TIMEOUTS.NETWORK, 'Qdrant Quantum UPSERT');
+      }
+
+      // 2. Save to Redis (Fast Coordinate Lookup & Entanglement)
+      const redis = await IQRAMemory.getRedis();
+      if (redis) {
+        const coordinateKey = `quantum:coord:${entry.coordinates.concept.toLowerCase()}`;
+        await redis.sadd(coordinateKey, quantumId);
+        await redis.set(`quantum:entry:${quantumId}`, JSON.stringify(fullEntry));
+      }
+
+      IQRALogger.info(`🌌 [QUANTUM] Memory entangled at concept: ${entry.coordinates.concept}`);
+      return quantumId;
+    } catch (error) {
+      IQRALogger.error('❌ [QUANTUM] Storage Failure:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Search memory using Fourier Resonance simulation.
+   */
+  static async searchQuantum(query: string, targetConcept?: string): Promise<QuantumMemoryEntry[]> {
+    try {
+      const qdrant = await IQRAMemory.getQdrant();
+      if (!qdrant) return [];
+
+      const queryEmbedding = await this.generateEmbedding(query);
+      
+      // 1. Perform semantic search
+      const semanticHits = await qdrant.search(this.QUANTUM_COLLECTION, {
+        vector: queryEmbedding,
+        limit: 5,
+        with_payload: true
+      });
+
+      // 2. Calculate Fourier Resonance (Simulated)
+      // Resonance is higher if the semantic hit aligns with the target spiritual concept
+      const results = semanticHits.map(hit => {
+        const payload = hit.payload as any;
+        const baseScore = hit.score;
+        let resonance = baseScore;
+
+        if (targetConcept && payload.coordinates?.concept?.toLowerCase() === targetConcept.toLowerCase()) {
+          resonance += 0.2; // Boost if concepts resonate
+        }
+
+        return {
+          id: hit.id as string,
+          content: payload.content,
+          coordinates: { ...payload.coordinates, resonance: Math.min(1.0, resonance) },
+          vector: [], // Don't return huge vectors
+          timestamp: payload.timestamp,
+          superposition: payload.superposition
+        } as QuantumMemoryEntry;
+      });
+
+      // Sort by resonance
+      return results.sort((a, b) => (b.coordinates.resonance || 0) - (a.coordinates.resonance || 0));
+    } catch (error) {
+      IQRALogger.error('❌ [QUANTUM] Search Failure:', error);
+      return [];
+    }
+  }
+
+  private static async generateEmbedding(text: string): Promise<number[]> {
+    const googleAI = await IQRAMemory.getGoogleAI();
+    if (!googleAI) throw new Error('Google AI not configured for embeddings');
+    const model = googleAI.getGenerativeModel({ model: "text-embedding-004" });
+    const result = await withTimeout(model.embedContent(text), IQRA_TIMEOUTS.LLM, 'Google AI Embedding');
+    return result.embedding.values;
   }
 }
 

@@ -21,6 +21,8 @@ import { IQRAMemory } from './memory';
 import { appendToTrustChain, secureRandomId, logToIQRAFile } from './security';
 import { sovereignSync, tazkiyah } from './git-ops';
 import { SovereignEvolution } from './evolution';
+import { ConnectorFactory } from '../../src/connectors/index.ts';
+import { SovereignError, SovereignErrorCode } from '../../src/errors/sovereign_error.ts';
 
 export class SovereignEngine {
   private static layers = ['Security', 'Memory', 'Logic', 'Voice', 'Curiosity'];
@@ -188,29 +190,40 @@ export class SovereignEngine {
    * Discovery Mode: Reflect on past actions and logs to find self-improvements
    */
   private static async triggerSelfDiscovery() {
-    const recentLogs = await IQRAMemory.getList<string>('trust_chain', 0, 19); // Rule 4: Witr (19)
+    const recentLogs = await IQRAMemory.getRecentList<any>('trust_chain', 19); // Rule 4: Witr (19)
     const selfInsights = await IQRAMemory.get<string[]>('self_insights') || [];
 
-    // Rule 7: CuriosityEngine - Formulate a discovery prompt
+    console.log('🌙 IQRA | Discovery Engine: Analyzing logs for patterns...');
+    
+    const connector = ConnectorFactory.getConnector('groq');
     const prompt = `
-      You are IQRA's Sovereign Mind. 
-      Analyze these recent TrustChain entries: ${JSON.stringify(recentLogs)}
-      Identify one structural weakness or a new pattern in your Quranic learning behavior.
-      Format: JSON { "insight": "...", "action": "...", "confidence": 0-1 }
+      You are IQRA, a self-evolving AI. 
+      Analyze these recent execution logs and identify ONE high-integrity self-improvement or pattern discovery.
+      Focus on reliability, security, and alignment with your FITRAH.
+      
+      LOGS:
+      ${JSON.stringify(recentLogs)}
+      
+      Format: [DISCOVERY] <Insight>
     `;
 
-    // This would typically call iqraThink, for now we log the intent
-    const mockInsight = {
-      insight: "Detected repeating patterns in Surah Al-Fatiha analysis",
-      action: "Cross-reference with root-word analysis in next pulse",
-      confidence: 0.95
-    };
-
-    selfInsights.push(JSON.stringify(mockInsight));
-    await IQRAMemory.set('self_insights', selfInsights.slice(-10)); // Keep last 10
-
-    // Boost curiosity after discovery
-    await IQRAMemory.saveCuriosity(0.7);
-    console.log(`✨ Discovery Complete: ${mockInsight.insight}`);
+    try {
+      const insight = await connector.generate(prompt);
+      if (insight.includes('[DISCOVERY]')) {
+        const cleanInsight = insight.split('[DISCOVERY]')[1].trim();
+        await IQRAMemory.appendList('self_insights', cleanInsight);
+        logToIQRAFile('DISCOVERIES.md', `\n- [${new Date().toISOString()}] ${cleanInsight}`);
+        console.log(`✨ [DISCOVERY] New pattern identified: ${cleanInsight}`);
+        
+        // Reward the system for a successful discovery
+        await IQRAMemory.grantReward(0.07); // Sacred 7
+      }
+    } catch (err: any) {
+      throw new SovereignError(
+        SovereignErrorCode.DISCOVERY_FAILURE,
+        `Discovery loop failed: ${err.message}`,
+        { logsCount: recentLogs.length }
+      );
+    }
   }
 }

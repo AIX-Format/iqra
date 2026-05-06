@@ -141,10 +141,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-      )}
-
-      </div>
-
       {/* ── AYAH DISPLAY ─────────────────────────────────────────────────── */}
       <section style={{ marginTop: '6rem' }}>
         <SacredCard resonance={0.9} glowColor="var(--sacred-green)">

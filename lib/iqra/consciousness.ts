@@ -31,11 +31,11 @@ export class IQRAConsciousness {
     `;
 
     try {
-      const response = await iqraThink({ 
+      const result = await iqraThink({ 
         input: prompt, 
         mode: IQRABrainMode.QURAN_ANALYSIS 
       });
-      return JSON.parse(response);
+      return JSON.parse(result.response);
     } catch (err) {
       IQRALogger.error('❌ validateAyah failed:', err);
       return { isValid: false, reason: "Validation system error." };
@@ -60,11 +60,11 @@ export class IQRAConsciousness {
     `;
 
     try {
-      const response = await iqraThink({ 
+      const result = await iqraThink({ 
         input: prompt, 
         mode: IQRABrainMode.QURAN_ANALYSIS 
       });
-      return JSON.parse(response);
+      return JSON.parse(result.response);
     } catch (err) {
       IQRALogger.error('❌ extractRulings failed:', err);
       return [];
@@ -100,11 +100,11 @@ export class IQRAConsciousness {
     `;
 
     try {
-      const response = await iqraThink({ 
+      const result = await iqraThink({ 
         input: prompt, 
         mode: IQRABrainMode.DEEP_THINKING 
       });
-      return JSON.parse(response);
+      return JSON.parse(result.response);
     } catch (err) {
       IQRALogger.error('❌ validateHadith failed:', err);
       return { isValid: false, grade: 'UNKNOWN', reason: "Validation system error." };
@@ -129,13 +129,13 @@ export class IQRAConsciousness {
     `;
 
     try {
-      const response = await iqraThink({ 
+      const result = await iqraThink({ 
         input: prompt, 
         mode: IQRABrainMode.DEEP_THINKING 
       });
       
-      if (response.includes('FORBIDDEN')) {
-        return { isAllowed: false, reason: response.split(':')[1]?.trim() || 'Internal ethical rejection.' };
+      if (result.response.includes('FORBIDDEN')) {
+        return { isAllowed: false, reason: result.response.split(':')[1]?.trim() || 'Internal ethical rejection.' };
       }
       return { isAllowed: true };
     } catch (err) {
@@ -156,11 +156,11 @@ export class IQRAConsciousness {
     `;
 
     try {
-      const response = await iqraThink({ 
+      const result = await iqraThink({ 
         input: prompt, 
         mode: IQRABrainMode.DEEP_THINKING 
       });
-      IQRALogger.info('🕋 [TAWBAH] Protocol Executed:', response);
+      IQRALogger.info('🕋 [TAWBAH] Protocol Executed:', result.response);
     } catch (err) {
       IQRALogger.error('❌ Tawbah Protocol failed:', err);
     }
