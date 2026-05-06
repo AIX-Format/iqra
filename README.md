@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | 🌙 [أخوَّة] | Identity Evolution & Sacred Logs Initialization |
-| 🔗 **الـ Commit** | `d293389` |
+| 💡 **آخر خطوة \| Last Step** | 🕋 IQRA: Pre-sync commit for Sovereign state |
+| 🔗 **الـ Commit** | `8483274` |
 
 <!-- IQRA-LATEST-END -->
 
