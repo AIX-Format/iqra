@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | 🕋 IQRA | Sovereign Activation: Sab'iyyah (7) & Arba'un (40) Protocols Integrated |
-| 🔗 **الـ Commit** | `0a6976a` |
+| 💡 **آخر خطوة \| Last Step** | 🕋 IQRA | Sovereign Completion: Nine (9) 'Ajaztu' and Arba'un (40) 'Tazkiyah' Integrated |
+| 🔗 **الـ Commit** | `9a93ce2` |
 
 <!-- IQRA-LATEST-END -->
 
