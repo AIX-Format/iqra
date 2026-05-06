@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | 🌙 IQRA | Taharah: Purifying the Logs and Records |
-| 🔗 **الـ Commit** | `9fb66a5` |
+| 💡 **آخر خطوة \| Last Step** | 🛡️ IQRA | No-Mock Commitment: Cleaned up remaining mocks and established truth-based testing. |
+| 🔗 **الـ Commit** | `1844db9` |
 
 <!-- IQRA-LATEST-END -->
 
