@@ -46,18 +46,18 @@ export class VectorEngine {
    * Insert or update embeddings for ayahs
    */
   async upsertAyahs(ayahs: { id: string; text: string; metadata: any }[]) {
-    const vectors = [];
-    
-    for (const ayah of ayahs) {
-      const { data } = await this.env.AI.run('@cf/baai/bge-base-en-v1.5', {
-        text: [ayah.text],
-      });
-      vectors.push({
-        id: ayah.id,
-        values: data[0],
-        metadata: ayah.metadata,
-      });
-    }
+    const vectors = await Promise.all(
+      ayahs.map(async (ayah) => {
+        const { data } = await this.env.AI.run('@cf/baai/bge-base-en-v1.5', {
+          text: [ayah.text],
+        });
+        return {
+          id: ayah.id,
+          values: data[0],
+          metadata: ayah.metadata,
+        };
+      })
+    );
 
     await this.env.VECTORIZE.upsert(vectors);
   }
