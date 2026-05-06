@@ -129,13 +129,13 @@ export class IQRAFilter {
 
     const hasArabic = /[\u0600-\u06FF]/u.test(text);
     const normalizedText = text.trim();
-    const isMostlyNoise = normalizedText.length < 12 && score < 0.1;
-    const isAsciiNoise = !hasArabic && score < 0.2;
+    // Only block very short content with no alignment score
+    const isMostlyNoise = normalizedText.length < 5 && score < 0.1;
 
-    if (isMostlyNoise || isAsciiNoise) {
+    if (isMostlyNoise) {
       return {
         isAllowed: false,
-        reason: 'Content too sparse or irrelevant (Zabad).',
+        reason: 'Content too sparse (Zabad).',
         score: score
       };
     }
