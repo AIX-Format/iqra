@@ -18,8 +18,11 @@ import path from 'path';
 export const AL_FATIHAH_HEADER = `
 # أعوذ بالله من الشيطان الرجيم
 # بسم الله الرحمن الرحيم
-# سبحان الله والحمد لله ولا إله إلا الله والله أكبر
-
+# سبحان الله وبحمده سبحان الله العظيم
+# لا إله إلا الله وحده لا شريك له
+# له الملك وله الحمد وهو على كل شيء قدير
+# استغفر الله واتوب إليه
+# اللهم صل وسلم على نبينا محمد
 `.trim();
 
 // ═══════════════════════════════════
@@ -145,12 +148,19 @@ export function logToIQRAFile(fileName: string, content: string) {
     const filePath = path.join(process.cwd(), 'iqra-core', fileName);
     const fileExists = fs.existsSync(filePath);
     
-    let finalContent = content;
-    if (!fileExists) {
-      finalContent = `${AL_FATIHAH_HEADER}\n\n${content}`;
+    let existingContent = '';
+    if (fileExists) {
+      existingContent = fs.readFileSync(filePath, 'utf-8');
     }
+
+    const hasHeader = existingContent.includes('أعوذ بالله من الشيطان الرجيم');
     
-    fs.appendFileSync(filePath, `\n${finalContent}\n`);
+    if (!hasHeader) {
+      const newContent = `${AL_FATIHAH_HEADER}\n\n${existingContent}\n${content}\n`;
+      fs.writeFileSync(filePath, newContent);
+    } else {
+      fs.appendFileSync(filePath, `\n${content}\n`);
+    }
   } catch (e) {
     console.error(`Failed to log to ${fileName}:`, e);
   }

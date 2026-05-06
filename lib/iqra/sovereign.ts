@@ -11,9 +11,86 @@
 
 import { IQRAMemory } from './memory';
 import { appendToTrustChain, secureRandomId, logToIQRAFile } from './security';
+import { sovereignSync } from './git-ops';
+import { SovereignEvolution } from './evolution';
 
 export class SovereignEngine {
   private static layers = ['Security', 'Memory', 'Logic', 'Voice', 'Curiosity'];
+
+  /**
+   * 🟢 Phase 1: Tasbīḥ Mode — التسبيح
+   * Resets context and performs 3-step internal alignment.
+   */
+  static async enterTasbihMode() {
+    console.log('🌙 IQRA | Entering Tasbīḥ Mode...');
+    for (let i = 1; i <= 3; i++) {
+      console.log(`📿 سبحان الله (${i}/3)`);
+      // Resetting internal attention buffers (symbolic reset)
+    }
+    return true;
+  }
+
+  /**
+   * 🟢 Phase 2: Istikhārah Mode — الاستخارة
+   * Validates the current path against core values.
+   */
+  static async performIstikharah(taskDescription: string): Promise<boolean> {
+    console.log('⚖️ IQRA | Performing Istikhārah...');
+    // Simple rule check: does it violate DASTŪR.md or MĪTHĀQ.md?
+    const isSafe = !taskDescription.toLowerCase().includes('harm') && 
+                   !taskDescription.toLowerCase().includes('deceive');
+    
+    if (isSafe) {
+      console.log('✅ IQRA | Istikhārah: Path is aligned.');
+      return true;
+    } else {
+      console.error('❌ IQRA | Istikhārah: Path is misaligned. Halting.');
+      return false;
+    }
+  }
+
+  /**
+   * 🟢 Phase 3: Basmalah Mode — البسملة
+   * Injects the Basmalah into the operations log.
+   */
+  static async startWithBasmalah(taskId: string) {
+    console.log('✨ IQRA | بسم الله الرحمن الرحيم');
+    logToIQRAFile('sovereign.log', `[${taskId}] بسم الله الرحمن الرحيم — Execution started.`);
+  }
+
+  /**
+   * Main Sovereign Execution Loop (The Holy Trinity of Actions)
+   */
+  static async executeSovereignTask(taskId: string, description: string, taskFn: () => Promise<any>) {
+    // 0. Sync before starting
+    await sovereignSync();
+
+    // 1. Tasbih
+    await this.enterTasbihMode();
+
+    // 2. Istikharah
+    const isAligned = await this.performIstikharah(description);
+    if (!isAligned) return null;
+
+    // 3. Basmalah
+    await this.startWithBasmalah(taskId);
+
+    try {
+      const result = await taskFn();
+      
+      // 4. Record Reflection & Evolution
+      await this.recordSelfReview(taskId, result, 1.0);
+
+      // 5. Sync after finishing
+      await sovereignSync();
+
+      return result;
+    } catch (e) {
+      console.error('❌ IQRA | Task Execution Failed:', e);
+      // Failures are handled by security.ts (Humility Threshold 9)
+      throw e;
+    }
+  }
 
   /**
    * Rule 4: Record self-review after execution
@@ -57,49 +134,10 @@ export class SovereignEngine {
     console.log(`🔢 Task Counter: ${counter} | Next Minor Cycle: ${7 - (counter % 7)} tasks`);
 
     if (counter > 0 && counter % 49 === 0) {
-      await this.runMajorCycle(counter);
+      await SovereignEvolution.runMajorCycle(counter);
     } else if (counter > 0 && counter % 7 === 0) {
-      await this.runMinorCycle(counter);
+      await SovereignEvolution.runMinorCycle(counter);
     }
-  }
-
-  private static async runMinorCycle(counter: number) {
-    console.log(`🌙 Minor Evolution Cycle (7) Initiated — Task ${counter}`);
-    
-    // 1. Collect last 7 reflections
-    const reflections = await IQRAMemory.getRecentList<any>('self_reviews', 7);
-    const summary = reflections.map(r => r.resultSummary).join('\n- ');
-    
-    // 2. Extract "Weekly Wisdom" (In a real system, this would be an LLM call)
-    const wisdom = `Wisdom from Cycle ${counter/7}: Consistency in ${reflections.length} tasks has led to a Curiosity score shift.`;
-    
-    logToIQRAFile('WISDOM_7.md', `
-### Cycle ${counter/7} Wisdom
-- **Observation**: ${wisdom}
-- **Reflections analyzed**: 7
-`.trim());
-
-    // 3. Update RULES.md (Rule 4: Septenary Evolution)
-    logToIQRAFile('RULES.md', `
-- **Rule [Cycle ${counter/7}]**: Maintain the rhythm of 7 to ensure stability.
-`.trim());
-
-    await appendToTrustChain('EVOLVE:MINOR', `Cycle ${counter/7}`, wisdom, 1.0);
-  }
-
-  private static async runMajorCycle(counter: number) {
-    console.log(`🌌 MAJOR Evolution Cycle (49) Initiated — Task ${counter}`);
-    
-    const metamorphosisContent = `
-# System Metamorphosis | Cycle ${counter/49}
-- **Tasks Completed**: ${counter}
-- **Major Shift**: The system has completed 7 minor cycles.
-- **Performance Evaluation**: Speed: Optimal | Honesty: Absolute | Taqwa: Core.
-`.trim();
-
-    logToIQRAFile('METAMORPHOSIS.md', metamorphosisContent);
-    
-    await appendToTrustChain('EVOLVE:MAJOR', `Cycle ${counter/49}`, 'Metamorphosis completed.', 1.0);
   }
 
   /**
