@@ -1,3 +1,4 @@
+/**
  * IQRA Memory — الذاكرة
  * 
  * "وَمَا كَانَ رَبُّكَ نَسِيًّا" — مريم: 64
@@ -10,13 +11,13 @@ import { createClient } from '@supabase/supabase-js';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { IQRALogger } from './logger';
-import path from 'path';
-import crypto from 'crypto';
+import * as path from 'path';
+import * as crypto from 'crypto';
 
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: process.env.UPSTASH_REDIS_REST_URL || 'http://localhost:8080',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || 'dummy',
 });
 
 // Initialize Supabase (Long-term structured memory)
@@ -25,7 +26,6 @@ const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_
   : null;
 
 const COLLECTION_NAME = 'iqra_wisdom';
-const LOCAL_MEMORY_PATH = path.join(process.cwd(), 'lib/iqra/memory_local.json');
 
 // Initialize Qdrant (Semantic/Vector memory)
 const qdrant = process.env.QDRANT_URL && process.env.QDRANT_API_KEY
@@ -36,9 +36,6 @@ const qdrant = process.env.QDRANT_URL && process.env.QDRANT_API_KEY
 const googleAI = process.env.GOOGLE_GENERATIVE_AI_API_KEY
   ? new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
   : null;
-
-
-
 
 export class IQRAMemory {
   /**
@@ -57,7 +54,6 @@ export class IQRAMemory {
 
   /**
    * Get a range of items from a list
-   * Used by sovereign meta-loop for self-review and discovery
    */
   static async getList<T>(key: string, start: number, end: number): Promise<T[]> {
     const result = await redis.lrange(`iqra:list:${key}`, start, end);
@@ -65,7 +61,7 @@ export class IQRAMemory {
   }
 
   /**
-   * Append to a list (for TrustChain)
+   * Append to a list
    */
   static async appendList(key: string, value: any) {
     return await redis.rpush(`iqra:list:${key}`, value);
@@ -98,10 +94,8 @@ export class IQRAMemory {
 
   /**
    * Soft Reset (Tasbih)
-   * Clears transient working memory/cache to reset context
    */
   static async softReset() {
-    // In a stateless worker, this could clear local cache or specific temporary keys
     await redis.del('iqra:working_memory');
     IQRALogger.info('📿 Tasbih: Working memory soft-reset complete.');
   }
@@ -122,21 +116,11 @@ export class IQRAMemory {
 
   /**
    * Arba'un Tazkiyah (40)
-   * Deep cleansing and compression of episodic memory.
    */
   static async performPurification() {
     IQRALogger.info('🧼 Arba\'ūn: Starting Tazkiyah cycle (Purification)...');
-    
-    // 1. Clear working memory
     await redis.del('iqra:working_memory');
     await redis.del('iqra:temp_context');
-
-    // 2. Compression: Summarize old failures to keep only patterns
-    const failures = await this.getRecentList<any>('failure_history', 40);
-    if (failures.length > 0) {
-      IQRALogger.info('📦 Tazkiyah: Compressing 40 failure logs into patterns...');
-    }
-
     await this.appendList('purification_logs', {
       timestamp: Date.now(),
       message: 'Reached 40 cycles. Tazkiyah performed. episodic memory cleared.'
@@ -145,7 +129,6 @@ export class IQRAMemory {
 
   /**
    * Barakah Multiplier (700)
-   * Tracks successful tasks and triggers a major Barakah Report.
    */
   static async incrementSuccessCounter(): Promise<number> {
     return await redis.incr('iqra:success_counter');
@@ -156,7 +139,7 @@ export class IQRAMemory {
   }
 
   /**
-   * Save to Long-term Memory (Supabase/PostgreSQL)
+   * Save to Long-term Memory
    */
   static async saveLongTerm(table: string, data: any) {
     if (!supabase) {
@@ -168,12 +151,11 @@ export class IQRAMemory {
   }
 
   /**
-   * Save to Semantic Memory (Qdrant Cloud / Vector DB)
-   * "وَمَا نُنَزِّلُهُ إِلَّا بِقَدَرٍ مَّعْلُومٍ"
+   * Save to Semantic Memory
    */
   static async saveSemantic(text: string, metadata: any) {
     if (!qdrant || !googleAI) {
-      IQRALogger.warn('⚠️ Semantic memory offline: Qdrant/Google AI not configured.');
+      IQRALogger.warn('⚠️ Semantic memory offline.');
       return;
     }
 
@@ -187,12 +169,7 @@ export class IQRAMemory {
         points: [{
           id: crypto.randomUUID(),
           vector: embedding,
-          payload: { 
-            content: text, 
-            ...metadata, 
-            iqra_version: '1.0',
-            timestamp: Date.now() 
-          }
+          payload: { content: text, ...metadata, iqra_version: '1.0', timestamp: Date.now() }
         }]
       });
       IQRALogger.info('🧠 Semantic Memory: Wisdom point preserved in Qdrant Cloud.');
@@ -203,23 +180,19 @@ export class IQRAMemory {
 
   /**
    * Search Semantic Memory
-   * Finds past wisdom that resonates with the current query.
    */
   static async searchSemantic(query: string, limit: number = 3) {
     if (!qdrant || !googleAI) return [];
-
     try {
       const model = googleAI.getGenerativeModel({ model: "text-embedding-004" });
       const result = await model.embedContent(query);
       const embedding = result.embedding.values;
-
       const searchResult = await qdrant.search(COLLECTION_NAME, {
         vector: embedding,
         limit,
         with_payload: true,
-        params: { hnsw_ef: 128 } // High precision search
+        params: { hnsw_ef: 128 }
       });
-
       return searchResult.map(hit => ({
         content: hit.payload?.content,
         score: hit.score,
@@ -231,5 +204,3 @@ export class IQRAMemory {
     }
   }
 }
-
-
