@@ -1,4 +1,4 @@
-import { SovereignWorker, WorkerResult, Handoff } from './protocol.ts';
+import { SovereignWorker, WorkerResult, Handoff, MissionState } from './protocol.ts';
 import { GoEngineBridge } from '../engine_bridge.ts';
 import { IQRAMemory, QuantumTopologyStore } from '../memory.ts';
 import { IQRALogger } from '../logger.ts';
@@ -6,7 +6,7 @@ import { IQRALogger } from '../logger.ts';
 export class ResonanceWorker extends SovereignWorker {
   id = 'ResonanceWorker';
 
-  async execute(input: string, context: any): Promise<WorkerResult> {
+  async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.workerId = this.id;
     this.report.timestamp = Date.now();
 
@@ -34,15 +34,23 @@ export class ResonanceWorker extends SovereignWorker {
       await IQRAMemory.grantReward(reward);
       this.markImplemented(`Reward granted: ${reward.toFixed(4)}`);
 
+      const updatedContext = {
+        ...state.context,
+        resonance: resonanceData,
+        novelty,
+        reward
+      };
+
+      const updatedState: MissionState = {
+        ...state,
+        context: updatedContext,
+        reports: [...state.reports, this.report]
+      };
+
       const handoff: Handoff = {
         from: this.id,
         to: 'ResearchWorker',
-        payload: {
-          input,
-          resonance: resonanceData,
-          novelty,
-          reward
-        },
+        payload: updatedContext,
         context: 'Topological resonance analysis complete. Patterns discovered.'
       };
 
@@ -53,6 +61,7 @@ export class ResonanceWorker extends SovereignWorker {
         success: true,
         data: resonanceData,
         report: this.report,
+        updatedState,
         nextHandoff: handoff
       };
     } catch (error: any) {

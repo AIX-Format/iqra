@@ -1,4 +1,4 @@
-import { SovereignWorker, WorkerResult, Handoff } from './protocol.ts';
+import { SovereignWorker, WorkerResult, Handoff, MissionState } from './protocol.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 import { IQRALogger } from '../logger.ts';
@@ -6,7 +6,7 @@ import { IQRALogger } from '../logger.ts';
 export class ResearchWorker extends SovereignWorker {
   id = 'ResearchWorker';
 
-  async execute(input: any, context: any): Promise<WorkerResult> {
+  async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.workerId = this.id;
     this.report.timestamp = Date.now();
 
@@ -30,12 +30,18 @@ export class ResearchWorker extends SovereignWorker {
       }
 
       // 3. Synthesize Research
-      const researchContext = {
-        ...context.payload,
+      const updatedContext = {
+        ...state.context,
         research: {
-          discoveries,
-          reflection
+          discoveries: discoveries.substring(0, 1000), // Safety limit
+          reflection: reflection.substring(0, 1000)
         }
+      };
+
+      const updatedState: MissionState = {
+        ...state,
+        context: updatedContext,
+        reports: [...state.reports, this.report]
       };
 
       this.markImplemented('Synthesized internal research context with previous resonance data');
@@ -43,12 +49,13 @@ export class ResearchWorker extends SovereignWorker {
 
       return {
         success: true,
-        data: researchContext,
+        data: updatedContext,
         report: this.report,
+        updatedState,
         nextHandoff: {
           from: this.id,
           to: 'ValidationWorker',
-          payload: researchContext,
+          payload: updatedContext,
           context: 'Internal research phase complete. Context enriched for validation.'
         }
       };

@@ -1,11 +1,11 @@
-import { SovereignWorker, WorkerResult } from './protocol.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class ValidationWorker extends SovereignWorker {
   id = 'ValidationWorker';
 
-  async execute(input: any, context: any): Promise<WorkerResult> {
+  async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.workerId = this.id;
     this.report.timestamp = Date.now();
 
@@ -44,6 +44,17 @@ export class ValidationWorker extends SovereignWorker {
         };
       }
 
+      const updatedContext = {
+        ...state.context,
+        validation: { success: true, timestamp: Date.now() }
+      };
+
+      const updatedState: MissionState = {
+        ...state,
+        context: updatedContext,
+        reports: [...state.reports, this.report]
+      };
+
       this.markImplemented('Input keywords validated against full Dastur HARAM_LIST');
       this.report.proceduresFollowed = true;
       
@@ -51,13 +62,11 @@ export class ValidationWorker extends SovereignWorker {
         success: true,
         data: { validated: true },
         report: this.report,
+        updatedState,
         nextHandoff: {
           from: this.id,
           to: 'ExecutionWorker',
-          payload: {
-            ...context.payload,
-            validation: { success: true, timestamp: Date.now() }
-          },
+          payload: updatedContext,
           context: 'Validation complete. Safe to proceed under Muraqabah.'
         }
       };

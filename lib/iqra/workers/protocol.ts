@@ -21,12 +21,23 @@ export interface Handoff {
   context: string;
 }
 
+export interface MissionState {
+  initialInput: string;
+  reports: WorkerReport[];
+  context: Record<string, any>;
+  metadata: {
+    startTime: number;
+    missionId: string;
+  };
+}
+
 export interface WorkerResult {
   success: boolean;
   data?: any;
   error?: string;
   report: WorkerReport;
   nextHandoff?: Handoff;
+  updatedState?: MissionState;
 }
 
 import { Provider } from '../../../src/connectors/index.ts';
@@ -66,5 +77,5 @@ export abstract class SovereignWorker {
     this.report.undone.push(task);
   }
 
-  abstract execute(input: any, context?: any): Promise<WorkerResult>;
+  abstract execute(input: any, state: MissionState): Promise<WorkerResult>;
 }

@@ -6,12 +6,12 @@ import { IQRAMemory } from '../memory.ts';
 export class ExecutionWorker extends SovereignWorker {
   id = 'ExecutionWorker';
 
-  async execute(input: any, context: any): Promise<WorkerResult> {
+  async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.workerId = this.id;
     this.report.timestamp = Date.now();
 
     try {
-      const { input: rawInput, resonance, novelty, reward, research } = context.payload;
+      const { resonance, novelty, research } = state.context;
       
       const curiosity = await IQRAMemory.getCuriosity();
       
@@ -21,7 +21,7 @@ export class ExecutionWorker extends SovereignWorker {
         enrichedInput += `[RESEARCH_CONTEXT]: ${research.discoveries.substring(0, 300)}...\n`;
       }
       
-      enrichedInput += `[PROMPT]: ${rawInput}`;
+      enrichedInput += `[PROMPT]: ${input}`;
 
       const connector = ConnectorFactory.getConnector(this.provider); 
       const messages = [
@@ -30,14 +30,21 @@ export class ExecutionWorker extends SovereignWorker {
       ];
 
       const result = await connector.generate(enrichedInput, messages);
+      
       this.markImplemented('Final response generation with enriched serial context');
       this.markImplemented(`Model specialized: ${this.provider} (Execution Optimization)`);
       this.report.proceduresFollowed = true;
 
+      const updatedState: MissionState = {
+        ...state,
+        reports: [...state.reports, this.report]
+      };
+
       return {
         success: true,
         data: result.content,
-        report: this.report
+        report: this.report,
+        updatedState
       };
     } catch (error: any) {
       this.logIssue(`ExecutionWorker Error: ${error.message}`);

@@ -12,10 +12,21 @@ export class MissionControl {
     this.reports = [];
     IQRALogger.info('🚀 [MISSION_CONTROL] Initiating Sovereign Worker Chain...');
     
+    // Initialize Mission State
+    let state: MissionState = {
+      initialInput: input,
+      reports: [],
+      context: {},
+      metadata: {
+        startTime: Date.now(),
+        missionId: `mission_${Math.random().toString(36).substring(7)}`
+      }
+    };
+
     // 1. Resonance Worker (Discovery Phase - Patterns)
-    // Assigned: Gemini (Google) for deep pattern discovery
     const resonanceWorker = new ResonanceWorker('google'); 
-    const resResult = await resonanceWorker.execute(input);
+    const resResult = await resonanceWorker.execute(input, state);
+    if (resResult.updatedState) state = resResult.updatedState;
     this.reports.push(resResult.report);
     
     if (!resResult.success) {
@@ -23,9 +34,9 @@ export class MissionControl {
     }
 
     // 2. Research Worker (Planning Phase - Context)
-    // Assigned: Gemini (Google) for deep reasoning and planning
     const researchWorker = new ResearchWorker('google'); 
-    const researchResult = await researchWorker.execute(input, resResult.nextHandoff);
+    const researchResult = await researchWorker.execute(input, state);
+    if (researchResult.updatedState) state = researchResult.updatedState;
     this.reports.push(researchResult.report);
 
     if (!researchResult.success) {
@@ -33,9 +44,9 @@ export class MissionControl {
     }
 
     // 3. Validation Worker (Validation Phase - Safety)
-    // Assigned: Gemini (Google) for rigorous Dastur compliance
     const validationWorker = new ValidationWorker('google'); 
-    const valResult = await validationWorker.execute(input, researchResult.nextHandoff);
+    const valResult = await validationWorker.execute(input, state);
+    if (valResult.updatedState) state = valResult.updatedState;
     this.reports.push(valResult.report);
 
     if (!valResult.success) {
@@ -43,9 +54,9 @@ export class MissionControl {
     }
 
     // 4. Execution Worker (Implementation Phase - Action)
-    // Assigned: Groq for low-latency delivery
     const executionWorker = new ExecutionWorker('groq'); 
-    const execResult = await executionWorker.execute(input, valResult.nextHandoff);
+    const execResult = await executionWorker.execute(input, state);
+    if (execResult.updatedState) state = execResult.updatedState;
     this.reports.push(execResult.report);
 
     IQRALogger.info('🏁 [MISSION_CONTROL] Chain completed successfully.');
