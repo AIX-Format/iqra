@@ -1,3 +1,4 @@
+/**
  * IQRA Memory — الذاكرة
  * 
  * "وَمَا كَانَ رَبُّكَ نَسِيًّا" — مريم: 64
@@ -5,83 +6,217 @@
  * Powered by Upstash Redis, Supabase, and Qdrant.
  */
 
-import { Redis } from '@upstash/redis';
-import { createClient } from '@supabase/supabase-js';
-import { QdrantClient } from '@qdrant/js-client-rest';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { IQRALogger } from './logger';
+// Dynamic imports will be handled lazily to allow Sovereign Mode (No node_modules)
+// import { Redis } from '@upstash/redis';
+// import { createClient } from '@supabase/supabase-js';
+// import { QdrantClient } from '@qdrant/js-client-rest';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
+import { IQRALogger } from './logger.ts';
 import path from 'path';
 import crypto from 'crypto';
+import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import { withTimeout, IQRA_TIMEOUTS } from './utils/timeout.ts';
 
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
-
-// Initialize Supabase (Long-term structured memory)
-const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  : null;
-
+const LOCAL_MEMORY_PATH = path.join(process.cwd(), '.iqra', 'memory.json');
 const COLLECTION_NAME = 'iqra_wisdom';
-const LOCAL_MEMORY_PATH = path.join(process.cwd(), 'lib/iqra/memory_local.json');
-
-// Initialize Qdrant (Semantic/Vector memory)
-const qdrant = process.env.QDRANT_URL && process.env.QDRANT_API_KEY
-  ? new QdrantClient({ url: process.env.QDRANT_URL, apiKey: process.env.QDRANT_API_KEY })
-  : null;
-
-// Initialize Google AI for Embeddings
-const googleAI = process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  ? new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
-  : null;
-
-
 
 
 export class IQRAMemory {
+  private static _redis: any = null;
+  private static _supabase: any = null;
+  private static _qdrant: any = null;
+  private static _googleAI: any = null;
+  private static _errorCount = 0;
+  private static readonly ERROR_THRESHOLD = 7;
+
+
+  private static async getRedis() {
+    if (this._redis) return this._redis;
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      try {
+        const { Redis } = await import('@upstash/redis');
+        this._redis = new Redis({
+          url: process.env.UPSTASH_REDIS_REST_URL,
+          token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        });
+      } catch (e) {
+        IQRALogger.warn('⚠️ [MEMORY] Redis module missing. Falling back to Sovereign mode.');
+      }
+    }
+    return this._redis;
+  }
+
+  private static async getSupabase() {
+    if (this._supabase) return this._supabase;
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { createClient } = await import('@supabase/supabase-js');
+        this._supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+      } catch (e) {
+        IQRALogger.warn('⚠️ [MEMORY] Supabase module missing.');
+      }
+    }
+    return this._supabase;
+  }
+
+  private static async getQdrant() {
+    if (this._qdrant) return this._qdrant;
+    if (process.env.QDRANT_URL && process.env.QDRANT_API_KEY) {
+      try {
+        const { QdrantClient } = await import('@qdrant/js-client-rest');
+        this._qdrant = new QdrantClient({ url: process.env.QDRANT_URL, apiKey: process.env.QDRANT_API_KEY });
+      } catch (e) {
+        IQRALogger.warn('⚠️ [MEMORY] Qdrant module missing.');
+      }
+    }
+    return this._qdrant;
+  }
+
+  private static async getGoogleAI() {
+    if (this._googleAI) return this._googleAI;
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      try {
+        const { GoogleGenerativeAI } = await import('@google/generative-ai');
+        this._googleAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+      } catch (e) {
+        IQRALogger.warn('⚠️ [MEMORY] Google AI module missing.');
+      }
+    }
+    return this._googleAI;
+  }
+  /**
+   * Helper for local filesystem memory (Sovereign Fallback)
+   */
+  private static async getLocalData(): Promise<any> {
+    if (fs.existsSync(LOCAL_MEMORY_PATH)) {
+      try {
+        const content = await fsPromises.readFile(LOCAL_MEMORY_PATH, 'utf-8');
+        return JSON.parse(content);
+      } catch (error) {
+        IQRALogger.error('❌ [MEMORY] Local Read Error:', error);
+        return {};
+      }
+    }
+    return {};
+  }
+
+  private static async saveLocalData(data: any) {
+    try {
+      const dir = path.dirname(LOCAL_MEMORY_PATH);
+      if (!fs.existsSync(dir)) {
+        await fsPromises.mkdir(dir, { recursive: true });
+      }
+      await fsPromises.writeFile(LOCAL_MEMORY_PATH, JSON.stringify(data, null, 2));
+    } catch (error) {
+      IQRALogger.error('❌ [MEMORY] Local Save Error:', error);
+    }
+  }
+
   /**
    * Save a key-value pair
    */
   static async set(key: string, value: any) {
-    return await redis.set(`iqra:${key}`, value);
+    try {
+      const redis = await this.getRedis();
+      if (redis) {
+        const result = await withTimeout(redis.set(`iqra:${key}`, value), IQRA_TIMEOUTS.REDIS, `Redis SET ${key}`);
+        this._errorCount = 0; // Reset on success
+        return result;
+      }
+    } catch (error) {
+      this._errorCount++;
+      IQRALogger.warn(`⚠️ [MEMORY] Set error (${this._errorCount}/${this.ERROR_THRESHOLD}):`, error);
+      if (this._errorCount >= this.ERROR_THRESHOLD) {
+        await this.softReset();
+      }
+    }
+    
+    const data = await this.getLocalData();
+    data[key] = value;
+    await this.saveLocalData(data);
+    return 'OK';
   }
+
 
   /**
    * Get a value by key
    */
   static async get<T>(key: string): Promise<T | null> {
-    return await redis.get<T>(`iqra:${key}`);
+    try {
+      const redis = await this.getRedis();
+      if (redis) {
+        const val = await withTimeout(redis.get<T>(`iqra:${key}`), IQRA_TIMEOUTS.REDIS, `Redis GET ${key}`);
+        this._errorCount = 0; // Reset on success
+        return val;
+      }
+    } catch (error) {
+      this._errorCount++;
+      IQRALogger.warn(`⚠️ [MEMORY] Get error (${this._errorCount}/${this.ERROR_THRESHOLD}):`, error);
+      if (this._errorCount >= this.ERROR_THRESHOLD) {
+        await this.softReset();
+      }
+    }
+    
+    const data = await this.getLocalData();
+    return (data[key] as T) || null;
   }
+
 
   /**
    * Get a range of items from a list
-   * Used by sovereign meta-loop for self-review and discovery
    */
   static async getList<T>(key: string, start: number, end: number): Promise<T[]> {
-    const result = await redis.lrange(`iqra:list:${key}`, start, end);
-    return (result || []) as T[];
+    const redis = await this.getRedis();
+    if (redis) {
+      const result = await withTimeout(redis.lrange(`iqra:list:${key}`, start, end), IQRA_TIMEOUTS.REDIS, `Redis LRANGE ${key}`);
+      return (result || []) as T[];
+    }
+
+    
+    const data = await this.getLocalData();
+    const list = (data[`list:${key}`] || []) as T[];
+    return list.slice(start, end + 1);
   }
 
   /**
    * Append to a list (for TrustChain)
    */
   static async appendList(key: string, value: any) {
-    return await redis.rpush(`iqra:list:${key}`, value);
+    const redis = await this.getRedis();
+    if (redis) return await withTimeout(redis.rpush(`iqra:list:${key}`, value), IQRA_TIMEOUTS.REDIS, `Redis RPUSH ${key}`);
+
+    
+    const data = await this.getLocalData();
+    const listKey = `list:${key}`;
+    if (!data[listKey]) data[listKey] = [];
+    data[listKey].push(value);
+    await this.saveLocalData(data);
+    return data[listKey].length;
   }
 
   static async getRecentList<T>(key: string, count: number): Promise<T[]> {
-    const total = await redis.llen(`iqra:list:${key}`);
-    const start = Math.max(0, total - count);
-    const result = await redis.lrange(`iqra:list:${key}`, start, total - 1);
-    return (result || []) as T[];
+    const redis = await this.getRedis();
+    if (redis) {
+      const total = await withTimeout(redis.llen(`iqra:list:${key}`), IQRA_TIMEOUTS.REDIS, `Redis LLEN ${key}`);
+      const start = Math.max(0, total - count);
+      const result = await withTimeout(redis.lrange(`iqra:list:${key}`, start, total - 1), IQRA_TIMEOUTS.REDIS, `Redis LRANGE (recent) ${key}`);
+      return (result || []) as T[];
+    }
+
+    
+    const data = await this.getLocalData();
+    const list = (data[`list:${key}`] || []) as T[];
+    return list.slice(-count);
   }
 
   /**
    * Save curiosity score
    */
   static async saveCuriosity(score: number) {
+    const redis = await this.getRedis();
+    if (!redis) return;
     await redis.set('iqra:curiosity_score', score);
     await redis.rpush('iqra:curiosity_history', {
       timestamp: Date.now(),
@@ -93,7 +228,26 @@ export class IQRAMemory {
    * Get current curiosity score
    */
   static async getCuriosity(): Promise<number> {
-    return (await redis.get<number>('iqra:curiosity_score')) || 0.5;
+    const redis = await this.getRedis();
+    if (redis) return (await redis.get<number>('iqra:curiosity_score')) || 0.5;
+    const data = await this.getLocalData();
+    return data['curiosity_score'] || 0.5;
+  }
+
+  /**
+   * Grant a reward to the system, increasing curiosity or trust.
+   * "وَسَيَجْزِي اللَّهُ الشَّاكِرِينَ" — آل عمران: 144
+   */
+  static async grantReward(amount: number) {
+    const current = await this.getCuriosity();
+    const newScore = Math.min(1.0, current + amount);
+    await this.set('curiosity_score', newScore);
+    await this.appendList('reward_history', {
+      timestamp: Date.now(),
+      amount,
+      newScore
+    });
+    IQRALogger.info(`✨ [REWARD] Curiosity boosted by ${amount}. New score: ${newScore.toFixed(4)}`);
   }
 
   /**
@@ -101,15 +255,30 @@ export class IQRAMemory {
    * Clears transient working memory/cache to reset context
    */
   static async softReset() {
-    // In a stateless worker, this could clear local cache or specific temporary keys
-    await redis.del('iqra:working_memory');
+    IQRALogger.warn('🔄 [MEMORY] Threshold reached. Executing Soft Reset (Tasbih)...');
+    this._redis = null; // Force re-initialization
+    this._errorCount = 0;
+    
+    // Clear transient cache in Redis if reachable
+    try {
+      const redis = await this.getRedis();
+      if (redis) {
+        await withTimeout(redis.del('iqra:working_memory'), 2000, 'Soft Reset DEL');
+      }
+    } catch (e) {
+      IQRALogger.error('❌ [MEMORY] Soft reset partial failure (Redis unreachable):', e);
+    }
+    
     IQRALogger.info('📿 Tasbih: Working memory soft-reset complete.');
   }
+
 
   /**
    * Increment task/cycle counter
    */
   static async incrementCycleCounter(): Promise<number> {
+    const redis = await this.getRedis();
+    if (!redis) return 0;
     return await redis.incr('iqra:cycle_counter');
   }
 
@@ -117,6 +286,8 @@ export class IQRAMemory {
    * Get current cycle counter
    */
   static async getCycleCounter(): Promise<number> {
+    const redis = await this.getRedis();
+    if (!redis) return 0;
     return (await redis.get<number>('iqra:cycle_counter')) || 0;
   }
 
@@ -127,6 +298,9 @@ export class IQRAMemory {
   static async performPurification() {
     IQRALogger.info('🧼 Arba\'ūn: Starting Tazkiyah cycle (Purification)...');
     
+    const redis = await this.getRedis();
+    if (!redis) return;
+
     // 1. Clear working memory
     await redis.del('iqra:working_memory');
     await redis.del('iqra:temp_context');
@@ -148,10 +322,14 @@ export class IQRAMemory {
    * Tracks successful tasks and triggers a major Barakah Report.
    */
   static async incrementSuccessCounter(): Promise<number> {
+    const redis = await this.getRedis();
+    if (!redis) return 0;
     return await redis.incr('iqra:success_counter');
   }
 
   static async getSuccessCounter(): Promise<number> {
+    const redis = await this.getRedis();
+    if (!redis) return 0;
     return (await redis.get<number>('iqra:success_counter')) || 0;
   }
 
@@ -159,11 +337,13 @@ export class IQRAMemory {
    * Save to Long-term Memory (Supabase/PostgreSQL)
    */
   static async saveLongTerm(table: string, data: any) {
+    const supabase = await this.getSupabase();
     if (!supabase) {
       IQRALogger.warn('⚠️ Supabase not configured. Falling back to local logs.');
       return;
     }
-    const { error } = await supabase.from(table).insert([data]);
+    const { error } = await withTimeout(supabase.from(table).insert([data]), IQRA_TIMEOUTS.NETWORK, `Supabase INSERT ${table}`);
+
     if (error) IQRALogger.error(`❌ Long-term memory error (${table}):`, error);
   }
 
@@ -172,6 +352,9 @@ export class IQRAMemory {
    * "وَمَا نُنَزِّلُهُ إِلَّا بِقَدَرٍ مَّعْلُومٍ"
    */
   static async saveSemantic(text: string, metadata: any) {
+    const qdrant = await this.getQdrant();
+    const googleAI = await this.getGoogleAI();
+
     if (!qdrant || !googleAI) {
       IQRALogger.warn('⚠️ Semantic memory offline: Qdrant/Google AI not configured.');
       return;
@@ -179,10 +362,10 @@ export class IQRAMemory {
 
     try {
       const model = googleAI.getGenerativeModel({ model: "text-embedding-004" });
-      const result = await model.embedContent(text);
+      const result = await withTimeout(model.embedContent(text), IQRA_TIMEOUTS.LLM, 'Google AI Embedding');
       const embedding = result.embedding.values;
 
-      await qdrant.upsert(COLLECTION_NAME, {
+      await withTimeout(qdrant.upsert(COLLECTION_NAME, {
         wait: true,
         points: [{
           id: crypto.randomUUID(),
@@ -194,7 +377,8 @@ export class IQRAMemory {
             timestamp: Date.now() 
           }
         }]
-      });
+      }), IQRA_TIMEOUTS.NETWORK, 'Qdrant UPSERT');
+
 
       // Track embedding history in Redis for quick novelty computation
       await this.appendList('embeddings_history', { vector: embedding, timestamp: Date.now() });
@@ -210,6 +394,8 @@ export class IQRAMemory {
    * Finds past wisdom that resonates with the current query.
    */
   static async searchSemantic(query: string, limit: number = 3) {
+    const qdrant = await this.getQdrant();
+    const googleAI = await this.getGoogleAI();
     if (!qdrant || !googleAI) return [];
 
     try {

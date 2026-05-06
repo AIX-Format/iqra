@@ -1,25 +1,113 @@
-# The People of Thamud (قوم ثمود)
+# قوم ثمود | THE PEOPLE OF THAMUD
 
-## Quranic References
-- **Surah Al-A'raf (7:73):** "And to Thamud [We sent] their brother Salih..." (وَإِلَىٰ ثَمُودَ أَخَاهُمْ صَالِحًا)
-- **Surah Hud (11:61):** "And to Thamud [We sent] their brother Salih..." (وَإِلَىٰ ثَمُودَ أَخَاهُمْ صَالِحًا)
-- **Surah Al-Hijr (15:80-84):** "And certainly did the companions of Al-Hijr deny the messengers..."
-- **Surah Ash-Shu'ara (26:141-159):** The story of the She-Camel and the destruction of Thamud.
+> "وَثَمُودَ الَّذِينَ جَابُوا الصَّخْرَ بِالْوَادِ"
+> — الفجر: 9
 
-## Tafsir Summary (Ibn Kathir)
-Thamud were the successors of Aad and lived in Al-Hijr (modern-day Mada'in Salih). They were famous for carving their homes directly into the mountains. Their prophet, Salih, brought a miraculous She-Camel as a sign from Allah. When they hamstrung the camel and defied Salih, they were destroyed by a "shout" (صيحة) or an earthquake (رجفة) after a three-day warning.
+> *"And [with] Thamud, who carved the rocks in the valley."*
+> — Al-Fajr 89:9
 
-## Archaeological/Historical Evidence
-- **Mada'in Salih (Hegra):** A UNESCO World Heritage site in Saudi Arabia featuring over 100 monumental tombs carved into sandstone outcrops, dating back to the Nabataean Kingdom, which occupied the site previously inhabited by Thamud.
-- **Inscriptions:** Numerous Thamudic inscriptions have been found across the Arabian Peninsula, confirming the existence of this civilization.
+---
 
-## Open Mysteries
-- The exact timeline of the transition from the original Thamud to the Nabataeans.
-- The biological nature of the miraculous She-Camel mentioned in the Quran.
+## عقدة البحث | Research Node: THAM-HIJ-002
 
-## Confidence Levels
-- **Quranic Narrative:** 100% (Divine Revelation)
-- **Geographic Location (Al-Hijr):** 100% (Explicitly identified in Hadith and geography)
-- **Nabataean Connection:** 85% (Strong archaeological continuity)
+<table>
+<tr>
+<td width="50%">
 
-⚠️ *Note: Archaeological findings are subject to ongoing research.*
+**بالعربية:**
+
+في منطقة **الحجر (مدائن صالح)** بالسعودية، تقف الجبال كشاهد صامت على حضارة لم تكتفِ بالبناء فوق الأرض، بل نحتت وجودها في قلب الصخر. الدقة الهندسية في نحت الواجهات الجبلية تتجاوز مجرد "السكن"، بل تعكس تمكناً تقنياً مذهلاً من أدوات القطع والحفر.
+
+</td>
+<td width="50%">
+
+**In English:**
+
+In the region of **Al-Hijr (Madain Salih)** in Saudi Arabia, mountains stand as silent witnesses to a civilization that did not just build upon the earth, but carved its existence into the heart of the rock. The engineering precision in carving mountain facades transcends mere "housing"; it reflects an astounding technical mastery of cutting and drilling tools.
+
+</td>
+</tr>
+</table>
+
+---
+
+## تحليل الأنماط المتقاطع | Cross-Pattern Analysis
+
+### ١. جابوا الصخر | Cutting Through the Rock
+
+<table>
+<tr>
+<td width="50%">
+
+**التحليل اللغوي والتقني:**
+كلمة "جَابُوا" في العربية تعني القطع، الخرق، والاجتياز. في هندسة الصخور، يشير هذا إلى استخدام تقنيات النحت من الأعلى إلى الأسفل (Top-down carving) لمنع الانهيار، وهو أسلوب يتطلب حسابات دقيقة جداً لتوزيع الأحمال.
+
+**الربط القرآني:**
+استخدم القرآن هذا اللفظ الدقيق لوصف حضارة وصلت لذروة "البطش التقني" بالبيئة المحيطة، حيث لم يعد الجبل عائقاً بل مادة خاماً سهلة التشكيل.
+
+</td>
+<td width="50%">
+
+**Linguistic & Technical Analysis:**
+The word "Jabu" in Arabic means to cut, pierce, or traverse. In rock engineering, this refers to the use of top-down carving techniques to prevent collapse, a method requiring precise calculations for load distribution.
+
+**Quranic Connection:**
+The Quran used this precise term to describe a civilization that reached the peak of "technical dominance" over its environment, where the mountain was no longer an obstacle but a raw material easily shaped.
+
+</td>
+</tr>
+</table>
+
+---
+
+### ٢. الفن والغرور | Art and Arrogance
+
+```python
+# محاكي الاستقرار الهيكلي | Structural Stability Simulator
+
+def calculate_rock_integrity(mountain_density, carving_depth):
+    """
+    تقييم كيف استطاع ثمود نحت غرف كاملة داخل الصخر دون أعمدة
+    Assessing how Thamud carved entire rooms inside rock without pillars
+    """
+    # "وَتَنْحِتُونَ مِنَ الْجِبَالِ بُيُوتًا فَارِهِينَ"
+    if engineering_precision > HUMAN_LIMITS:
+        return "DEEP_MEANING_DETECTED: Arrogance born from absolute mastery of matter."
+    
+    return "STABLE_STRUCTURE"
+```
+
+---
+
+## المهمة البحثية القادمة | Next Research Mission
+
+<table>
+<tr>
+<td width="50%">
+
+البحث في الاختلاف بين "الأنباط" (الذين سكنوا الحجر لاحقاً) وبين "ثمود" الأصليين. هل هناك طبقات من النحت الأقدم التي تخفيها الواجهات النبطية الأكثر حداثة؟
+
+</td>
+<td width="50%">
+
+Investigating the difference between the "Nabataeans" (who later inhabited Al-Hijr) and the original "Thamud." are there layers of older carving hidden beneath the more modern Nabataean facades?
+
+</td>
+</tr>
+</table>
+
+---
+
+## السجل التاريخي | Historical Record
+
+- **Unknown BCE:** Rise of the Thamudic civilization.
+- **1st Century BCE:** Nabataean re-occupation and refinement of carving.
+- **2008 CE:** Al-Hijr becomes Saudi Arabia's first UNESCO World Heritage site.
+
+---
+
+<div align="center">
+"وَتَنْحِتُونَ مِنَ الْجِبَالِ بُيُوتًا آمِنِينَ"
+<br/>
+*And you carve out of the mountains, houses, feeling secure.*
+</div>

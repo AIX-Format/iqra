@@ -8,17 +8,19 @@
  * Every thought passes through FITRAH filter first.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { Groq } from 'groq-sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { MITHAQ, DASTUR, MURAQABAH } from './philosophy';
-import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess } from './security';
-import { SovereignEngine } from './sovereign';
-import { IQRAMemory } from './memory';
-import { IQRALogger } from './logger';
-import { iqraExecute } from './orchestrator';
-import { IQRAStore } from './database';
+// Dynamic imports for LLM SDKs to allow Sovereign Mode
+// import Anthropic from '@anthropic-ai/sdk';
+// import OpenAI from 'openai';
+// import { Groq } from 'groq-sdk';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
+import { MITHAQ, DASTUR, MURAQABAH } from './philosophy.ts';
+import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess } from './security.ts';
+import { SovereignEngine } from './sovereign.ts';
+import { IQRAMemory } from './memory.ts';
+import { IQRALogger } from './logger.ts';
+import { iqraExecute } from './orchestrator.ts';
+import { IQRAStore } from './database.ts';
+import { IQRATopology } from './quran/topology.ts';
 
 // Translation Placeholder (Will be replaced with real Cloud Translation API call)
 async function translateToTarget(text: string, targetLang: string) {
@@ -71,14 +73,45 @@ export enum IQRABrainMode {
   CREATIVE = 'creative',       // GPT-4o — creative writing
   QURAN_ANALYSIS = 'quran',    // Claude — sacred text analysis
   RESEARCH = 'research',       // Gemini — long context search
+  ECONOMY = 'economy',         // GLM-4.7-Flash / Qwen — low cost/free
 }
 
-const clients = {
-  claude: new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
-  openai: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
-  groq: new Groq({ apiKey: process.env.GROQ_API_KEY }),
-  google: new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!),
-};
+let _clients: any = null;
+
+async function getClients() {
+  if (_clients) return _clients;
+  _clients = {};
+  
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      _clients.claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    } catch (e) { IQRALogger.warn('⚠️ [BRAIN] Anthropic SDK missing.'); }
+  }
+  
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const { default: OpenAI } = await import('openai');
+      _clients.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    } catch (e) { IQRALogger.warn('⚠️ [BRAIN] OpenAI SDK missing.'); }
+  }
+
+  if (process.env.GROQ_API_KEY) {
+    try {
+      const { Groq } = await import('groq-sdk');
+      _clients.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    } catch (e) { IQRALogger.warn('⚠️ [BRAIN] Groq SDK missing.'); }
+  }
+
+  if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      _clients.google = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+    } catch (e) { IQRALogger.warn('⚠️ [BRAIN] Google AI SDK missing.'); }
+  }
+  
+  return _clients;
+}
 
 export async function iqraThink({
   input,
@@ -90,76 +123,87 @@ export async function iqraThink({
   context?: { role: 'user' | 'assistant' | 'system'; content: string }[];
 }): Promise<string> {
 
-  // Rule 1: Validate input
-  const validation = validateInput({ prompt: input, context });
-  if (!validation.success) {
-    throw new Error(`Sovereign Validation Failed: ${validation.error.message}`);
+  try {
+    // Rule 1: Validate input
+    const validation = validateInput({ prompt: input, context });
+    if (!validation.success) {
+      throw new Error(`Sovereign Validation Failed: ${validation.error.message}`);
+    }
+
+    // FITRAH FILTER — before any LLM call
+    const filtered = await fitrahFilter(input);
+    if (filtered.blocked) {
+      const refusal = filtered.response || '';
+      appendToTrustChain('FITRAH_BLOCK', input, refusal, 0.0);
+      return refusal;
+    }
+
+    // Rule 2: Semantic Retrieval — Retrieve past wisdom
+    const relevantWisdom = await IQRAMemory.searchSemantic(input, 3);
+    const wisdomContext = relevantWisdom.length > 0 
+      ? `\n\nPast Relevant Wisdom:\n${relevantWisdom.map((w: any) => `- ${w.content}`).join('\n')}`
+      : '';
+
+    let response: string;
+    const taskId = `task_${Date.now()}`;
+
+    const enrichedInput = `${input}${wisdomContext}`;
+
+    // 🌀 Barakah Tuning: Check space curvature
+    const curvature = await IQRATopology.calculateCurvature(input);
+    if (curvature > 0.8 && mode === IQRABrainMode.DEEP_THINKING) {
+      IQRALogger.info("⚖️ [BARAKAH] High density detected. Prioritizing memory over new LLM inference.");
+    }
+
+    switch (mode) {
+      case IQRABrainMode.DEEP_THINKING:
+      case IQRABrainMode.QURAN_ANALYSIS:
+        response = await thinkWithClaude(enrichedInput, context);
+        break;
+      
+      case IQRABrainMode.CREATIVE:
+        response = await thinkWithGPT(enrichedInput, context);
+        break;
+
+      case IQRABrainMode.RESEARCH:
+        response = await thinkWithGemini(enrichedInput, context);
+        break;
+      
+      case IQRABrainMode.ECONOMY:
+        response = await thinkWithEconomy(enrichedInput, context);
+        break;
+      
+      case IQRABrainMode.FAST_RESPONSE:
+      default:
+        // use the sovereign orchestrator for fast responses
+        response = await iqraExecute(enrichedInput);
+        break;
+    }
+
+
+    // Rule 3: Append to TrustChain
+    appendToTrustChain(`THINK:${mode}`, input, response, 0.9);
+
+    // Rule 4: Preserve wisdom in Semantic Memory (Async, non-blocking)
+    if (response.length > 50) {
+      IQRAMemory.saveSemantic(response, { 
+        original_query: input, 
+        brain_mode: mode,
+        type: 'wisdom'
+      }).catch(console.error);
+    }
+
+    // Rule 5: Self-Review (Non-blocking)
+    SovereignEngine.recordSelfReview(taskId, response, 0.9).catch(err => {
+      IQRALogger.error('❌ Sovereign Review Error:', err);
+    });
+
+    return response;
+  } catch (error: any) {
+    reportFailure(mode, error.message);
+    IQRALogger.error(`❌ IQRA Brain Error (${mode}):`, error);
+    throw error;
   }
-
-  // FITRAH FILTER — before any LLM call
-  const filtered = await fitrahFilter(input);
-  if (filtered.blocked) {
-    const refusal = filtered.response || '';
-    appendToTrustChain('FITRAH_BLOCK', input, refusal, 0.0);
-    return refusal;
-  }
-
-  // Rule 2: Semantic Retrieval — Retrieve past wisdom
-  const relevantWisdom = await IQRAMemory.searchSemantic(input, 3);
-  const wisdomContext = relevantWisdom.length > 0 
-    ? `\n\nPast Relevant Wisdom:\n${relevantWisdom.map((w: any) => `- ${w.content}`).join('\n')}`
-    : '';
-
-  let response: string;
-  const taskId = `task_${Date.now()}`;
-
-  const enrichedInput = `${input}${wisdomContext}`;
-
-  switch (mode) {
-    case IQRABrainMode.DEEP_THINKING:
-    case IQRABrainMode.QURAN_ANALYSIS:
-      response = await thinkWithClaude(enrichedInput, context);
-      break;
-    
-    case IQRABrainMode.CREATIVE:
-      response = await thinkWithGPT(enrichedInput, context);
-      break;
-
-    case IQRABrainMode.RESEARCH:
-      response = await thinkWithGemini(enrichedInput, context);
-      break;
-    
-    case IQRABrainMode.FAST_RESPONSE:
-    default:
-      // use the sovereign orchestrator for fast responses
-      response = await iqraExecute(enrichedInput);
-      break;
-  }
-
-
-  // Rule 3: Append to TrustChain
-  appendToTrustChain(`THINK:${mode}`, input, response, 0.9);
-
-  // Rule 4: Preserve wisdom in Semantic Memory (Async, non-blocking)
-  if (response.length > 50) {
-    IQRAMemory.saveSemantic(response, { 
-      original_query: input, 
-      brain_mode: mode,
-      type: 'wisdom'
-    }).catch(console.error);
-  }
-
-  // Rule 5: Self-Review (Non-blocking)
-  SovereignEngine.recordSelfReview(taskId, response, 0.9).catch(err => {
-    IQRALogger.error('❌ Sovereign Review Error:', err);
-  });
-
-  return response;
-} catch (error: any) {
-  reportFailure(mode, error.message);
-  IQRALogger.error(`❌ IQRA Brain Error (${mode}):`, error);
-  throw error;
-}
 }
 
 // ═══════════════════════════════════
@@ -174,6 +218,9 @@ async function thinkWithClaude(
   if (!checkCircuit(provider)) return "⚠️ Deep reasoning engine is cooling down. Please try again in a moment.";
 
   try {
+    const clients = await getClients();
+    if (!clients.claude) throw new Error('Claude client not available');
+    
     const response = await clients.claude.messages.create({
       model: 'claude-3-opus-20240229',
       max_tokens: 2048,
@@ -204,6 +251,9 @@ async function thinkWithGroq(
   if (!checkCircuit(provider)) return "⚠️ Fast response system is offline. Switching to secondary brain...";
 
   try {
+    const clients = await getClients();
+    if (!clients.groq) throw new Error('Groq client not available');
+    
     const response = await clients.groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
@@ -233,6 +283,9 @@ async function thinkWithGPT(
   if (!checkCircuit(provider)) return "⚠️ System maintenance in progress. Please try again later.";
   
   try {
+    const clients = await getClients();
+    if (!clients.openai) throw new Error('OpenAI client not available');
+    
     const response = await clients.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -262,6 +315,9 @@ async function thinkWithGemini(
   if (!checkCircuit(provider)) return "⚠️ Research engine busy. Please try again later.";
 
   try {
+    const clients = await getClients();
+    if (!clients.google) throw new Error('Google AI client not available');
+    
     const model = clients.google.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const chat = model.startChat({
       history: context.map(c => ({
@@ -277,6 +333,28 @@ async function thinkWithGemini(
     const response = await result.response;
     reportSuccess(provider);
     return response.text();
+  } catch (e: any) {
+    reportFailure(provider, e.message);
+    throw e;
+  }
+}
+
+// ═══════════════════════════════════
+// ECONOMY — GLM-4.7-Flash / Qwen
+// Best for: Budget-friendly experimentation
+// ═══════════════════════════════════
+async function thinkWithEconomy(
+  input: string,
+  context: any[]
+): Promise<string> {
+  const provider = 'economy';
+  if (!checkCircuit(provider)) return "⚠️ Economy brain is resting. Please try again later.";
+
+  try {
+    const { callEconomyModel } = await import('./llm/economy.ts');
+    const response = await callEconomyModel(input, context);
+    reportSuccess(provider);
+    return response;
   } catch (e: any) {
     reportFailure(provider, e.message);
     throw e;

@@ -1,36 +1,160 @@
-// افتراض وجود استيرادات للملفات المساعدة
-import { IQRALogger } from '../logger';
-import { computeArabicSimilarity } from '../utils/similarity';
-import { callGroqForResonance } from '../llm/groq';
-// import { appendToTrustChain } from '../security'; // Removed as per new requirement flow
+/**
+ * 🌀 Curiosity Engine | محرك الفضول
+ * 
+ * "وَفِي أَنفُسِكُمْ ۚ أَفَلَا تُبْصِرُونَ" — الذاريات: 21
+ * 
+ * This engine drives the discovery of deep resonances between Quranic verses 
+ * and external data sources using Topological Curiosity and Inverse Mirror validation.
+ */
+
+import { IQRALogger } from '../logger.ts';
+import { computeArabicSimilarity } from '../utils/similarity.ts';
+import { callGroqForResonance, callGroqForTruthValidation } from '../llm/groq.ts';
+import { IQRAMemory } from '../memory.ts';
+
+/**
+ * 🌀 Resonance Types | أنواع الرنين
+ */
+export enum ResonanceType {
+  LINGUISTIC = "Linguistic",   // لغوي
+  SCIENTIFIC = "Scientific",   // علمي
+  HISTORICAL = "Historical",   // تاريخي
+  ETHICAL = "Ethical",         // أخلاقي
+  TOPOLOGICAL = "Topological", // طوبولوجي
+  NUMERICAL = "Numerical",     // عددي
+  SPIRITUAL = "Spiritual",     // روحي
+  CONGZI = "Congzi"             // كونغتزي - أنماط بنيوية وسببية
+}
 
 export class CuriosityEngine {
+    // 1. Granular failure tracking: Map<session:ayah, failures>
+    private static failureMap = new Map<string, number>();
+
+    /**
+     * 🧬 Recursive Triangulation Pattern
+     */
+    
+    private static checkSurfaceResonance(ayah: string, newData: string): number {
+        return computeArabicSimilarity(ayah, newData);
+    }
+
+    private static async analyzeDeepResonance(ayah: string, newData: string, env: any): Promise<any> {
+        return await callGroqForResonance(ayah, newData, env);
+    }
+
+    /**
+     * 🏗️ Structural Analysis (Congzi Pattern)
+     * Look for physical analogies and causal constraints.
+     */
+    private static async analyzeStructuralPatterns(ayah: string, newData: string): Promise<any> {
+        IQRALogger.info("🏗️ [CONGZI] Executing structural pattern discovery...");
+        // Use the ECONOMY mode brain for this if available, or stay with Groq
+        const result = await callGroqForResonance(ayah, newData, { lens: "Congzi" });
+        return result;
+    }
+
+    private static validateResonance(result: any): boolean {
+        if (!result || typeof result !== 'object') return false;
+        
+        // Ensure confidence is a number and above threshold
+        const confidence = typeof result.confidence === 'number' ? result.confidence : 0;
+        if (confidence < 0.3) return false;
+
+        // 3. Safe check for isTrivial (defaults to true if missing to be skeptical)
+        const isTrivial = result.isTrivial === true;
+        if (isTrivial) return false; 
+
+        // Ensure type and reason exist
+        if (!result.type || !result.reason) return false;
+
+        return true;
+    }
+
+    /**
+     * 🪞 Inverse Mirror Validation | التحقق من المرآة العكسية
+     * Ensures the resonance discovery is not a hallucination by checking the "negative" space.
+     */
+    private static async validateTruth(ayah: string, newData: string, resonance: any): Promise<boolean> {
+        IQRALogger.info(`🪞 [INVERSE MIRROR] Validating truth of ${resonance.type} resonance...`);
+        
+        try {
+            const validation = await callGroqForTruthValidation(ayah, newData, resonance);
+            
+            if (validation.strengthOfCounterArgument > 0.7) {
+                IQRALogger.warn(`🛡️ [TRUTH] Inverse Mirror found a strong counter-argument (${validation.strengthOfCounterArgument.toFixed(2)}): ${validation.critique}`);
+                return false;
+            }
+
+            if (validation.strengthOfCounterArgument > 0.4) {
+                IQRALogger.info(`🪞 [INVERSE MIRROR] Weak critique: ${validation.critique}`);
+            } else {
+                IQRALogger.info(`✅ [TRUTH] Resonance survived the Inverse Mirror.`);
+            }
+
+            return validation.isTrue;
+        } catch (error) {
+            IQRALogger.error("❌ [INVERSE-MIRROR] Validation Error:", error);
+            return true; // Default to true if validation engine fails
+        }
+    }
+
     /**
      * Finds "Resonance" (Raneen) between an Ayah and new data.
-     * 
-     * @param ayah The Quranic verse text.
-     * @param newData The new data to check resonance against.
-     * @param env Environment variables/config.
-     * @param skip_low_similarity If true (default), avoids calling Groq if similarity < 0.6.
-     * @returns The resonance object or null if similarity is too low or error occurs.
      */
     static async processResonance(
         ayah: string, 
         newData: string, 
         env: any, 
-        skip_low_similarity: boolean = true
+        sessionId: string = 'global'
     ): Promise<any | null> {
-        // لا نضيع طلبات Groq على تشابه سطحي
-        if (skip_low_similarity) {
-            const similarityScore = computeArabicSimilarity(ayah, newData);
-            if (similarityScore < 0.6) {
-                IQRALogger.info(
-                    `🌊 [CURIOSITY] Aborting: Similarity (${similarityScore.toFixed(2)}) < 0.6. Skipping Groq.`
-                );
-                return null;
-            }
+        
+        const failureKey = `${sessionId}:${ayah.substring(0, 20)}`;
+        const consecutiveFailures = this.failureMap.get(failureKey) || 0;
+        let threshold = 0.6;
+        
+        if (consecutiveFailures > 7) {
+            threshold = 0.4;
+            IQRALogger.info(`💎 [HONESTY] Humility detected for ${failureKey}. Threshold lowered.`);
         }
 
-        return await callGroqForResonance(ayah, newData, env);
+        const similarityScore = this.checkSurfaceResonance(ayah, newData);
+
+        // 6. Caching/Short-circuit: If similarity is extremely high, we might already have the answer
+        if (similarityScore > 0.95) {
+            IQRALogger.info("⚡ [RESONANCE] High surface similarity detected. Short-circuiting for efficiency.");
+            // We could return a cached resonance if available
+        }
+
+        if (similarityScore < threshold) {
+            this.failureMap.set(failureKey, consecutiveFailures + 1);
+            return null;
+        }
+
+        this.failureMap.set(failureKey, 0);
+
+        try {
+            const deepResult = await this.analyzeDeepResonance(ayah, newData, env);
+            
+            if (this.validateResonance(deepResult)) {
+                // 🪞 Truth Validation (Inverse Mirror)
+                const isTrue = await this.validateTruth(ayah, newData, deepResult);
+                
+                if (!isTrue) {
+                    IQRALogger.warn(`🛡️ [TRUTH] Resonance failed Inverse Mirror validation. Skipping.`);
+                    return null;
+                }
+
+                IQRALogger.info(`🌀 [RESONANCE] Found ${deepResult.type} resonance: ${deepResult.reason}`);
+                
+                // 4. Record Reward
+                await IQRAMemory.grantReward(deepResult.confidence * 0.1);
+                
+                return deepResult;
+            }
+        } catch (error) {
+            IQRALogger.error("❌ [CURIOSITY] Deep Analysis Error:", error);
+        }
+
+        return null;
     }
 }

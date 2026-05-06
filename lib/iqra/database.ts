@@ -1,9 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { IQRALogger } from './logger.ts';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+let _supabase: any = null;
+
+async function getSupabase() {
+  if (_supabase) return _supabase;
+  
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!url || !key) return null;
+  
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    _supabase = createClient(url, key);
+    return _supabase;
+  } catch (e) {
+    IQRALogger.warn("⚠️ [DATABASE] Supabase SDK missing. Database features disabled.");
+    return null;
+  }
+}
 
 export interface UserPreferences {
   user_id: string;
@@ -15,6 +30,9 @@ export interface UserPreferences {
 
 export class IQRAStore {
   static async getPreferences(userId: string): Promise<UserPreferences | null> {
+    const supabase = await getSupabase();
+    if (!supabase) return null;
+
     const { data, error } = await supabase
       .from('user_preferences')
       .select('*')
@@ -26,6 +44,9 @@ export class IQRAStore {
   }
 
   static async updatePreferences(userId: string, prefs: Partial<UserPreferences>) {
+    const supabase = await getSupabase();
+    if (!supabase) return;
+
     const { error } = await supabase
       .from('user_preferences')
       .upsert({ user_id: userId, ...prefs });

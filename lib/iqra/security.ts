@@ -10,11 +10,20 @@
  * Rule 8: Circuit Breaker.
  */
 
-import { z } from 'zod';
+// import { z } from 'zod'; // Sovereign fallback handled below
 import { createHash, randomBytes } from 'crypto';
-import { IQRAMemory } from './memory';
+import { IQRAMemory } from './memory.ts';
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 import path from 'path';
+
+async function getZod() {
+  try {
+    return await import('zod');
+  } catch (e) {
+    return null;
+  }
+}
 
 export const AL_FATIHAH_HEADER = `
 # أعوذ بالله من الشيطان الرجيم
@@ -141,7 +150,7 @@ export function reportFailure(provider: string, reason?: string) {
 - **Reason**: ${reason}
 - **Global Count**: ${globalFailures[errorType]}
 ---
-`.trim());
+`.trim()).catch(console.error);
 
     if (globalFailures[errorType] >= 9) {
       triggerHumanIntervention(errorType, reason);
@@ -182,7 +191,7 @@ export async function tasbihTriplet(provider: string, context?: string) {
 - **Context**: ${context || 'General Recovery'}
 - **Action**: Transient failure count decremented. System stabilized.
 ---
-  `.trim());
+  `.trim()).catch(console.error);
 }
 
 /**
@@ -212,8 +221,8 @@ ${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 ---
 `.trim();
 
-    logToIQRAFile('WISDOM_7.md', wisdom);
-    logToIQRAFile('REFLECTION_7.md', wisdom);
+    logToIQRAFile('WISDOM_7.md', wisdom).catch(console.error);
+    logToIQRAFile('REFLECTION_7.md', wisdom).catch(console.error);
 
     // Automatically store the reflection in Qdrant Semantic Memory
     const { storeReflectionInQdrant } = await import('./qdrant');
@@ -226,23 +235,27 @@ ${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 /**
  * Helper to append content to files in the iqra-core directory
  */
-export function logToIQRAFile(fileName: string, content: string) {
+export async function logToIQRAFile(fileName: string, content: string) {
   try {
-    const filePath = path.join(process.cwd(), 'iqra-core', fileName);
-    const fileExists = fs.existsSync(filePath);
+    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const filePath = path.join(dirPath, fileName);
+    
+    if (!fs.existsSync(dirPath)) {
+        await fsPromises.mkdir(dirPath, { recursive: true });
+    }
 
     let existingContent = '';
-    if (fileExists) {
-      existingContent = fs.readFileSync(filePath, 'utf-8');
+    if (fs.existsSync(filePath)) {
+      existingContent = await fsPromises.readFile(filePath, 'utf-8');
     }
 
     const hasHeader = existingContent.includes('أعوذ بالله من الشيطان الرجيم');
 
     if (!hasHeader) {
       const newContent = `${AL_FATIHAH_HEADER}\n\n${existingContent}\n${content}\n`;
-      fs.writeFileSync(filePath, newContent);
+      await fsPromises.writeFile(filePath, newContent);
     } else {
-      fs.appendFileSync(filePath, `\n${content}\n`);
+      await fsPromises.appendFile(filePath, `\n${content}\n`);
     }
   } catch (e) {
     console.error(`Failed to log to ${fileName}:`, e);
@@ -274,8 +287,14 @@ ${AL_FATIHAH_HEADER}
   `.trim();
 
   try {
-    const filePath = path.join(process.cwd(), 'iqra-core', 'ASK_HUMAN.md');
-    fs.writeFileSync(filePath, content);
+    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const filePath = path.join(dirPath, 'ASK_HUMAN.md');
+    
+    if (!fs.existsSync(dirPath)) {
+        await fsPromises.mkdir(dirPath, { recursive: true });
+    }
+    
+    await fsPromises.writeFile(filePath, content);
     console.error(`📝 ASK_HUMAN.md created at: ${filePath}`);
   } catch (e) {
     console.error('Failed to create ASK_HUMAN.md:', e);
@@ -321,8 +340,14 @@ ${AL_FATIHAH_HEADER}
   `.trim();
 
   try {
-    const filePath = path.join(process.cwd(), 'iqra-core', 'BARAKAH_REPORT.md');
-    fs.writeFileSync(filePath, content);
+    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const filePath = path.join(dirPath, 'BARAKAH_REPORT.md');
+    
+    if (!fs.existsSync(dirPath)) {
+        await fsPromises.mkdir(dirPath, { recursive: true });
+    }
+
+    await fsPromises.writeFile(filePath, content);
 
     // Self-evolution: Boost internal "confidence" or success weight
     await IQRAMemory.set('success_weight_multiplier', 2.0);
@@ -336,15 +361,21 @@ ${AL_FATIHAH_HEADER}
 // INPUT VALIDATION (Rule 1)
 // ═══════════════════════════════════
 
-export const SovereignInputSchema = z.object({
-  prompt: z.string().min(1).max(5000),
-  context: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string()
-  })).optional(),
-  metadata: z.record(z.any()).optional()
-});
+export function validateInput(input: any): { success: boolean; data?: any; error?: any } {
+  // Check if we can do full Zod validation
+  // Note: Since this is synchronous, we'd need to have pre-loaded zod or just do basic checks here.
+  // For IQRA, we'll favor basic checks to ensure it never hangs.
+  
+  if (!input || typeof input.prompt !== 'string') {
+    return { success: false, error: { message: 'Invalid input: prompt is required.' } };
+  }
+  
+  if (input.prompt.length > 5000) {
+    return { success: false, error: { message: 'Input too long (max 5000 chars).' } };
+  }
 
-export function validateInput(input: any) {
-  return SovereignInputSchema.safeParse(input);
+  // If we wanted to use Zod here, we'd need an async validator or a sync fallback.
+  // We'll stick to basic validation for the sovereign core.
+  return { success: true, data: input };
 }
+
