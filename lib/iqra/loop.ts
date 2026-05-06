@@ -11,6 +11,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { IQRAEvolution } from './evolution/self_evolve.ts';
 
 export enum LoopPhase {
   NIYYAH = "NIYYAH",
@@ -49,6 +50,8 @@ export class IQRAExecutionLoop {
       // 📜 Wisdom Extraction: Every 7 attempts
       if (state.loopCounter % 7 === 0) {
         this.extractWisdom(state);
+        // Trigger self-evolution cycle asynchronously to not block the main loop
+        IQRAEvolution.runEvolutionCycle().catch(e => console.error("Evolution Error:", e));
       }
 
       // 🌊 Topological Flood: Rebuild every 40 cycles

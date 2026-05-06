@@ -7,6 +7,8 @@ import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout.ts';
  * Supports:
  * - GLM-4.7-Flash (Free Tier)
  * - Qwen-2.5-Coder (Low Cost)
+ * - MiniMax-M2.7 (Self-Evolutionary)
+ * - InternLM-S1-Pro (Physical World/FoPE)
  */
 
 export async function callEconomyModel(input: string, context: any[]): Promise<string> {
@@ -19,6 +21,15 @@ export async function callEconomyModel(input: string, context: any[]): Promise<s
 
     if (!apiKey) {
         IQRALogger.warn(`⚠️ [ECONOMY] No API Key for ${model}. Falling back to Mock.`);
+        
+        // Specialized Mock logic for Research Models
+        if (model.includes("minimax")) {
+            return `[MINIMAX M2.7] Self-evolution trace: Problem analyzed -> Correction planned -> IQRA code verified.`;
+        }
+        if (model.includes("internlm")) {
+            return `[INTERNLM S1 PRO] FoPE analysis: Detected harmonic resonance between local linguistic particles and global thematic waves.`;
+        }
+
         return `[ECONOMY MOCK] Using ${model}: In-depth analysis of patterns in text complete.`;
     }
 
