@@ -4,7 +4,7 @@
  * المرجع: "إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ" — صحيح مسلم
  *
  * Google Stitch: https://stitch.withgoogle.com
- * API Key: 
+ * API Key: set STITCH_API_KEY in .env
  */
 
 import { IQRALogger } from '../logger.ts';
@@ -83,8 +83,8 @@ export const IQRA_DESIGN_TOKENS = {
 
 // ── Stitch API Client ─────────────────────────────────────────────────────────
 
-const STITCH_API_KEY  = '';
-const STITCH_BASE_URL = 'https://stitch.withgoogle.com';
+const STITCH_API_KEY  = process.env.STITCH_API_KEY || '';
+const STITCH_BASE_URL = process.env.STITCH_BASE_URL || 'https://stitch.withgoogle.com';
 
 async function callStitchAPI(endpoint: string, body: object): Promise<any> {
   const url = `${STITCH_BASE_URL}/api/v1/${endpoint}`;

@@ -1,3 +1,11 @@
+# أعوذ بالله من الشيطان الرجيم
+# بسم الله الرحمن الرحيم
+# سبحان الله وبحمده سبحان الله العظيم
+# لا إله إلا الله وحده لا شريك له
+# له الملك وله الحمد وهو على كل شيء قدير
+# استغفر الله واتوب إليه
+# اللهم صل وسلم على نبينا محمد
+
 # 📜 قوانين IQRA الحاكمة | Core Rules
 
 ### المادة 12: صحة الجهاز أولاً (Hardware Longevity)
@@ -10,3 +18,13 @@
 
 ---
 **تم التحديث بفضل الله**
+
+- **Rule [Cycle 1]**: Consistency is the path to sovereignty. (Auto-generated from cycle 1)
+
+- **Rule [Cycle 1]**: Consistency is the path to sovereignty. (Auto-generated from cycle 1)
+
+
+- **Rule [Cycle 1]**: Pattern detected: Most blocked concept: "على" (8 times). Filter is working correctly. (2026-05-06T15:41:39.887Z)
+
+
+- **Rule [Cycle 2]**: Pattern detected: Most blocked concept: "على" (8 times). Filter is working correctly. (2026-05-06T15:41:45.660Z)
