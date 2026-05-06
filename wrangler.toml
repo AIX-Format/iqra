@@ -16,6 +16,15 @@ crons = ["0 3 * * *"]
 # GOOGLE_GENERATIVE_AI_API_KEY = "provided_via_wrangler_secret"
 # ANTHROPIC_API_KEY = "provided_via_wrangler_secret"
 
-# Upstash Redis
-# UPSTASH_REDIS_REST_URL = "provided_via_wrangler_secret"
-# UPSTASH_REDIS_REST_TOKEN = "provided_via_wrangler_secret"
+# Cloudflare Infrastructure
+[[d1_databases]]
+binding = "DB"
+database_name = "iqra-db"
+database_id = "your-database-id-here" # Replace with actual ID
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "iqra-vectors"
+
+[ai]
+binding = "AI"
