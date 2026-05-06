@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-06` |
-| 💡 **آخر خطوة \| Last Step** | 🕋 IQRA: Pre-sync commit for Sovereign state |
-| 🔗 **الـ Commit** | `8483274` |
+| 💡 **آخر خطوة \| Last Step** | 🕋 IQRA | Sovereign Activation: Sab'iyyah (7) & Arba'un (40) Protocols Integrated |
+| 🔗 **الـ Commit** | `0a6976a` |
 
 <!-- IQRA-LATEST-END -->
 
