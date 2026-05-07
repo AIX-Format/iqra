@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-07` |
-| 💡 **آخر خطوة \| Last Step** | feat: promote generateEmbedding to a static Memory method and delegate reporter calls to it |
-| 🔗 **الـ Commit** | `58d90ad` |
+| 💡 **آخر خطوة \| Last Step** | 🧠 the memory learns to remember its own patterns |
+| 🔗 **الـ Commit** | `b0fd250` |
 
 <!-- IQRA-LATEST-END -->
 
