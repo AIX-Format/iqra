@@ -1,9 +1,0 @@
-mission_id: topology_reward_test_001
-objective: Analyze the topological structure of divine remembrance in Surah Al-Hijr 15:9
-verse: '15:9'
-field_of_inquiry: Numerical Topology of Remembrance
-provider: simulated
-allowed_tools:
-  - topology_engine
-  - read_db
-status: failed
