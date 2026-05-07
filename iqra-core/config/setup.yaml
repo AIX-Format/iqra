@@ -35,6 +35,8 @@ evolution:
   failures_path: "FAILURES.md"
   reward_ledger: "ledger/rewards.jsonl"
   missions_dir: "missions/"
+  mission_scope: "mission-scope.yml"
+  knowledge_root: "knowledge/"
 
 mission_control:
   default_mode: "SOVEREIGN_CHAIN"

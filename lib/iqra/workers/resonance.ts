@@ -3,6 +3,8 @@ import type { MissionHandoff } from '../../../agents/contracts.ts';
 import { GoEngineBridge } from '../engine_bridge.ts';
 import { IQRAMemory, QuantumTopologyStore } from '../memory.ts';
 import { IQRALogger } from '../logger.ts';
+import { RewardEngine } from '../../../rewards/engine.ts';
+import { RewardInput } from '../../../rewards/types.ts';
 
 /**
  * 🌊 ResonanceWorker — عامل الرنين
@@ -43,15 +45,25 @@ export class ResonanceWorker extends SovereignWorker {
       this.markImplemented(`Novelty score: ${novelty.toFixed(2)}`);
 
       const coherence = resonanceData?.coherence || 0.5;
-      const reward = (coherence * 0.1) * (1.0 + novelty);
-      await IQRAMemory.grantReward(reward);
-      this.markImplemented(`Reward granted: ${reward.toFixed(4)}`);
+      const rewardInput: RewardInput = {
+        mission_id: state.metadata.mission_id,
+        worker_id: this.id,
+        novelty_score: novelty,
+        resonance_score: coherence,
+        topology_score: 0.0,
+        hallucination_penalty: 0.0,
+        timestamp: Date.now()
+      };
+      const rewardOutput = RewardEngine.computeTotalReward(rewardInput);
+      await IQRAMemory.grantReward(rewardOutput.total_reward);
+      this.markImplemented(`Reward granted: ${rewardOutput.total_reward.toFixed(4)}`);
+      IQRALogger.info(`🧠 [RESINCE] Reward prepared for orchestrator persistence: ${rewardOutput.total_reward.toFixed(4)}`);
 
       const updatedContext = {
         ...state.context,
         resonance: resonanceData,
         novelty,
-        reward
+        reward: rewardOutput.total_reward
       };
 
       const updatedState: MissionState = {

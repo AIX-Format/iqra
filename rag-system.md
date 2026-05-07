@@ -61,7 +61,7 @@ export async function queryQuran(
 
   // ٢. Embed query (Workers AI — مجاني)
   const { data: [queryEmbedding] } = await env.AI.run(
-    '@cf/baai/bge-small-en-v1.5',
+    '@cf/baai/bge-m3',
     { text: [query] }
   );
 

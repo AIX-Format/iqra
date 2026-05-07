@@ -114,7 +114,7 @@ import MURAQAB_TEXT  from '../iqra-core/MURĀQABAH.md?raw';
 ```
 user query
     ↓
-embed (Workers AI: @cf/baai/bge-small-en-v1.5)  [مجاني]
+embed (Workers AI: @cf/baai/bge-m3)  [مجاني]
     ↓
 vectorize.query(topK=5)  [Cloudflare Vectorize — مجاني]
     ↓

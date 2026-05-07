@@ -169,7 +169,7 @@ export default {
       const texts = chunk.map(a => \`\${a.arabic} \${a.english}\`);
       
       const { data: embeddings } = await env.AI.run(
-        '@cf/baai/bge-small-en-v1.5',
+        '@cf/baai/bge-m3',
         { text: texts }
       );
 

@@ -111,6 +111,7 @@ export class TopologicalLoop {
     const entry: RewardEntry = {
       ...output,
       mission_id: this.mission.mission_id,
+      worker_id: 'orchestrator',
       timestamp: Date.now(),
       validation_status: 'verified'
     };
@@ -118,13 +119,17 @@ export class TopologicalLoop {
     await RewardLedger.append(entry);
     
     // 📖 Storytelling & Voice — رواية القصة
-    const storyteller = new IQRAStoryteller();
-    const story = await storyteller.summarizeMission(this.reports);
-    IQRALogger.info(`\n${story}\n`);
-    
-    // If serendipity was found, generate a voice report
-    if (this.reports.some(r => r.serendipity?.found)) {
-      await storyteller.speakStory(story, this.mission.mission_id);
+    try {
+      const storyteller = new IQRAStoryteller();
+      const story = await storyteller.summarizeMission(this.reports);
+      IQRALogger.info(`\n${story}\n`);
+      
+      // If serendipity was found, generate a voice report
+      if (this.reports.some(r => r.serendipity?.found)) {
+        await storyteller.speakStory(story, this.mission.mission_id);
+      }
+    } catch (storyError) {
+      IQRALogger.warn('⚠️ [STORYTELLER] Story generation or voice service unavailable:', storyError);
     }
 
     IQRALogger.info('🏁 [ORCHESTRATOR] Cycle Completed Successfully.');

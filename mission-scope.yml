@@ -1,0 +1,37 @@
+mission_id: curiosity_topology_bootstrap_v1
+version: 1.0.0
+status: active
+objective: "Discover and validate topological resonance between modern data and Quranic patterns, then record the reward in an append-only ledger."
+verse: "2:255"
+field_of_inquiry: "Topological resonance between divine structure and contemporary scientific/data evidence"
+allowed_tools:
+  - "VectorEngine"
+  - "TopologicalCuriosity"
+  - "RewardLedger"
+  - "IQRAMemory"
+  - "QuantumTopologyStore"
+workers:
+  - id: Planner
+    role: "Mission Planning"
+    skills: ["task_decomposition", "model_selection", "validation_definition"]
+  - id: Researcher
+    role: "Resonance Research"
+    skills: ["semantic_search", "numerical_analysis", "data_alignment"]
+  - id: Builder
+    role: "Implementation"
+    skills: ["pattern_mapping", "knowledge_encoding", "artifact_generation"]
+  - id: Validator
+    role: "Compliance Verification"
+    skills: ["dastur_validation", "consistency_check", "hallucination_detection"]
+  - id: Reporter
+    role: "Documentation & Storytelling"
+    skills: ["structured_reporting", "serendipity_extraction"]
+validation_rules:
+  - "Every resonance claim must include a Quranic ayah reference and a modern evidence source."
+  - "All reward entries must be stored in ledger/rewards.jsonl."
+  - "Validator cannot modify Builder implementation logic."
+  - "No reward is final until validation_status == verified."
+success_criteria:
+  - "ledger/rewards.jsonl contains at least one new verified entry."
+  - "knowledge/node-0001.md is created for the first discovery."
+  - "All handoffs include pending_tasks and validation_rules."
