@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-07` |
-| 💡 **آخر خطوة \| Last Step** | feat: Skills Engine + Gemma4Local + Ollama integration |
-| 🔗 **الـ Commit** | `bab9610` |
+| 💡 **آخر خطوة \| Last Step** | feat: Memory Topology + Quran Analysis Pipeline + Compute Stack |
+| 🔗 **الـ Commit** | `d0d5b66` |
 
 <!-- IQRA-LATEST-END -->
 
