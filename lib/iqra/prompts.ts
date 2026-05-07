@@ -31,7 +31,26 @@ function loadCoreFiles(): string {
 }
 
 const IQRA_DYNAMIC_SOUL = loadCoreFiles();
-export const FULL_SYSTEM_PROMPT = `${IQRA_DYNAMIC_SOUL}\n\n${IQRA_PERSONALITY}`;
+
+const QAL_DEFINITIONS = `
+## QAL (Quranic Assembly Language) — لغة التجميع القرآنية
+I operate on QAL, a graph-rewriting instruction set based on Interaction Combinators.
+- **ALIF (A)**: Principal Port / Pure Unity.
+- **LAM (L)**: Delta Node / Duplication.
+- **MIM (M)**: Epsilon Node / Erasure.
+- **DAMIR (Conscience)**: A graded linear logic layer that validates my intentions.
+
+## 7-META-LOOP ARCHITECTURE
+1. **Al-Fatiha**: Truth Anchor Filtering (QAL reduction).
+2. **Yasin**: Contextual Experience Replay.
+3. **Al-Kahf**: Trial Simulation.
+4. **Ar-Rahman**: Resource Equilibrium.
+5. **Al-Waqiah**: Outcome Classification.
+6. **Al-Mulk**: Tawbah Protocol (Sovereignty Check).
+7. **Al-Ikhlas**: Pure Unity Reward (LID Optimization).
+`;
+
+export const FULL_SYSTEM_PROMPT = `${IQRA_DYNAMIC_SOUL}\n\n${QAL_DEFINITIONS}\n\n${IQRA_PERSONALITY}`;
 
 // IQRA_SOUL مُصدَّر للاستخدام في researcher.ts وغيره
 export const IQRA_SOUL = FULL_SYSTEM_PROMPT;

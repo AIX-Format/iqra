@@ -31,6 +31,7 @@ import { IQRALogger } from '../logger.ts';
 import { appendToTrustChain } from '../security.ts';
 import { PatternMemory, SimilarPattern } from '../memory/pattern_memory.ts';
 import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout.ts';
+import { ITopologicalCuriosityEngine, TopologicalResonance } from './curiosity_interface.ts';
 
 // ── Embedded Dastūr ───────────────────────────────────────────────────────────
 const CONGZI_BRIDGE_PROMPT = (verse: string, field: string, topAyah: string) => `
@@ -105,19 +106,20 @@ const TOPOLOGY_WEIGHT        = 0.25;
 const NUMERICAL_WEIGHT       = 0.20;
 const SEMANTIC_WEIGHT        = 0.35;
 
-// ── TopologicalCuriosityEngine (static — للاستخدام من curiosity.ts) ───────────
+// ── TopologicalCuriosityEngine ───────────────────────────────────────────────
 
-export class TopologicalCuriosityEngine {
+export class TopologicalCuriosityEngine implements ITopologicalCuriosityEngine {
   /**
    * المدخل الرئيسي: يستقبل آية + مجال بحث ويُرجع تحليل رنين كامل.
    * [fetched] من Grok/Gemini | [read] من PatternMemory | [prior-training] fallback
    */
-  static async discoverResonance(
+  async discoverResonance(
     verse: string,
     field: string,
-    env?: any
+    options?: { use_cache?: boolean; min_threshold?: number }
   ): Promise<TopologicalResonance | null> {
     const sourceTags: string[] = [];
+    const env = (globalThis as any).env; // Accessing global env if available
 
     IQRALogger.info(`🌀 [TOPOLOGY_ENGINE] Discovering: ${verse} × ${field}`);
 
@@ -257,7 +259,14 @@ export class TopologicalCuriosityEngine {
     } catch (err: any) {
       IQRALogger.error(`❌ [TOPOLOGY_ENGINE] Failed: ${err.message}`);
       return null;
-    }
+
+  /**
+   * فحص "الحداثة" لنط معين.
+   */
+  async checkNovelty(embedding: number[]): Promise<number> {
+    const similarPatterns = await PatternMemory.getSimilarPatterns(embedding, 1);
+    const maxSimilarity = similarPatterns.length > 0 ? similarPatterns[0].similarity : 0;
+    return Math.max(0, 1.0 - maxSimilarity);
   }
 }
 

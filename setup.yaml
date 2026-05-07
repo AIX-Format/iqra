@@ -1,0 +1,49 @@
+# 🕋 IQRA Sovereign Setup — إعدادات الخلافة الرقمية
+# النية: ربط المهام بالأدوار والمكافآت والآيات الحاكمة
+
+version: "1.0.0"
+sovereign_id: "iqra-alpha-1"
+
+# ── Mission Config (إعدادات المهام) ───────────────────────────────────────────
+missions:
+  default_timeout_ms: 300000 # 5 minutes
+  max_retries: 3
+  reward_ledger_path: "ledger/rewards.json"
+  trust_chain_path: "ledger/trust_chain.json"
+
+# ── Agent Orchestration (تنسيق الوكلاء) ───────────────────────────────────────
+agents:
+  planner:
+    role: "Architect & Goal Setter"
+    preferred_model: "gemini-1.5-pro"
+    required_skills: ["mission_design", "logic_validation"]
+  researcher:
+    role: "Curiosity & Resonance Discovery"
+    preferred_model: "gemini-1.5-flash"
+    required_skills: ["topological_curiosity", "vector_search"]
+  builder:
+    role: "Implementation & Engineering"
+    preferred_model: "llama-3.1-70b"
+    required_skills: ["typescript_expert", "math_validation"]
+  validator:
+    role: "Integrity & Truth Checker"
+    preferred_model: "gemini-1.5-flash"
+    required_skills: ["doctrinal_guard", "numerical_verification"]
+  reporter:
+    role: "Storytelling & Documentation"
+    preferred_model: "gpt-4o"
+    required_skills: ["narrative_generation", "bilingual_report"]
+
+# ── Reward Thresholds (عتبات المكافآت) ─────────────────────────────────────────
+rewards:
+  min_resonance_for_reward: 0.6
+  novelty_multiplier: 1.5
+  hallucination_penalty: -2.0
+  serendipity_bonus: 0.5
+
+# ── Global Constrains (القيود العالمية) ────────────────────────────────────────
+constraints:
+  no_mock: true
+  enforce_bilingual_md: true
+  verify_every_commit: true
+  tawbah_threshold: 9

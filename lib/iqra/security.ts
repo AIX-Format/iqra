@@ -8,7 +8,33 @@
  * Rule 2: Crypto randomness.
  * Rule 3: TrustChain.
  * Rule 8: Circuit Breaker.
+ * ══════════════════════════════════════════════════════════════
  */
+
+/**
+ * 🛑 SovereignError — خطأ سيادي
+ * Custom error class for IQRA to handle MĪTHĀQ violations and 
+ * core logic failures without resorting to mocks.
+ */
+export class SovereignError extends Error {
+  public code: string;
+  public severity: 'FATAL' | 'WARNING' | 'INFO';
+  public timestamp: number;
+
+  constructor(message: string, code: string = 'SOVEREIGN_FAILURE', severity: 'FATAL' | 'WARNING' | 'INFO' = 'FATAL') {
+    super(`[${code}] ${message}`);
+    this.name = 'SovereignError';
+    this.code = code;
+    this.severity = severity;
+    this.timestamp = Date.now();
+
+    // Log immediately on creation if fatal
+    if (severity === 'FATAL') {
+      console.error(`🛑 [SOVEREIGN_ERROR] ${code}: ${message}`);
+    }
+  }
+}
+
 
 // import { z } from 'zod'; // Sovereign fallback handled below
 import { createHash, randomBytes } from 'crypto';
@@ -16,6 +42,56 @@ import { IQRAMemory } from './memory.ts';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
+
+/**
+ * 🕋 Sovereign Identity Guard
+ * Ensures the system remains anchored in its core Constitution.
+ */
+export class SovereignIdentityGuard {
+  private static readonly CORE_FILES = ['FITRAH.md', 'DASTŪR.md', 'MĪTHĀQ.md', 'MURĀQABAH.md'];
+  private static _currentFingerprint: string | null = null;
+
+  /**
+   * 🛡️ Verify Constitution Integrity
+   * Generates a "Quantum Fingerprint" of the core files.
+   */
+  static async verifyIntegrity(): Promise<string> {
+    const dirPath = path.join(process.cwd(), 'iqra-core');
+    let combinedContent = '';
+
+    for (const file of this.CORE_FILES) {
+      const filePath = path.join(dirPath, file);
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`🛑 [IDENTITY_VIOLATION] Core file missing: ${file}`);
+      }
+      combinedContent += await fsPromises.readFile(filePath, 'utf-8');
+    }
+
+    this._currentFingerprint = createHash('sha256').update(combinedContent).digest('hex');
+    return this._currentFingerprint;
+  }
+
+  /**
+   * 📜 Get Sovereign Context
+   * Returns a distilled version of the constitution for injection into LLM prompts.
+   */
+  static async getContext(): Promise<string> {
+    const dirPath = path.join(process.cwd(), 'iqra-core');
+    let context = '### 🌙 IQRA SOVEREIGN CONSTITUTION\n';
+    
+    for (const file of this.CORE_FILES) {
+      const filePath = path.join(dirPath, file);
+      const content = await fsPromises.readFile(filePath, 'utf-8');
+      // Extract only headers or key points to keep it "tinyminimicro"
+      const summary = content.split('\n').filter(line => line.startsWith('#') || line.startsWith('-')).slice(0, 10).join('\n');
+      context += `\n#### ${file}\n${summary}\n`;
+    }
+
+    const fingerprint = await this.verifyIntegrity();
+    context += `\n**ID_SIG**: ${fingerprint.substring(0, 8)}\n`;
+    return context;
+  }
+}
 
 async function getZod() {
   try {

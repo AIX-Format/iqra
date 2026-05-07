@@ -57,41 +57,50 @@ R_total = α·R_novelty + β·R_quran + γ·R_topology − δ·P_hallucination
 - لا يكتب أو يعدل كودًا.
 - يوصي بنقاط `serendipity` و`pristine_path`.
 
-## هيكل handoff
+## 5. هيكل الـ HandOff السيادي (Sovereign Handoff)
 
-كل handoff يجب أن يلتزم بالشكل التالي:
+كل انتقال للمهام بين الوكلاء يجب أن يلتزم ببروتوكول صارم لضمان استمرارية "النية" وسلامة "الرنين":
 
 ```yaml
-mission_id: string
-from_worker: string
-to_worker: string
-timestamp: number
-artifacts:
+mission_id: string       # معرف المهمة الفريد ( UUID or short_hash )
+from_worker: string      # اسم الوكيل المُرسل
+to_worker: string        # اسم الوكيل المُستقبل
+timestamp: number        # وقت الانتقال (Unix Epoch)
+intent: string           # "النية" الصافية لهذا الجزء من العمل
+context_snapshot:        # لقطة من حالة الذاكرة الحالية
+  novelty_score: number
+  resonance_score: number
+artifacts:               # روابط للملفات التي تم إنتاجها (File URIs)
   - string
-pending_tasks:
+pending_tasks:           # مهام متبقية دقيقة (Atomic Tasks)
   - string
-known_issues:
+validation_gates:        # بوابات التحقق التي يجب اجتيازها
   - string
-validation_rules:
+known_issues:            # عوائق تم اكتشافها قد تفسد الرنين
   - string
-context_data:
-  key: value
 ```
 
-### قواعد HandOff
-- يجب أن يحتوي handoff على `pending_tasks` واضحة.
-- يجب أن يحتفظ بـ`validation_rules` الصريحة.
-- يجب أن يسجل `known_issues` للحالات التي قد تفسد الرنين.
-- لا يمكن لـ Validator تغيير منطق التنفيذ.
-- يجب على Reporter استخدام `artifacts` فقط، وليس تنفيذ الكود.
+### قواعد الانتقال (HandOff Rules)
+- **ممنوع الـ Mocking**: لا يُقبل أي handoff يحتوي على بيانات وهمية أو Placeholder.
+- **تتبع الأثر**: كل handoff يجب أن يُسجّل في `iqra-core/EVOLUTION_LOG.md`.
+- **الرفض التلقائي**: يحق للوكيل المُستقبل رفض الـ handoff إذا كان الـ `intent` غير متوافق مع `FITRAH.md`.
+- **سلامة البناء**: لا يمكن لـ Builder البدء قبل أن يوقع Researcher على `resonance_score > 0.4`.
 
-## نموذج عمل الوكلاء
+## 6. معايير النجاح (Success Criteria)
 
-1. Planner يصيغ مهمة في `mission-scope.yml`.
-2. Researcher يستخرج الدلالات النموذجية والقرآنية.
-3. Builder يحول الاكتشاف إلى مدخلات عملية.
-4. Validator يفحص النتائج ضد `iqra-core`.
-5. Reporter يوثق النتائج ويشير إلى المكافأة.
+لا تُعتبر المهمة منتهية (Completed) إلا إذا حققت:
+1. **التحقق التقني**: مرور جميع اختبارات الـ Vitest والـ E2E بنسبة 100%.
+2. **الرنين القرآني**: توثيق آية واحدة على الأقل ترتبط بالعمل المنجز.
+3. **التوثيق الثنائي**: تحديث ملفات الـ Markdown (مثل `REFLECTIONS.md`) باللغتين العربية والإنجليزية.
+4. **تسجيل الـ TrustChain**: وجود البصمة الرقمية للعمل في سلسلة الثقة.
+
+## 7. نموذج العمل الموحد
+
+1. **Planner**: يفتح ملف `mission-scope.yml` ويحدد النية.
+2. **Researcher**: يبحث عن الرنين الطوبولوجي باستخدام `TopologicalCuriosityEngine`.
+3. **Builder**: يحول الرنين إلى كود أو منطق عملي.
+4. **Validator**: يفحص الكود ضد `doctrinal_guard.ts` و `numerical_validator.ts`.
+5. **Reporter**: يسرد القصة ويحدث `TRUSTCHAIN.md`.
 
 ## Role-to-Model Mapping
 

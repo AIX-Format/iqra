@@ -59,6 +59,22 @@ export class IQRAMemory {
   private static _errorCount = 0;
   private static readonly ERROR_THRESHOLD = 7;
 
+  /**
+   * 🌌 Store Quantum Memory
+   * Entangles a memory point at a specific coordinate.
+   */
+  static async storeQuantum(entry: Omit<QuantumMemoryEntry, 'id' | 'timestamp' | 'vector'>) {
+    return await QuantumTopologyStore.storeQuantum(entry);
+  }
+
+  /**
+   * 🧠 Search Semantic Memory
+   * Finds wisdom points preserved in Qdrant.
+   */
+  static async searchSemantic(query: string, limit: number = 3) {
+    return await this.searchSemanticInternal(query, limit);
+  }
+
   private static async getRedis() {
     if (this._redis) return this._redis;
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -386,7 +402,7 @@ export class IQRAMemory {
     fs.appendFileSync(failuresPath, log);
   }
 
-  static async searchSemantic(query: string, limit: number = 3) {
+  private static async searchSemanticInternal(query: string, limit: number = 3) {
     const qdrant = await this.getQdrant();
     const googleAI = await this.getGoogleAI();
     if (!qdrant || !googleAI) return [];
