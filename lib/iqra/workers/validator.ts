@@ -2,6 +2,8 @@ import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
 import type { MissionHandoff } from '../../../agents/contracts.ts';
 import * as fs from 'fs';
 import * as path from 'path';
+import { GoEngineBridge } from '../quran/go-bridge';
+import { IQRALogger } from '../logger';
 
 export class ValidationWorker extends SovereignWorker {
   id = 'ValidationWorker';
@@ -33,7 +35,6 @@ export class ValidationWorker extends SovereignWorker {
 
       // 3. Compliance Check
       const violates = forbidden.some(word => textToValidate.toLowerCase().includes(word));
-
       if (violates) {
         const violator = forbidden.find(word => textToValidate.toLowerCase().includes(word));
         this.logIssue(`Potential Dastur violation detected: "${violator}"`);
@@ -45,6 +46,18 @@ export class ValidationWorker extends SovereignWorker {
           error: `Dastur Compliance Failure: Violation of "${violator}" prohibited.`,
           report: this.report
         };
+      }
+
+      // 4. Structural Integrity Check (The "Truth Hunter" Logic)
+      this.markImplemented('Checking structural resonance for Truth Pattern');
+      const goResonance = await GoEngineBridge.calculateResonance(textToValidate);
+      
+      if (goResonance && goResonance.is_truth_pattern) {
+        this.markImplemented('Verified: Structural TRUTH_PATTERN detected via Go Engine');
+        IQRALogger.info(`✨ [VALIDATOR] Truth Pattern Detected! Coherence: ${goResonance.coherence}`);
+      } else if (goResonance && goResonance.coherence < 0.3) {
+        this.logIssue(`Low Coherence Warning: ${goResonance.coherence}. Content may be weak or hallucinated.`);
+        // We don't fail here unless we want to be very strict, but we log the warning.
       }
 
       const updatedContext = {

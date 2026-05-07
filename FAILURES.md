@@ -286,3 +286,19 @@
 - **Source**: GOOGLE_GENERATE
 - **Recovery**: REFLECT
 ---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-07T04:35:11.702Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Groq (Llama) failed: Missing GROQ_API_KEY
+- **Severity**: HIGH
+- **Source**: GROQ_INIT
+- **Recovery**: REFLECT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-07T04:35:13.332Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Groq (Llama) failed: Missing GROQ_API_KEY
+- **Severity**: HIGH
+- **Source**: GROQ_INIT
+- **Recovery**: REFLECT
+---

@@ -21,6 +21,14 @@ export class RewardEngine {
     return this.clamp(score) * REWARD_WEIGHTS.TOPOLOGY;
   }
 
+  static computeFractalReward(score: number): number {
+    return this.clamp(score) * REWARD_WEIGHTS.FRACTAL;
+  }
+
+  static computeLidReward(score: number): number {
+    return this.clamp(score) * REWARD_WEIGHTS.LID;
+  }
+
   static computePenalty(penalty: number): number {
     return this.clamp(penalty) * PENALTIES.HALLUCINATION_MULTIPLIER;
   }
@@ -33,10 +41,12 @@ export class RewardEngine {
     const novelty = this.computeNoveltyReward(input.novelty_score);
     const resonance = this.computeResonanceReward(input.resonance_score);
     const topology = this.computeTopologyReward(input.topology_score);
+    const fractal = this.computeFractalReward(input.fractal_depth || 0);
+    const lid = this.computeLidReward(input.lid_factor || 0);
     const penalty = this.computePenalty(input.hallucination_penalty);
 
     // 3. Total calculation
-    let total = (novelty + resonance + topology) - penalty;
+    let total = (novelty + resonance + topology + fractal + lid) - penalty;
     total = Math.max(CLAMPS.MIN_REWARD, total);
 
     // 4. Discovery level
@@ -50,12 +60,15 @@ export class RewardEngine {
         novelty,
         resonance,
         topology,
+        fractal,
+        lid,
         penalty
       }
     };
   }
 
   static determineDiscoveryLevel(score: number): DiscoveryLevel {
+    if (score >= REWARD_THRESHOLDS.TRUTH) return DiscoveryLevel.RESONANCE; // "TRUTH" maps to resonance level or new enum
     if (score >= REWARD_THRESHOLDS.RESONANCE) return DiscoveryLevel.RESONANCE;
     if (score >= REWARD_THRESHOLDS.TREE) return DiscoveryLevel.TREE;
     if (score >= REWARD_THRESHOLDS.BRANCH) return DiscoveryLevel.BRANCH;

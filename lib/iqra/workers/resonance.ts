@@ -6,9 +6,11 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MissionContext, HandoffResult } from '../mission-context.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
+import type { MissionHandoff } from '../../../agents/contracts.ts';
 import { appendToTrustChain } from '../security.ts';
 import { IQRALogger } from '../logger.ts';
+import { GoEngineBridge } from '../quran/go-bridge';
 
 export interface ResonanceData {
   topological_score: number;
@@ -17,83 +19,83 @@ export interface ResonanceData {
   soul_alignment: number;
 }
 
-export async function executeResonanceWorker(context: MissionContext): Promise<HandoffResult> {
-  const { scope, workingDir, previousOutput } = context;
-  const implemented: string[] = [];
-  const undone: string[] = [];
-  const issues: string[] = [];
-  const commands_run: any[] = [];
+export class ResonanceWorker extends SovereignWorker {
+  id = 'ResonanceWorker';
 
-  IQRALogger.info(`🌀 [RESONANCE] Analyzing resonance for mission: ${scope.mission_id}`);
+  async execute(input: string, state: MissionState): Promise<WorkerResult> {
+    this.report.worker_id = this.id;
+    this.report.timestamp = Date.now();
 
-  try {
-    const researchData = previousOutput?.output;
-    if (!researchData) {
-      throw new Error('INTEGRITY_ERR: No research data provided for resonance analysis');
+    try {
+      // 1. Analysis of Input for Resonance | تحليل المدخلات للرنين
+      const goResonance = await GoEngineBridge.calculateResonance(input);
+      const caughtPatterns = await GoEngineBridge.calculateCatch(input);
+
+      const hasTopology = caughtPatterns.some((p: string) => p.includes('TOPOLOGY'));
+      const hasMathCode = caughtPatterns.some((p: string) => p.includes('NUMERICAL'));
+      
+      let bonus = 0;
+      if (hasTopology) bonus += 0.20;
+      if (hasMathCode) bonus += 0.25;
+
+      const lid = goResonance?.lid ?? 0.8;
+      const topological_score = goResonance?.coherence ?? Math.min(1.0, (input.length / 500) * 0.5 + bonus);
+      const resonance_entropy = 1.0 - topological_score;
+      const soul_alignment = (topological_score > 0.7 && lid < 0.7) ? 0.99 : 0.75;
+
+      const data: ResonanceData = {
+        topological_score,
+        pattern_matched: caughtPatterns.join('|') || 'GENERIC_RESONANCE',
+        resonance_entropy,
+        soul_alignment,
+      };
+
+      const updatedContext = {
+        ...state.context,
+        resonance: data
+      };
+
+      const updatedState: MissionState = {
+        ...state,
+        context: updatedContext,
+        reports: [...state.reports, this.report]
+      };
+
+      this.markImplemented(`Resonance analysis completed with score: ${topological_score.toFixed(4)}`);
+      this.markImplemented(`Structural patterns detected: ${caughtPatterns.length}`);
+
+      if (topological_score > 0.85) {
+        this.markImplemented("Evolving: High resonance detected, triggering evolution cycle");
+        await GoEngineBridge.triggerEvolutionCycle();
+      }
+
+      const handoff: MissionHandoff = {
+        mission_id: state.metadata.mission_id,
+        from_worker: this.id,
+        to_worker: 'ResearchWorker',
+        timestamp: Date.now(),
+        artifacts: [],
+        pending_tasks: ['Deep research into resonance patterns'],
+        known_issues: this.report.issues_discovered,
+        validation_rules: ['High-fidelity verification'],
+        context_data: updatedContext
+      };
+
+      return {
+        success: true,
+        data,
+        report: this.report,
+        updated_state: updatedState,
+        next_handoff: handoff
+      };
+
+    } catch (error: any) {
+      this.logIssue(`ResonanceWorker Error: ${error.message}`);
+      return {
+        success: false,
+        error: error.message,
+        report: this.report
+      };
     }
-
-    // ── 3. Pattern Detection (Topological Curiosity) ──────────────────────────
-    const evidence = researchData.evidence.toLowerCase();
-    const hasTopology = evidence.includes('topology') || evidence.includes('curvature') || evidence.includes('manifold');
-    const hasMathCode = evidence.includes('19') || evidence.includes('prime') || evidence.includes('numerical');
-    
-    let bonus = 0;
-    if (hasTopology) bonus += 0.15;
-    if (hasMathCode) bonus += 0.25;
-
-    const base_score = (researchData.evidence.length / 500) * researchData.resonance_score;
-    const topological_score = Math.min(1.0, base_score + bonus);
-    
-    const resonance_entropy = 1.0 - topological_score;
-    const soul_alignment = researchData.resonance_score > 0.8 ? 0.98 : 0.75;
-
-    const data: ResonanceData = {
-      topological_score,
-      pattern_matched: hasMathCode ? 'MATH_19_RESONANCE' : `TOPOLOGY_MATCH_${scope.verse.replace(':', '_')}`,
-      resonance_entropy,
-      soul_alignment,
-    };
-
-    const outputPath = path.join(workingDir, 'resonance_output.json');
-    fs.writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
-    
-    implemented.push(`Resonance analysis completed with score: ${topological_score.toFixed(4)}`);
-    implemented.push(`Resonance output written to ${outputPath}`);
-
-    appendToTrustChain(
-      'RESONANCE:ALIGNED',
-      scope.mission_id,
-      `alignment:${soul_alignment.toFixed(3)}`,
-      topological_score
-    );
-
-    return {
-      status: 'success',
-      worker: 'ResonanceWorker',
-      next: 'Builder',
-      data: { resonance: data, output: researchData, outputPath },
-      artifacts: [outputPath],
-      implemented,
-      undone,
-      issues,
-      procedures_followed: true,
-      timestamp: Date.now(),
-    };
-
-  } catch (err: any) {
-    issues.push(err.message);
-    IQRALogger.error('❌ [RESONANCE] Failed:', err.message);
-    return {
-      status: 'failure',
-      worker: 'ResonanceWorker',
-      next: null,
-      data: {},
-      artifacts: [],
-      implemented,
-      undone: ['resonance_output.json'],
-      issues,
-      procedures_followed: false,
-      timestamp: Date.now(),
-    };
   }
 }

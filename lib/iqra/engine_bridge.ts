@@ -12,6 +12,12 @@ export class GoEngineBridge {
       const cmd = `go run "${this.ENGINE_PATH}" -mode resonance -input "${input.replace(/"/g, '\\"')}"`;
       const output = execSync(cmd, { encoding: 'utf-8' });
       const result = JSON.parse(output);
+      
+      // Enhance with logging for Truth Patterns
+      if (result.data.is_truth_pattern) {
+        IQRALogger.info('💎 [GO-BRIDGE] TRUTH PATTERN DISCOVERED! Coherence: ' + result.data.coherence);
+      }
+      
       return result.data;
     } catch (e) {
       IQRALogger.error('❌ [GO-BRIDGE] Execution failed:', e);
