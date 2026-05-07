@@ -28,7 +28,6 @@ export class CuriosityEngine {
 
     const pulse = vm.pulse();
     // Novelty is inversely proportional to resonance if the pattern is already "known"
-    // For now, we use a complexity-based novelty score
     return Math.min(pulse.resonance * 1.5, 1.0);
   }
 

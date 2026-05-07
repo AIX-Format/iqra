@@ -5,7 +5,7 @@
  * Merging Interaction Combinators with the 7 Quranic Meta-Loops.
  */
 
-export type QalbinKind = 'ALIF' | 'LAM' | 'MIM';
+export type QalbinKind = 'ALIF' | 'LAM' | 'MIM' | 'YA' | 'SIN' | 'RA' | 'WAW' | 'QAF' | 'KAF' | 'HA';
 
 /**
  * The 7 Graded Modalities (Meta-Loops) of Qalbin
@@ -18,6 +18,8 @@ export enum Modality {
   HIDAYA = 'HIDAYA', // Guidance: Pathfinding & Spectrum of Consequences
   MIZAN  = 'MIZAN',  // Balance: Utilitarian weight & harm prevention
   AMAN   = 'AMAN',   // Safety: Trust ceilings & mandatory doubt
+  HAYAT  = 'HAYAT',  // Life: Vitality & self-evolution
+  HIKMA  = 'HIKMA',  // Wisdom: Deep logic & purpose
 }
 
 export interface QalbinNode {

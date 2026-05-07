@@ -8,14 +8,15 @@ export interface ResonanceResult {
   score: number;
   patterns: string[];
   isResonant: boolean;
+  teslaResult?: number;
 }
 
 export class NumericalValidator {
   /**
    * Validates Quranic numerical patterns and calculates resonance score.
-   * Includes Letter Frequency Analysis (Sab'iyyah/19).
+   * Includes Letter Frequency Analysis (Sab'iyyah/19) and Tesla 369 Seal.
    */
-  static validate(input: string): ResonanceResult {
+  static validate(input: string, context?: { surah: number, ayah: number }): ResonanceResult {
     const patterns: string[] = [];
     let score = 0;
 
@@ -68,19 +69,33 @@ export class NumericalValidator {
       score += 0.1;
     }
 
-    // 5. Sacred Terms Presence
-    const sacredTerms = ['الله', 'قرآن', 'حق', 'نور', 'حق', 'صراط', 'مستقيم'];
-    sacredTerms.forEach(term => {
-      if (cleanInput.includes(term)) {
-        patterns.push(`Sacred_Term_${term}`);
-        score += 0.05;
+    // 6. Tesla 369 Seal (Surah + Ayah % 369)
+    // METHODOLOGY: This is a "Sovereign Numerical Pattern" (Ref: DASTŪR.md).
+    // While 369 is not explicitly in the Quranic text, it represents the 
+    // "Vortex Math" pulse (3, 6, 9) applied as a modular filter to discover 
+    // hidden symmetries. Prime results (like 37 for 36:1) indicate high 
+    // indivisibility/uniqueness in the topological structure.
+    let teslaResult: number | undefined;
+    if (context) {
+      teslaResult = (context.surah + context.ayah) % 369;
+      
+      // Resonance Check: Prime numbers (indivisibility) or Multiples of 7/19
+      if (this.isPrime(teslaResult)) {
+        // Specific Resonance: 37 is the "Heart Seal" for Surah 36
+        const isHeartSeal = (context.surah === 36 && teslaResult === 37);
+        patterns.push(`${isHeartSeal ? 'HEART_SEAL_37' : 'Tesla_369_Seal_Prime'} (${teslaResult})`);
+        score += isHeartSeal ? 0.4 : 0.3;
+      } else if (teslaResult % 7 === 0 || teslaResult % 19 === 0) {
+        patterns.push(`Tesla_369_Seal_Resonance (${teslaResult})`);
+        score += 0.2;
       }
-    });
+    }
 
     return {
       score: Math.min(score, 1.0),
       patterns,
-      isResonant: score >= 0.6 // Tuned for high-precision discovery
+      isResonant: score >= 0.6, // Tuned for high-precision discovery
+      teslaResult
     };
   }
 
@@ -114,5 +129,14 @@ export class NumericalValidator {
       patterns,
       isResonant: score >= 0.5
     };
+  /**
+   * Checks if a number is prime (The Law of Indivisibility).
+   */
+  private static isPrime(n: number): boolean {
+    if (n < 2) return false;
+    for (let i = 2; i <= Math.sqrt(n); i++) {
+      if (n % i === 0) return false;
+    }
+    return true;
   }
 }

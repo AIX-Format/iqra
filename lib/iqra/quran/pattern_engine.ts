@@ -86,7 +86,7 @@ export async function intuitionDiscovery(
  * 2. Topological Discovery (Qalbin VM-based)
  * WHY: Proves patterns through graph reduction and resonance.
  */
-export async function topologicalDiscovery(context: string): Promise<number> {
+export async function topologicalDiscovery(context: string): Promise<{ resonance: number; logs: string[] }> {
   const vm = new Qalbin_VM();
   const seed = findSeed(context);
   const entryNode = seed.topology(vm);
@@ -96,7 +96,7 @@ export async function topologicalDiscovery(context: string): Promise<number> {
   vm.ignite(entryNode, mirrorNode);
   
   const result = vm.pulse();
-  return result.resonance;
+  return { resonance: result.resonance, logs: result.logs };
 }
 
 /**
@@ -120,14 +120,14 @@ export async function deterministicDiscovery(
     const numResonance = numericalDiscovery(a.arabic);
     const topoResonance = await topologicalDiscovery(a.reference);
     
-    if (numResonance.isResonant || topoResonance > 0.8) {
+    if (numResonance.isResonant || topoResonance.resonance > 0.8) {
       verified.push({
         type: PatternType.NUMERICAL,
         discovery: `Topological & Numerical resonance found in ${a.reference}`,
         ayahs: [a.reference],
         confidence: 'high',
-        arabicNote: `تحقق طوبولوجي ورقمي بنسبة ${((topoResonance + numResonance.score) / 2).toFixed(2)}`,
-        scientificLink: `Topology: ${topoResonance.toFixed(3)} | Patterns: ${numResonance.patterns.join(", ")}`
+        arabicNote: `تحقق طوبولوجي ورقمي بنسبة ${((topoResonance.resonance + numResonance.score) / 2).toFixed(2)}`,
+        scientificLink: `Topology: ${topoResonance.resonance.toFixed(3)} | Patterns: ${numResonance.patterns.join(", ")}`
       });
     }
   }
@@ -159,7 +159,8 @@ export async function discover(
   if (hypotheses.length > 0) {
     for (const h of hypotheses) {
       // C. Topological Verification
-      const topoResonance = await topologicalDiscovery(h.discovery);
+      const topoResult = await topologicalDiscovery(h.discovery);
+      const topoResonance = topoResult.resonance;
       
       // D. Numerical Verification
       const combinedText = ayahs.filter(a => h.ayahs.includes(a.reference)).map(a => a.arabic).join(" ");

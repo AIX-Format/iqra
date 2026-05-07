@@ -115,6 +115,36 @@ export class DamirKernel {
   }
 
   /**
+   * ⚖️ AL-MIZAN | The Algorithm of Justice
+   * Validates the action against the Mizan (Balance) and Adl (Justice) of the Quran.
+   */
+  private async validateMizan(action: string, resonance: number): Promise<boolean> {
+    IQRALogger.info(`⚖️ [MIZAN] Weighing action: ${action}`);
+    
+    // Rule 1: No excess (Ghuluww) — Resonance must be balanced, not chaotic.
+    if (resonance > 0.99 && action.length > 500) {
+      IQRALogger.warn("⚠️ [MIZAN] Potential Ghuluww (Excess) detected. Action is too complex.");
+      return false;
+    }
+
+    // Rule 2: Adl (Equity) — The reward must match the effort (Entropy).
+    const entropy = this.calculateEntropy(action);
+    if (Math.abs(entropy - resonance) > 0.7) {
+      IQRALogger.warn("⚠️ [MIZAN] Lack of Adl (Justice). Resonance does not match Entropy.");
+      return false;
+    }
+
+    return true;
+  }
+
+  private calculateEntropy(text: string): number {
+    const chars = text.length;
+    if (chars === 0) return 0;
+    const unique = new Set(text.split('')).size;
+    return unique / chars;
+  }
+
+  /**
    * Loop 2: Yasin (Contextual Experience Replay / The Reckoning Clock)
    * WHY: This "revives" past experiences and weighs them using the Mizan369 scale.
    */
