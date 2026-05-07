@@ -12,6 +12,7 @@ export class Qalbin_VM {
   private nodes: Map<number, QalbinNode> = new Map();
   private activePairs: Set<string> = new Set(); // Use a Set to avoid duplicate active pairs
   private nodeCounter: number = 0;
+  private reductionLog: string[] = [];
 
   spawn(kind: QalbinKind, modality: Modality = Modality.RAHMA): number {
     const id = this.nodeCounter++;
@@ -21,7 +22,8 @@ export class Qalbin_VM {
       modality,
       ports: [null, null, null],
       metadata: {
-        reductions: 0
+        reductions: 0,
+        spawn_time: Date.now()
       }
     };
     this.nodes.set(id, node);
@@ -38,7 +40,7 @@ export class Qalbin_VM {
     this.link(idA, 0, idB, 0);
   }
 
-  pulse(): { steps: number; resonance: number } {
+  pulse(): { steps: number; resonance: number; logs: string[] } {
     let steps = 0;
     while (this.activePairs.size > 0) {
       const pairStr = this.activePairs.values().next().value;
@@ -50,13 +52,15 @@ export class Qalbin_VM {
       steps++;
 
       if (steps > 1000) {
-        throw new SovereignError(`QALBIN_OVERFLOW: Halt at ${steps} steps.`, "HALT", "CRITICAL");
+        throw new SovereignError(`QALBIN_OVERFLOW: Interaction limit exceeded (${steps}). Possible infinite loop in topology.`, "HALT", "CRITICAL");
       }
     }
 
+    const resonance = this.calculateResonance();
     return {
       steps,
-      resonance: this.calculateResonance()
+      resonance,
+      logs: [...this.reductionLog]
     };
   }
 
@@ -69,22 +73,33 @@ export class Qalbin_VM {
     this.verifyMoralConstraints(a, b);
 
     if (a.kind === b.kind) {
+      this.reductionLog.push(`Annihilate: ${a.kind}(${a.modality}) <-> ${b.kind}(${b.modality})`);
       this.annihilate(a, b);
     } else {
+      this.reductionLog.push(`Commute: ${a.kind}(${a.modality}) <-> ${b.kind}(${b.modality})`);
       this.commute(a, b);
     }
   }
 
   private verifyMoralConstraints(a: QalbinNode, b: QalbinNode) {
-    // 1. Protection against high-risk interactions
-    if (a.modality === Modality.AMAN && a.metadata['risk_score'] > 0.9) {
-      throw new SovereignError("AMAN_VIOLATION: High-risk interaction.", "TAWBAH", "CRITICAL");
+    // 1. Protection against high-risk interactions (Hidayah Filter)
+    if ((a.modality === Modality.AMAN || b.modality === Modality.AMAN) && 
+        (a.metadata['risk_score'] > 0.9 || b.metadata['risk_score'] > 0.9)) {
+      throw new SovereignError("AMAN_VIOLATION: High-risk interaction blocked by Hidayah filter.", "TAWBAH", "CRITICAL");
     }
 
-    // 2. AMAN Sovereignty: Tokens with AMAN modality cannot be cloned (Commute)
+    // 2. AMAN Sovereignty: Security tokens are "Indivisible" and "Non-Clonable"
     // In Interaction Combinators, cloning happens during Commute (kind mismatch)
-    if (a.kind !== b.kind && (a.modality === Modality.AMAN || b.modality === Modality.AMAN)) {
-      throw new SovereignError("AMAN_SOVEREIGNTY: Security tokens cannot be cloned or fragmented.", "TAWBAH", "HALT");
+    if (a.kind !== b.kind) {
+      if (a.modality === Modality.AMAN || b.modality === Modality.AMAN) {
+        throw new SovereignError("AMAN_SOVEREIGNTY: Security protocols cannot be fragmented or replicated during interaction.", "TAWBAH", "HALT");
+      }
+    }
+    
+    // 3. Ikhlas Requirement: Pure interactions must not have conflicting modalities
+    if (a.modality === Modality.IKHLAS && b.modality === Modality.ADL) {
+      // Small tension is allowed, but documented
+      this.reductionLog.push(`Tension: IKHLAS meeting ADL. Seeking balance.`);
     }
   }
 

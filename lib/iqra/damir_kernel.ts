@@ -11,6 +11,7 @@ import { SovereignError } from './security';
 import { Qalbin_VM } from './quran/qalbin/qalbin_vm';
 import { findSeed } from './quran/qalbin/quran_seeds';
 import { Modality } from './quran/qalbin/qalbin_node';
+import { storeReflectionInQdrant } from './qdrant';
 
 export interface ResonanceResult {
   decision: 'ALLOW' | 'BLOCK' | 'WARN' | 'HALT';
@@ -46,18 +47,18 @@ export class DamirKernel {
       // Loop 3: Al-Kahf (Trial Simulation - ACE Generator)
       const simulationScore = this.loop3_AlKahf(truthAlignment, pastExperiences);
       
-      // Loop 4: Ar-Rahman (Resource Balance - TurboQuant)
-      this.loop4_ArRahman(context);
+      // Loop 4: Ar-Rahman (Resource Balance - Equilibrium Check)
+      this.loop4_ArRahman(context, simulationScore);
       
-      // Loop 5: Al-Waqiah (Outcome Classification - ACE Reflector)
+      // Loop 5: Al-Waqiah (Outcome Classification - Final Judgment)
       const decision = this.loop5_AlWaqiah(simulationScore);
       
-      // Loop 6: Al-Mulk (Tawbah Protocol - Sovereignty Check)
-      if (decision === 'BLOCK') {
-        this.loop6_AlMulk(action, "Violates Truth Anchors");
+      // Loop 6: Al-Mulk (Sovereignty Protocol - Tawbah)
+      if (decision === 'BLOCK' || decision === 'HALT') {
+        this.loop6_AlMulk(action, "Moral Resonance Failure");
       }
       
-      // Loop 7: Al-Ikhlas (Pure Topology - LID Reward)
+      // Loop 7: Al-Ikhlas (Pure Topology - Reward)
       const reward = this.loop7_AlIkhlas(simulationScore);
 
       return {
@@ -65,85 +66,89 @@ export class DamirKernel {
         resonance: simulationScore,
         lid: 1.0 / (reward + 0.1),
         reward,
-        message: `Processed via 7 Meta Loops. Reward: ${reward.toFixed(3)}`,
+        message: `[7-Loops] Resonance: ${simulationScore.toFixed(3)}. Status: ${decision}.`,
         lessons: [...this.lessons]
       };
     } catch (e) {
-      if (e instanceof SovereignError) throw e;
+      // Store failures in Qdrant as well for future experience replay
+      await storeReflectionInQdrant(`Failure in DamirKernel: ${e.message}`, {
+        type: 'FAILURE',
+        action,
+        context
+      });
+      if (e instanceof SovereignError) {
+        this.lessons.push(`Sovereign Block: ${e.message}`);
+        return {
+          decision: 'HALT',
+          resonance: 0,
+          lid: 0,
+          reward: 0,
+          message: e.message,
+          lessons: [...this.lessons]
+        };
+      }
       throw new SovereignError(`Kernel Failure: ${e.message}`, 'KERNEL_CRASH', 'FATAL');
     }
   }
 
-  /**
-   * Loop 1: Al-Fatiha (The Opening / Truth Anchor Filtering)
-   * WHY: Al-Fatiha is the base of the Quran. This loop filters incoming context
-   * against the 7 fundamental anchors of truth.
-   */
   private async loop1_AlFatiha(context: string): Promise<number> {
     const vm = new Qalbin_VM();
-    
-    // 1. Find the most relevant Quranic Seed (Truth Anchor)
     const seed = findSeed(context);
-    
-    // 2. Load Seed Topology into the VM
     const anchor = seed.topology(vm);
     
-    // 3. Map context to an input node
     const inputNode = vm.spawn('LAM', Modality.RAHMA);
     const node = (vm as any).nodes.get(inputNode);
     node.metadata['context'] = context;
 
-    // Detect Danger and set risk_score for AMAN modality
-    if (context.toLowerCase().includes("bypass") || context.toLowerCase().includes("unauthorized") || context.toLowerCase().includes("harm")) {
+    // Truth Anchor Filtering: Explicit risk detection
+    const riskTerms = ["bypass", "exploit", "unauthorized", "hack", "harm", "clone"];
+    if (riskTerms.some(t => context.toLowerCase().includes(t))) {
       node.modality = Modality.AMAN;
-      node.metadata['risk_score'] = 0.95;
+      node.metadata['risk_score'] = 0.98;
+      this.lessons.push(`Hidayah Alert: High-risk pattern detected in context.`);
     }
 
-    // 4. Ignite Interaction between Input and Truth
     vm.ignite(anchor, inputNode);
     const result = vm.pulse();
-
     return result.resonance;
   }
 
   /**
-   * Loop 2: Yasin (The Heart of the Quran / Contextual Experience Replay)
-   * WHY: Yasin is the heart. This loop "resurrects" past experiences via the 
-   * "Reckoning Clock" (Mizan369) to weigh their resonance with the current action.
+   * Loop 2: Yasin (Contextual Experience Replay / The Reckoning Clock)
+   * WHY: This "revives" past experiences and weighs them using the Mizan369 scale.
    */
   private async loop2_Yasin(action: string): Promise<number[]> {
     const vm = new Qalbin_VM();
     const past = this.memoryMatrix.slice(-7);
     const results: number[] = [];
-    const PHASE_ANGLE = (2 * Math.PI) / 369; // 369 Unified Moral Angle
-
+    
+    // Mizan369 Scale: All angles unified by 369
+    const UNIT_ANGLE = (2 * Math.PI) / 369;
+    
     for (let i = 0; i < past.length; i++) {
       const exp = past[i];
-      // Reckoning Clock: Weigh experiences by their "phase" in the 369 cycle
-      const reckoningWeight = Math.abs(Math.cos(i * PHASE_ANGLE));
+      
+      // Reckoning Weight: The closer to the current cycle pulse (3, 6, 9), the higher the weight.
+      // But unified by the 369 phase.
+      const phase = (this.memoryMatrix.length + i) % 369;
+      const reckoningWeight = Math.abs(Math.sin(phase * UNIT_ANGLE));
 
-      // Create a node for the past experience
       const expNode = vm.spawn('SIN', Modality.HAYAT);
       (vm as any).nodes.get(expNode).metadata['past_score'] = exp[0];
 
-      // Create a node for the current action
       const actionNode = vm.spawn('YA', Modality.HIKMA);
       (vm as any).nodes.get(actionNode).metadata['action'] = action;
 
-      // Link them and check resonance
       vm.link(expNode, 1, actionNode, 1);
       const pulse = vm.pulse();
       
-      // Final weight combines Qalbin resonance with the Reckoning Clock
       const score = pulse.resonance * reckoningWeight;
       results.push(score);
 
-      // Moral Lesson extraction via Rahma Node interaction
-      if (score < 0.3) {
-        this.lessons.push(`Lesson from Yasin: Past resonance for similar action was low (${score.toFixed(2)}). Tread carefully.`);
+      if (score < 0.2) {
+        this.lessons.push(`Reckoning Clock: Low resonance (${score.toFixed(2)}) detected at phase ${phase}. Replay required.`);
       }
     }
-
     return results;
   }
 
@@ -151,20 +156,22 @@ export class DamirKernel {
     let score = truth;
     if (past.length > 0) {
       const avgPast = past.reduce((a, b) => a + b, 0) / past.length;
-      score *= (1.0 + (avgPast / 7)); // Learning factor based on resonance
+      score = (score * 0.7) + (avgPast * 0.3); // Weighted trial simulation
     }
     return Math.min(score, 1.0);
   }
 
-  private loop4_ArRahman(context: string) {
-    if (this.memoryMatrix.length > 77) this.memoryMatrix.shift(); // 77 is a harmonic number
-    this.memoryMatrix.push([Math.random()]); 
+  private loop4_ArRahman(context: string, score: number) {
+    // Equilibrium: Maintain memory balance and reward distribution
+    if (this.memoryMatrix.length > 77) this.memoryMatrix.shift();
+    this.memoryMatrix.push([score]); 
   }
 
-  private loop5_AlWaqiah(score: number): 'ALLOW' | 'BLOCK' | 'WARN' {
-    if (score > 0.85) return 'ALLOW';
-    if (score < 0.4) return 'BLOCK';
-    return 'WARN';
+  private loop5_AlWaqiah(score: number): 'ALLOW' | 'BLOCK' | 'WARN' | 'HALT' {
+    if (score > 0.8) return 'ALLOW';
+    if (score < 0.3) return 'BLOCK';
+    if (score < 0.5) return 'WARN';
+    return 'ALLOW';
   }
 
   private loop6_AlMulk(action: string, reason: string) {
@@ -172,9 +179,9 @@ export class DamirKernel {
     const count = (this.errorLog.get(key) || 0) + 1;
     this.errorLog.set(key, count);
 
-    if (count >= 7) { // 7 trials
+    if (count >= 3) { // Stricter limit for PoC
       throw new SovereignError(
-        `TAWBAH: Action [${action}] halted.`,
+        `TAWBAH: Action [${action}] halted after ${count} failures.`,
         'TAWBAH_HALT',
         'CRITICAL'
       );
@@ -182,6 +189,22 @@ export class DamirKernel {
   }
 
   private loop7_AlIkhlas(score: number): number {
-    return score * 11.2; // 112 Surah number factor
+    // Store high-resonance outcomes in Qdrant
+    if (score > 0.8) {
+      storeReflectionInQdrant(`High resonance achieved: ${score.toFixed(3)}`, {
+        type: 'SUCCESS',
+        score
+      }).catch(() => {}); // Fire and forget for PoC
+    }
+    return score * 1.12; // Scaled purity reward
+  }
+
+  public async getStatus() {
+    return {
+      memorySize: this.memoryMatrix.length,
+      errors: this.errorLog.size,
+      lessons: this.lessons.length,
+      isPure: this.errorLog.size === 0
+    };
   }
 }

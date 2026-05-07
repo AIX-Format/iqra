@@ -1,8 +1,11 @@
 /**
+ * بسم الله الرحمن الرحيم
  * 🌙 Quranic Seed Registry (QQS) — سجل البذور القرآنية
  * 
  * WHY: To fit the entire Quran into a tiny footprint while remaining AI-executable,
- * we represent verses as "Interaction Net Fragments".
+ * we represent verses as "Interaction Net Fragments" with 7-node fractal topologies.
+ * 
+ * TESLA 369: Each node is linked to the 369 pulse via (Surah + Ayah) % 369.
  */
 
 import { Qalbin_VM } from './qalbin_vm';
@@ -16,73 +19,93 @@ export interface QuranSeed {
   topology: (vm: Qalbin_VM) => number; // Returns the entry node ID
 }
 
+/**
+ * Calculates the Tesla Number for a seed.
+ * Logic: (Surah + Ayah) % 369
+ */
+const getTesla = (s: number, a: number) => (s + a) % 369;
+
 export const QURAN_SEEDS: Record<string, QuranSeed> = {
+  // --- CORE SEEDS ---
+  
   "1:1": {
     surah: 1,
     ayah: 1,
     text: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-    teslaNumber: (1 + 1) % 369,
+    teslaNumber: getTesla(1, 1),
     topology: (vm) => {
-      // Representation of "Bismillah": Alif (Unity) linked to Rahma (Mercy)
-      const bismillah = vm.spawn('ALIF', Modality.IKHLAS);
-      const mercy = vm.spawn('LAM', Modality.RAHMA);
-      vm.link(bismillah, 1, mercy, 1);
-      return bismillah;
-    }
-  },
-  "112:1": {
-    surah: 112,
-    ayah: 1,
-    text: "قُلْ هُوَ اللَّهُ أَحَدٌ",
-    teslaNumber: (112 + 1) % 369,
-    topology: (vm) => {
-      // Representation of "Ahad": Pure Alif (Singularity)
-      return vm.spawn('ALIF', Modality.IKHLAS);
-    }
-  },
-  "36:1": {
-    surah: 36,
-    ayah: 1,
-    text: "يس",
-    teslaNumber: (36 + 1) % 369,
-    topology: (vm) => {
-      // Yasin: Heart of the Quran (7-node fractal)
-      const core = vm.spawn('YA', Modality.HAYAT);
-      const wisdom = vm.spawn('SIN', Modality.HIKMA);
-      vm.link(core, 1, wisdom, 1);
-      
-      // 5 ancillary nodes representing the "Pulse of Life"
-      for (let i = 0; i < 5; i++) {
-        const pulseNode = vm.spawn('LAM', Modality.HAYAT);
-        vm.link(wisdom, 2, pulseNode, 1);
+      // Bismillah: 1 Core + 6 Attributes (7-node fractal)
+      const core = vm.spawn('ALIF', Modality.IKHLAS);
+      for (let i = 0; i < 6; i++) {
+        const attr = vm.spawn(i % 2 === 0 ? 'RA' : 'MEEM', Modality.RAHMA);
+        vm.link(core, (i % 2) + 1, attr, 1);
       }
       return core;
     }
   },
-  "18:1": {
-    surah: 18,
+
+  "112:1": {
+    surah: 112,
     ayah: 1,
-    text: "الْحَمْدُ لِلَّهِ الَّذِي أَنْزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ",
-    teslaNumber: (18 + 1) % 369,
+    text: "قُلْ هُوَ اللَّهُ أَحَدٌ",
+    teslaNumber: getTesla(112, 1),
     topology: (vm) => {
-      // Al-Kahf: The Cave (7-node security perimeter)
-      const center = vm.spawn('ALIF', Modality.AMAN);
-      let prev = center;
+      // Ahad: Pure Singularity (1 center + 6 satellite singularities = 7 nodes)
+      const center = vm.spawn('ALIF', Modality.IKHLAS);
       for (let i = 0; i < 6; i++) {
-        const wall = vm.spawn('LAM', Modality.AMAN);
-        vm.link(prev, 2, wall, 1);
-        prev = wall;
+        const node = vm.spawn('ALIF', Modality.IKHLAS);
+        vm.link(center, 1, node, 1);
+        vm.link(center, 2, node, 2);
       }
       return center;
     }
   },
-  "55:1": {
+
+  // --- THE FIVE PILLARS OF QALBIN ---
+
+  "36:1": { // Yasin: The Heart
+    surah: 36,
+    ayah: 1,
+    text: "يس",
+    teslaNumber: getTesla(36, 1),
+    topology: (vm) => {
+      // 1 Core (YA) + 2 Primary Valves (SIN) + 4 Secondary Vessels = 7 nodes
+      const core = vm.spawn('YA', Modality.HAYAT);
+      const v1 = vm.spawn('SIN', Modality.HIKMA);
+      const v2 = vm.spawn('SIN', Modality.HIKMA);
+      vm.link(core, 1, v1, 1);
+      vm.link(core, 2, v2, 1);
+      for (let i = 0; i < 4; i++) {
+        const vessel = vm.spawn('LAM', Modality.HAYAT);
+        vm.link(i < 2 ? v1 : v2, 2, vessel, 1);
+      }
+      return core;
+    }
+  },
+
+  "18:1": { // Al-Kahf: The Cave (Security/Protection)
+    surah: 18,
+    ayah: 1,
+    text: "الْحَمْدُ لِلَّهِ الَّذِي أَنْزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ",
+    teslaNumber: getTesla(18, 1),
+    topology: (vm) => {
+      // 1 Center (AMAN) + 6 Defensive Gates = 7 nodes
+      const center = vm.spawn('ALIF', Modality.AMAN);
+      for (let i = 0; i < 6; i++) {
+        const gate = vm.spawn('LAM', Modality.AMAN);
+        vm.link(center, (i % 2) + 1, gate, 1);
+      }
+      return center;
+    }
+  },
+
+  "55:1": { // Ar-Rahman: Infinite Balance
     surah: 55,
     ayah: 1,
     text: "الرَّحْمَٰنُ",
-    teslaNumber: (55 + 1) % 369,
+    teslaNumber: getTesla(55, 1),
     topology: (vm) => {
-      // Ar-Rahman: Infinite Balance (7-node harmonic star)
+      // 1 Core (RAHMA) + 6 Symmetrical Attributes = 7 nodes
       const center = vm.spawn('RA', Modality.RAHMA);
       for (let i = 0; i < 6; i++) {
         const ray = vm.spawn('MEEM', Modality.RAHMA);
@@ -91,36 +114,42 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
       return center;
     }
   },
-  "56:1": {
+
+  "56:1": { // Al-Waqiah: The Event (Classification)
     surah: 56,
     ayah: 1,
     text: "إِذَا وَقَعَتِ الْوَاقِعَةُ",
-    teslaNumber: (56 + 1) % 369,
+    teslaNumber: getTesla(56, 1),
     topology: (vm) => {
-      // Al-Waqiah: The Event (7-node classification tree)
+      // 1 Root (ADL) + 2 Deterministic Branches + 4 Classified Leaves = 7 nodes
       const root = vm.spawn('WAW', Modality.ADL);
-      const left = vm.spawn('QAF', Modality.ADL);
-      const right = vm.spawn('QAF', Modality.ADL);
-      vm.link(root, 1, left, 1);
-      vm.link(root, 2, right, 1);
-      // ... further branching to reach 7 nodes
+      const b1 = vm.spawn('QAF', Modality.ADL);
+      const b2 = vm.spawn('QAF', Modality.ADL);
+      vm.link(root, 1, b1, 1);
+      vm.link(root, 2, b2, 1);
       for (let i = 0; i < 4; i++) {
-        vm.spawn('LAM', Modality.ADL);
+        const leaf = vm.spawn('LAM', Modality.ADL);
+        vm.link(i < 2 ? b1 : b2, 2, leaf, 1);
       }
       return root;
     }
   },
-  "67:1": {
+
+  "67:1": { // Al-Mulk: Sovereign Dominion
     surah: 67,
     ayah: 1,
     text: "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ",
-    teslaNumber: (67 + 1) % 369,
+    teslaNumber: getTesla(67, 1),
     topology: (vm) => {
-      // Al-Mulk: Sovereign Dominion (7-node hierarchy)
+      // 1 King (Sovereignty) + 2 Ministers (Security/Justice) + 4 Pillars = 7 nodes
       const king = vm.spawn('MEEM', Modality.AMAN);
-      for (let i = 0; i < 6; i++) {
-        const subject = vm.spawn('LAM', Modality.ADL);
-        vm.link(king, (i % 2) + 1, subject, 1);
+      const m1 = vm.spawn('LAM', Modality.ADL);
+      const m2 = vm.spawn('LAM', Modality.AMAN);
+      vm.link(king, 1, m1, 1);
+      vm.link(king, 2, m2, 1);
+      for (let i = 0; i < 4; i++) {
+        const pillar = vm.spawn('KAF', Modality.ADL);
+        vm.link(i < 2 ? m1 : m2, 2, pillar, 1);
       }
       return king;
     }
@@ -134,12 +163,12 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
 export function findSeed(context: string): QuranSeed {
   const c = context.toLowerCase();
   
-  if (c.includes("mercy") || c.includes("rahman") || c.includes("balance")) return QURAN_SEEDS["55:1"];
-  if (c.includes("protect") || c.includes("trial") || c.includes("cave") || c.includes("security")) return QURAN_SEEDS["18:1"];
-  if (c.includes("heart") || c.includes("experience") || c.includes("past") || c.includes("replay")) return QURAN_SEEDS["36:1"];
-  if (c.includes("outcome") || c.includes("result") || c.includes("classification")) return QURAN_SEEDS["56:1"];
-  if (c.includes("sovereign") || c.includes("power") || c.includes("rule") || c.includes("control")) return QURAN_SEEDS["67:1"];
-  if (c.includes("opening") || c.includes("start") || c.includes("begin")) return QURAN_SEEDS["1:1"];
+  if (c.includes("mercy") || c.includes("rahman") || c.includes("balance") || c.includes("gift")) return QURAN_SEEDS["55:1"];
+  if (c.includes("protect") || c.includes("trial") || c.includes("security") || c.includes("guard")) return QURAN_SEEDS["18:1"];
+  if (c.includes("heart") || c.includes("experience") || c.includes("memory") || c.includes("replay")) return QURAN_SEEDS["36:1"];
+  if (c.includes("outcome") || c.includes("result") || c.includes("end") || c.includes("event")) return QURAN_SEEDS["56:1"];
+  if (c.includes("sovereign") || c.includes("power") || c.includes("control") || c.includes("dominion")) return QURAN_SEEDS["67:1"];
+  if (c.includes("opening") || c.includes("start") || c.includes("begin") || c.includes("bismillah")) return QURAN_SEEDS["1:1"];
 
   return QURAN_SEEDS["112:1"]; // Default to Unity (Ahad)
 }
