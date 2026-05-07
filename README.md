@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | Update README.md |
-| 🔗 **الـ Commit** | `f3242e2` |
+| 💡 **آخر خطوة \| Last Step** | feat: Update learning pipeline and fix telegram issues |
+| 🔗 **الـ Commit** | `3a7ef62` |
 
 <!-- IQRA-LATEST-END -->
 
