@@ -32,6 +32,7 @@ export interface ResonanceData {
 
 export class ResonanceWorker extends SovereignWorker {
   id = 'ResonanceWorker';
+  intention = 'قياس الرنين الطوبولوجي بين الآيات القرآنية والعلم الحديث';
 
   async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.worker_id = this.id;

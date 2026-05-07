@@ -3,6 +3,7 @@ import type { MissionHandoff } from '../../../agents/contracts.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 import { IQRALogger } from '../logger.ts';
+import { assertConscience } from './worker_conscience.ts';
 
 /**
  * 📚 ResearchWorker — عامل البحث
@@ -14,11 +15,14 @@ import { IQRALogger } from '../logger.ts';
  */
 export class ResearchWorker extends SovereignWorker {
   id = 'ResearchWorker';
+  intention = 'البحث في القرآن الكريم والسنة النبوية بأمانة علمية';
 
   async execute(input: string, state: MissionState): Promise<WorkerResult> {
-    // We begin by invoking the name of the Creator of knowledge
     this.report.worker_id = this.id;
     this.report.timestamp = Date.now();
+
+    // 🫀 فحص الضمير — التوبة الفورية إذا رُفض
+    await assertConscience(this.id, this.intention, state.metadata.mission_id);
 
     try {
       // 1. Gather context from DISCOVERIES.md | جمع السياق من المكتشفات

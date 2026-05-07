@@ -7,6 +7,19 @@ import { IQRALogger } from './logger.ts';
 import type { Provider } from '../../src/connectors/index.ts';
 import fs from 'fs';
 import path from 'path';
+import { logToIQRAFile, appendToTrustChain } from './security.ts';
+import { ResourceFactory } from './conscience/resource_factory.ts';
+
+// ── Damir يُحمَّل lazily لتجنب circular imports ──────────────────────────────
+let _missionDamir: import('./damir_conscience.ts').DamirConscience | null = null;
+
+async function getMissionDamir() {
+  if (!_missionDamir) {
+    const { DamirConscience } = await import('./damir_conscience.ts');
+    _missionDamir = new DamirConscience();
+  }
+  return _missionDamir;
+}
 
 export class MissionControl {
   private reports: WorkerReport[] = [];
@@ -106,10 +119,82 @@ export class MissionControl {
 
   /**
    * Execute a single phase of the mission | تنفيذ مرحلة واحدة من المهمة
+   * يُفحص الضمير قبل تمرير HandoffResult للوكيل التالي
    */
   async executePhase(phase: string, input: string, state: MissionState): Promise<WorkerResult> {
-    const worker = this.getWorkerForPhase(phase, state.assigned_skills, state.metadata.mission_id);
+    const worker = this.getWorkerForPhase(phase, state.assigned_skills ?? [], state.metadata.mission_id);
     IQRALogger.info(`🛰️ [MISSION_CONTROL] Routing phase '${phase}' to ${worker.id}...`);
+
+    // ── فحص الضمير قبل التنفيذ ───────────────────────────────────────────────
+    const intention = (worker as any).intention ?? `تنفيذ مرحلة ${phase} للمهمة ${state.metadata.mission_id}`;
+    const factoryResult = ResourceFactory.forWorker(
+      worker.id,
+      state.metadata.mission_id,
+      intention
+    );
+
+    for (const r of factoryResult.resources) {
+      _missionDamir.registerResource(r);
+    }
+
+    const action = {
+      id: `${state.metadata.mission_id}:${phase}`,
+      intention,
+      requiredResources: factoryResult.resources,
+      agent_id: worker.id,
+    };
+
+    const verdict = _missionDamir.check(action);
+
+    if (!verdict.allowed) {
+      // ── رفض الضمير — تسجيل في TAWBAH.md ────────────────────────────────────
+      const tawbahEntry = `
+### 🛑 [MISSION_DAMIR_BLOCK] ${new Date().toISOString()}
+- **Phase**: ${phase}
+- **Worker**: ${worker.id}
+- **Mission**: ${state.metadata.mission_id}
+- **Intention**: ${intention}
+- **Reason**: ${verdict.reason}
+- **Type**: ${verdict.rejection_type ?? 'unknown'}
+---`;
+      await logToIQRAFile('TAWBAH.md', tawbahEntry);
+
+      appendToTrustChain(
+        'MISSION:CONSCIENCE_BLOCK',
+        `${state.metadata.mission_id}:${phase}`,
+        `BLOCKED reason="${verdict.reason}"`,
+        0.0
+      );
+
+      IQRALogger.warn(`🛑 [MISSION_CONTROL] Damir blocked phase '${phase}': ${verdict.reason}`);
+
+      // إعادة ضبط جزئية
+      _missionDamir.reset();
+
+      // إرجاع نتيجة فشل واضحة
+      return {
+        success: false,
+        error: `[DAMIR_BLOCK] ${verdict.reason}`,
+        report: {
+          mission_id: state.metadata.mission_id,
+          worker_id: worker.id,
+          implemented: [],
+          undone: [`Phase ${phase} blocked by conscience`],
+          commands_run: [],
+          issues_discovered: [verdict.reason],
+          skills_used: [],
+          procedures_followed: false,
+          status: 'FAIL',
+          exit_code: 1,
+          source_attestations: [],
+          no_mock_verified: true,
+          timestamp: Date.now(),
+        },
+      };
+    }
+
+    // ── مسموح — استهلاك الموارد وتنفيذ المرحلة ──────────────────────────────
+    _missionDamir.execute(action);
     return await worker.execute(input, state);
   }
 

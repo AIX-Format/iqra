@@ -28,6 +28,16 @@ import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import { withTimeout, IQRA_TIMEOUTS } from './utils/timeout';
 
+// ── Bridge (lazy import لتجنب circular deps) ──────────────────────────────────
+let _bridge: typeof import('./memory/memory_bridge.ts').MemoryBridge | null = null;
+async function getBridge() {
+  if (!_bridge) {
+    const mod = await import('./memory/memory_bridge.ts');
+    _bridge = mod.MemoryBridge;
+  }
+  return _bridge;
+}
+
 /**
  * 🌀 Quantum Topological Memory Structures
  */
@@ -162,6 +172,12 @@ export class IQRAMemory {
   }
 
   static async set(key: string, value: any) {
+    // ── الجسر: كتابة في الطبقة الساخنة أولاً ────────────────────────────────
+    try {
+      const bridge = await getBridge();
+      await bridge.write(key, value, { layer: 'hot' });
+    } catch { /* الجسر اختياري — لا يوقف التنفيذ */ }
+
     try {
       const redis = await this.getRedis();
       if (redis) {
@@ -189,6 +205,15 @@ export class IQRAMemory {
   }
 
   static async get<T>(key: string): Promise<T | null> {
+    // ── الجسر: قراءة من الطبقة الساخنة أولاً ────────────────────────────────
+    try {
+      const bridge = await getBridge();
+      const result = await bridge.read<T>(key);
+      if (result.hit && result.value !== null) {
+        return result.value;
+      }
+    } catch { /* الجسر اختياري */ }
+
     try {
       const redis = await this.getRedis();
       if (redis) {

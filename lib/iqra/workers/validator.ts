@@ -7,6 +7,7 @@ import { IQRALogger } from '../logger';
 
 export class ValidationWorker extends SovereignWorker {
   id = 'ValidationWorker';
+  intention = 'التحقق من صحة الكود وتوافقه مع DASTŪR.md والمبادئ الأخلاقية';
 
   async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.worker_id = this.id;

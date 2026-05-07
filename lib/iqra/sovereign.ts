@@ -23,6 +23,11 @@ import { sovereignSync, tazkiyah } from './git-ops';
 import { SovereignEvolution } from './evolution';
 import { ConnectorFactory } from '../../src/connectors/index.ts';
 import { SovereignError, SovereignErrorCode } from '../../src/errors/sovereign_error.ts';
+import { DamirConscience } from './damir_conscience.ts';
+import { ResourceFactory } from './conscience/resource_factory.ts';
+
+// ── Singleton ضمير السيادة ────────────────────────────────────────────────────
+const _sovereignDamir = new DamirConscience();
 
 export class SovereignEngine {
   private static layers = ['Security', 'Memory', 'Logic', 'Voice', 'Curiosity'];
@@ -69,13 +74,92 @@ export class SovereignEngine {
   }
 
   /**
+   * 🫀 checkConscience — استشارة الضمير قبل التنفيذ
+   *
+   * يُستدعى قبل executeSovereignTask لكل مهمة.
+   * إذا رفض الضمير → يُسجَّل في TAWBAH.md ويُرجع false.
+   *
+   * @param taskId    - معرّف المهمة
+   * @param intention - النية المُعلنة للمهمة
+   * @param workerId  - الوكيل الطالب
+   * @returns true إذا مسموح، false إذا مرفوض
+   */
+  static async checkConscience(
+    taskId: string,
+    intention: string,
+    workerId: string = 'SovereignEngine'
+  ): Promise<boolean> {
+    // بناء الموارد المطلوبة من سياق المهمة
+    const factoryResult = ResourceFactory.forWorker(workerId, taskId, intention);
+
+    // تسجيل الموارد في الضمير
+    for (const resource of factoryResult.resources) {
+      _sovereignDamir.registerResource(resource);
+    }
+
+    // بناء الفعل
+    const action = {
+      id: taskId,
+      intention,
+      requiredResources: factoryResult.resources,
+      agent_id: workerId,
+    };
+
+    // فحص الضمير
+    const verdict = _sovereignDamir.check(action);
+
+    if (!verdict.allowed) {
+      // ── تسجيل الرفض في TAWBAH.md ──────────────────────────────────────────
+      const tawbahEntry = `
+### 🛑 [DAMIR_REJECTION] ${new Date().toISOString()}
+- **Task ID**: ${taskId}
+- **Worker**: ${workerId}
+- **Intention**: ${intention}
+- **Reason**: ${verdict.reason}
+- **Rejection Type**: ${verdict.rejection_type ?? 'unknown'}
+- **Confidence**: ${verdict.confidence.toFixed(2)}
+- **Latency**: ${verdict.latency_ms}ms
+- **Action**: Task halted. Resources partially reset.
+---`;
+
+      await logToIQRAFile('TAWBAH.md', tawbahEntry);
+
+      appendToTrustChain(
+        'SOVEREIGN:CONSCIENCE_BLOCK',
+        taskId,
+        `BLOCKED worker=${workerId} reason="${verdict.reason}"`,
+        0.0
+      );
+
+      console.error(
+        `🛑 [SOVEREIGN] Conscience blocked task "${taskId}": ${verdict.reason}`
+      );
+
+      // إعادة ضبط جزئية — التوبة
+      _sovereignDamir.reset();
+
+      return false;
+    }
+
+    // مسموح — استهلاك الموارد
+    _sovereignDamir.execute(action);
+
+    appendToTrustChain(
+      'SOVEREIGN:CONSCIENCE_PASS',
+      taskId,
+      `ALLOWED worker=${workerId} confidence=${verdict.confidence.toFixed(2)}`,
+      verdict.confidence
+    );
+
+    return true;
+  }
+
+  /**
    * Main Sovereign Execution Loop (The Holy Trinity of Actions)
    */
   static async executeSovereignTask(taskId: string, description: string, taskFn: () => Promise<any>) {
     // 0. Tazkiyah & Sync before starting
-    // Purify the workspace from temporary artifacts
     tazkiyah();
-
     await sovereignSync();
 
     // 1. Tasbih
@@ -84,6 +168,13 @@ export class SovereignEngine {
     // 2. Istikharah
     const isAligned = await this.performIstikharah(description);
     if (!isAligned) return null;
+
+    // 2.5 🫀 Conscience Check — الضمير قبل التنفيذ
+    const consciencePassed = await this.checkConscience(taskId, description);
+    if (!consciencePassed) {
+      console.error(`🛑 [SOVEREIGN] Task "${taskId}" rejected by Damir conscience.`);
+      return null;
+    }
 
     // 3. Basmalah
     await this.startWithBasmalah(taskId);

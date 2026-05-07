@@ -3,13 +3,18 @@ import type { WorkerResult, MissionState } from './protocol.ts';
 import { ConnectorFactory, Provider } from '../../../src/connectors/index.ts';
 import { FULL_SYSTEM_PROMPT } from '../prompts.ts';
 import { IQRAMemory } from '../memory.ts';
+import { assertConscience } from './worker_conscience.ts';
 
 export class ExecutionWorker extends SovereignWorker {
   id = 'ExecutionWorker';
+  intention = 'تنفيذ المهمة البرمجية وبناء الكود بصدق وأمانة';
 
   async execute(input: string, state: MissionState): Promise<WorkerResult> {
     this.report.worker_id = this.id;
     this.report.timestamp = Date.now();
+
+    // 🫀 فحص الضمير — التوبة الفورية إذا رُفض
+    await assertConscience(this.id, this.intention, state.metadata.mission_id);
 
     try {
       const { resonance, novelty, research } = state.context;

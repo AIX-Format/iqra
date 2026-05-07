@@ -7,6 +7,7 @@ import { SovereignEvolution } from './evolution.ts';
 import { SkillBank } from './skill_bank.ts';
 import { IQRALogger } from './logger.ts';
 import { appendToTrustChain } from './security.ts';
+import { Pulse369 } from './memory/pulse_369.ts';
 import fs from 'fs';
 import path from 'path';
 
@@ -31,6 +32,9 @@ export class SoulEngine {
       const counter = await IQRAMemory.incrementCycleCounter();
       IQRALogger.info(`💓 [SOUL_PULSE] Pulse: ${counter} | Mission: ${missionId} | Success: ${success}`);
 
+      // 💓 Pulse369 — ترقية الذاكرة بين الطبقات
+      await Pulse369.tick(missionId);
+
       // Record performance for all skills used/available
       const skills = SkillBank.listSkills();
       for (const skill of skills) {
@@ -52,8 +56,6 @@ export class SoulEngine {
         await this.triggerWisdom(counter);
       }
 
-      // 4. Reset counter after 108 (369 resonance) to maintain precision?
-      // For now, we let it grow as it powers the 7 and 49 cycles in SovereignEvolution.
       if (counter % 7 === 0) {
         await SovereignEvolution.runMinorCycle(counter);
       }

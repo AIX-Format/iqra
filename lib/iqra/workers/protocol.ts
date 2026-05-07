@@ -1,7 +1,10 @@
 /**
  * IQRA Worker Protocol — بروتوكول العمال
- * 
+ *
+ * "وَلَا تَقْفُ مَا لَيْسَ لَكَ بِهِ عِلْمٌ" — الإسراء: 36
+ *
  * Defines the structure for sovereign handoffs and reports.
+ * كل وكيل يُعلن نيته قبل التنفيذ — يُفحص بواسطة DamirConscience.
  */
 
 import type { WorkerReport, MissionHandoff, CommandLog } from '../../../agents/contracts.ts';
@@ -12,7 +15,7 @@ export interface MissionState {
   initial_input: string;
   reports: WorkerReport[];
   context: Record<string, any>;
-  assigned_skills?: string[]; // Dynamic skills assigned by the Orchestrator
+  assigned_skills?: string[];
   metadata: {
     start_time: number;
     mission_id: string;
@@ -28,9 +31,25 @@ export interface WorkerResult {
   updated_state?: MissionState;
 }
 
+/**
+ * نتيجة فحص الضمير — تُضاف لكل WorkerResult
+ */
+export interface ConscienceCheck {
+  passed: boolean;
+  reason?: string;
+  latency_ms: number;
+}
+
 export abstract class SovereignWorker {
   abstract id: string;
-  
+
+  /**
+   * النية الإلزامية — يُعلنها كل وكيل قبل التنفيذ
+   * يُفحص بواسطة DamirConscience في sovereign.ts
+   * مثال: "تحليل آية قرآنية وإيجاد الأنماط العلمية"
+   */
+  abstract intention: string;
+
   protected report: WorkerReport;
   protected provider: Provider;
 
