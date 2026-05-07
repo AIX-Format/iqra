@@ -43,6 +43,13 @@ const ARCHIVE_INTERVAL = 27;
 /** كل 81 عملية: تطهير Cold */
 const PURGE_INTERVAL = 81;
 
+/**
+ * كل 9 نبضات: تحليل قرآني عميق
+ * يُشغّل quran_deep_analysis على الأنماط الجديدة
+ * ويكتب النتائج في Obsidian + InfraNodus
+ */
+const DEEP_ANALYSIS_INTERVAL = 9;
+
 /** نسبة الترقية من Hot: أقدم 10% */
 const PROMOTE_RATIO = 0.1;
 
@@ -59,9 +66,11 @@ export interface PulseStats {
   last_promote: number;
   last_archive: number;
   last_purge: number;
+  last_deep_analysis: number;
   total_promoted: number;
   total_archived: number;
   total_purged: number;
+  total_analyzed: number;
 }
 
 // ── Pulse369 ──────────────────────────────────────────────────────────────────
@@ -76,9 +85,11 @@ export class Pulse369 {
     last_promote: 0,
     last_archive: 0,
     last_purge: 0,
+    last_deep_analysis: 0,
     total_promoted: 0,
     total_archived: 0,
     total_purged: 0,
+    total_analyzed: 0,
   };
 
   // ── Core: tick ────────────────────────────────────────────────────────────
@@ -100,11 +111,14 @@ export class Pulse369 {
 
     IQRALogger.info(`💓 [PULSE_369] Tick ${counter} | Mission: ${missionId}`);
 
-    // ── كل 9: Hot → Warm ──────────────────────────────────────────────────
+    // ── كل 9: Hot → Warm + Deep Analysis ────────────────────────────────────
     if (counter % PROMOTE_INTERVAL === 0) {
       const promoted = await this.promoteHotToWarm();
       this._stats.last_promote = Date.now();
       this._stats.total_promoted += promoted;
+
+      // 🌀 Pipeline: تحليل قرآني عميق كل 9 نبضات
+      await this.triggerDeepAnalysisPipeline(missionId, counter);
 
       appendToTrustChain(
         'PULSE:PROMOTE',
@@ -317,6 +331,194 @@ export class Pulse369 {
     }
   }
 
+  // ── Deep Analysis Pipeline ────────────────────────────────────────────────
+
+  /**
+   * 🌀 Pipeline التحليل القرآني العميق
+   *
+   * يُشغَّل كل 9 نبضات تلقائياً.
+   * الخطوات:
+   *   ① يجلب الأنماط الجديدة من MicroMemory
+   *   ② يُشغّل quran_deep_analysis عبر Groq
+   *   ③ يُخزّن النتائج في MemoryTopology
+   *   ④ يكتب في Obsidian (إذا متاح)
+   *   ⑤ يُرسل لـ InfraNodus لكشف الفجوات (إذا متاح)
+   *   ⑥ يُسجّل في Causal Graph
+   */
+  static async triggerDeepAnalysisPipeline(
+    missionId: string,
+    counter: number
+  ): Promise<void> {
+    IQRALogger.info(`🌀 [PULSE_369] Deep Analysis Pipeline — tick ${counter}`);
+
+    try {
+      const { MicroMemory } = await import('./micro_memory.ts');
+      await MicroMemory.init();
+
+      // ① جلب أحدث الأنماط (آخر 7 — من DASTŪR)
+      const db = (MicroMemory as any)._db;
+      if (!db) return;
+
+      const recentPatterns = db.prepare(`
+        SELECT id, verse, field, resonance, shannon_hel, created_at
+        FROM patterns
+        ORDER BY created_at DESC
+        LIMIT 7
+      `).all() as any[];
+
+      if (recentPatterns.length === 0) {
+        IQRALogger.info('🌀 [PULSE_369] No patterns to analyze yet');
+        return;
+      }
+
+      IQRALogger.info(`🌀 [PULSE_369] Analyzing ${recentPatterns.length} patterns...`);
+
+      // ② تحليل كل نمط
+      for (const pattern of recentPatterns) {
+        await this._analyzePattern(pattern, missionId);
+      }
+
+      // ⑤ InfraNodus — كشف الفجوات (إذا متاح)
+      await this._triggerInfraNodus(recentPatterns);
+
+      appendToTrustChain(
+        'PULSE:DEEP_ANALYSIS',
+        `tick_${counter}`,
+        `analyzed=${recentPatterns.length} patterns`,
+        1.0
+      );
+
+    } catch (e) {
+      IQRALogger.warn(`⚠️ [PULSE_369] Deep analysis failed: ${(e as Error).message}`);
+    }
+  }
+
+  /**
+   * يُحلّل نمطاً واحداً ويُخزّن النتائج
+   */
+  private static async _analyzePattern(
+    pattern: any,
+    missionId: string
+  ): Promise<void> {
+    try {
+      // ② تحليل عبر Groq (مع مهارة quran_deep_analysis)
+      const { SkillBank } = await import('../skill_bank.ts');
+      const skillContent = SkillBank.getSkillContent('quran_deep_analysis');
+      if (!skillContent) return;
+
+      let analysisResult: any = null;
+
+      // استدعاء Groq — فقط إذا كان API key موجوداً وليس في وضع الاختبار
+      if (process.env.GROQ_API_KEY && process.env.NODE_ENV !== 'test') {
+        try {
+          const { Groq } = await import('groq-sdk');
+          const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+          const completion = await groq.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: skillContent },
+              { role: 'user', content: `حلل الآية ${pattern.verse} في مجال ${pattern.field}` },
+            ],
+            max_tokens: 300,
+            temperature: 0.1,
+            response_format: { type: 'json_object' },
+          });
+
+          const raw = completion.choices[0]?.message?.content ?? '{}';
+          const jsonMatch = raw.match(/\{[\s\S]*\}/);
+          if (jsonMatch) analysisResult = JSON.parse(jsonMatch[0]);
+        } catch { /* Groq unavailable */ }
+      }
+
+      if (!analysisResult) return;
+
+      // ③ تخزين في MemoryTopology
+      const { MemoryTopology } = await import('./memory_topology.ts');
+      await MemoryTopology.storePattern({
+        verse_ref: pattern.verse,
+        pattern_type: analysisResult.analysis?.numerical?.pattern ? 'numerical' : 'semantic',
+        description: analysisResult.reasoning ?? `تحليل ${pattern.verse}`,
+        strength: analysisResult.confidence ?? pattern.resonance,
+        related_verses: analysisResult.analysis?.semantic?.related_verses ?? [],
+        shannon_hel: pattern.shannon_hel,
+        discovery_level: analysisResult.discovery_level ?? 'branch',
+      });
+
+      // ④ كتابة في Obsidian
+      if (process.env.IQRA_OBSIDIAN === 'true') {
+        const { ObsidianBridge } = await import('../topology/obsidian_bridge.ts');
+        await ObsidianBridge.writeDiscovery({
+          title: `تحليل ${pattern.verse} — ${pattern.field}`,
+          verse_ref: pattern.verse,
+          arabic: '',
+          field: pattern.field,
+          resonance: analysisResult.confidence ?? pattern.resonance,
+          links: analysisResult.analysis?.semantic?.related_verses ?? [],
+          insights: [analysisResult.reasoning ?? ''],
+          mission_id: missionId,
+          timestamp: Date.now(),
+          shannon_hel: pattern.shannon_hel,
+        });
+      }
+
+      // ⑥ تسجيل في Causal Graph
+      const { MicroMemory } = await import('./micro_memory.ts');
+      MicroMemory.recordCausalEdge({
+        cause_id: pattern.id,
+        cause_type: 'pattern',
+        effect_id: `analysis_${pattern.id}`,
+        effect_type: 'discovery',
+        relation: 'led_to',
+        strength: analysisResult.confidence ?? 0.7,
+        explanation: `تحليل ${pattern.verse} أنتج: ${analysisResult.reasoning?.slice(0, 80) ?? ''}`,
+      });
+
+      IQRALogger.info(
+        `✅ [PULSE_369] Pattern analyzed: ${pattern.verse} ` +
+        `[${analysisResult.discovery_level ?? 'branch'}] ` +
+        `confidence=${analysisResult.confidence ?? 0}`
+      );
+
+    } catch (e) {
+      IQRALogger.warn(`⚠️ [PULSE_369] Pattern analysis failed: ${(e as Error).message}`);
+    }
+  }
+
+  /**
+   * يُرسل الأنماط لـ InfraNodus لكشف الفجوات المعرفية
+   */
+  private static async _triggerInfraNodus(patterns: any[]): Promise<void> {
+    if (!process.env.INFRANODUS_API_KEY) return;
+
+    try {
+      // بناء نص موحّد من الأنماط
+      const text = patterns
+        .map(p => `${p.verse}: ${p.field}`)
+        .join('. ');
+
+      const res = await fetch('https://infranodus.com/api/v1/graph', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.INFRANODUS_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          context: 'iqra_quran_patterns',
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json() as any;
+        IQRALogger.info(
+          `🕸️ [INFRANODUS] Graph updated: ${data.nodes ?? 0} nodes, ` +
+          `${data.gaps ?? 0} gaps detected`
+        );
+      }
+    } catch { /* InfraNodus اختياري */ }
+  }
+
   // ── Counter ───────────────────────────────────────────────────────────────
 
   /**
@@ -369,9 +571,11 @@ export class Pulse369 {
       last_promote: 0,
       last_archive: 0,
       last_purge: 0,
+      last_deep_analysis: 0,
       total_promoted: 0,
       total_archived: 0,
       total_purged: 0,
+      total_analyzed: 0,
     };
   }
 }
