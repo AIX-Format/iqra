@@ -95,6 +95,54 @@ export interface SimilarPattern {
   shannon_hel?: number;
 }
 
+// ── Causal Graph Types (MAGMA-inspired) ──────────────────────────────────────
+
+/**
+ * علاقة سببية بين حدثين
+ * MAGMA (arXiv:2601.03236): الرسم السببي يُجيب "لماذا؟"
+ */
+export interface CausalEdge {
+  id: string;
+  /** الحدث السابق (السبب) */
+  cause_id: string;
+  cause_type: 'pattern' | 'experience' | 'discovery' | 'skill';
+  /** الحدث اللاحق (النتيجة) */
+  effect_id: string;
+  effect_type: 'pattern' | 'experience' | 'discovery' | 'skill';
+  /** نوع العلاقة السببية */
+  relation: 'led_to' | 'enabled' | 'contradicted' | 'extended' | 'inspired';
+  /** قوة العلاقة 0.0-1.0 */
+  strength: number;
+  /** شرح السببية */
+  explanation: string;
+  timestamp: number;
+}
+
+// ── Knowledge Version Types (Kumiho-inspired) ─────────────────────────────────
+
+/**
+ * نسخة من معرفة IQRA عبر الزمن
+ * Kumiho (arXiv:2603.17244): كل فكرة تتطور — لا تُحذف
+ */
+export interface KnowledgeVersion {
+  id: string;
+  /** معرّف المعرفة الأصلية */
+  knowledge_id: string;
+  /** نوع المعرفة */
+  knowledge_type: 'pattern' | 'discovery' | 'interpretation' | 'skill';
+  /** رقم النسخة */
+  version: number;
+  /** المحتوى */
+  content: string;
+  /** ملخص التغيير */
+  change_summary: string;
+  /** النسخة السابقة (للتتبع) */
+  parent_version_id: string | null;
+  /** مصدر التغيير */
+  changed_by: string;
+  timestamp: number;
+}
+
 // ── MicroMemory ───────────────────────────────────────────────────────────────
 
 export class MicroMemory {
@@ -213,6 +261,41 @@ export class MicroMemory {
         is_quran   INTEGER NOT NULL DEFAULT 0,
         computed_at INTEGER NOT NULL
       );
+    `);
+
+    // ── Causal Graph (MAGMA-inspired) ─────────────────────────────────────────
+    this._db.exec(`
+      CREATE TABLE IF NOT EXISTS causal_edges (
+        id           TEXT PRIMARY KEY,
+        cause_id     TEXT NOT NULL,
+        cause_type   TEXT NOT NULL,
+        effect_id    TEXT NOT NULL,
+        effect_type  TEXT NOT NULL,
+        relation     TEXT NOT NULL,
+        strength     REAL NOT NULL DEFAULT 0.5,
+        explanation  TEXT NOT NULL DEFAULT '',
+        timestamp    INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_causal_cause  ON causal_edges(cause_id);
+      CREATE INDEX IF NOT EXISTS idx_causal_effect ON causal_edges(effect_id);
+      CREATE INDEX IF NOT EXISTS idx_causal_rel    ON causal_edges(relation);
+    `);
+
+    // ── Knowledge Versions (Kumiho-inspired) ──────────────────────────────────
+    this._db.exec(`
+      CREATE TABLE IF NOT EXISTS knowledge_versions (
+        id                TEXT PRIMARY KEY,
+        knowledge_id      TEXT NOT NULL,
+        knowledge_type    TEXT NOT NULL,
+        version           INTEGER NOT NULL DEFAULT 1,
+        content           TEXT NOT NULL,
+        change_summary    TEXT NOT NULL DEFAULT '',
+        parent_version_id TEXT,
+        changed_by        TEXT NOT NULL DEFAULT 'IQRA',
+        timestamp         INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_kv_knowledge ON knowledge_versions(knowledge_id);
+      CREATE INDEX IF NOT EXISTS idx_kv_version   ON knowledge_versions(knowledge_id, version DESC);
     `);
   }
 
@@ -646,6 +729,182 @@ export class MicroMemory {
       this._db = null;
       IQRALogger.info('🗄️ [MICRO_MEMORY] Database closed');
     }
+  }
+
+  // ── Causal Graph (MAGMA) ──────────────────────────────────────────────────
+
+  /**
+   * يُسجّل علاقة سببية بين حدثين
+   *
+   * مثال: "اكتشاف رنين آية النور" ← led_to → "اكتشاف رنين الليزر"
+   * يُجيب على: لماذا حدث هذا الاكتشاف؟
+   */
+  static recordCausalEdge(edge: Omit<CausalEdge, 'id' | 'timestamp'>): string {
+    this._ensureInit();
+    const id = crypto.randomUUID();
+
+    this._db.prepare(`
+      INSERT INTO causal_edges
+        (id, cause_id, cause_type, effect_id, effect_type,
+         relation, strength, explanation, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      edge.cause_id, edge.cause_type,
+      edge.effect_id, edge.effect_type,
+      edge.relation,
+      edge.strength,
+      edge.explanation,
+      Date.now()
+    );
+
+    IQRALogger.info(
+      `🔗 [CAUSAL] ${edge.cause_type}:${edge.cause_id.slice(0,8)} ` +
+      `--[${edge.relation}]--> ${edge.effect_type}:${edge.effect_id.slice(0,8)} ` +
+      `(${(edge.strength*100).toFixed(0)}%)`
+    );
+
+    return id;
+  }
+
+  /**
+   * يسترجع السلسلة السببية لحدث معين
+   * "لماذا حدث هذا؟" — يتتبع الأسباب للخلف
+   */
+  static getCausalChain(
+    effectId: string,
+    maxDepth: number = 5
+  ): CausalEdge[] {
+    this._ensureInit();
+    const chain: CausalEdge[] = [];
+    const visited = new Set<string>();
+
+    const traverse = (id: string, depth: number) => {
+      if (depth >= maxDepth || visited.has(id)) return;
+      visited.add(id);
+
+      const edges = this._db.prepare(`
+        SELECT * FROM causal_edges WHERE effect_id = ?
+        ORDER BY strength DESC, timestamp DESC LIMIT 7
+      `).all(id) as CausalEdge[];
+
+      for (const edge of edges) {
+        chain.push(edge);
+        traverse(edge.cause_id, depth + 1);
+      }
+    };
+
+    traverse(effectId, 0);
+    return chain;
+  }
+
+  /**
+   * يسترجع كل ما أدى إليه حدث معين
+   * "ماذا أنتج هذا الاكتشاف؟"
+   */
+  static getCausalEffects(causeId: string): CausalEdge[] {
+    this._ensureInit();
+    return this._db.prepare(`
+      SELECT * FROM causal_edges WHERE cause_id = ?
+      ORDER BY strength DESC
+    `).all(causeId) as CausalEdge[];
+  }
+
+  // ── Knowledge Versioning (Kumiho) ─────────────────────────────────────────
+
+  /**
+   * يُسجّل نسخة جديدة من معرفة
+   *
+   * كل تغيير في الفهم يُحفظ — لا شيء يُحذف
+   * مثال: فهم آية النور تطور من "نور حسي" → "نور كمومي"
+   */
+  static recordKnowledgeVersion(
+    knowledgeId: string,
+    knowledgeType: KnowledgeVersion['knowledge_type'],
+    content: string,
+    changeSummary: string,
+    changedBy: string = 'IQRA'
+  ): string {
+    this._ensureInit();
+
+    // إيجاد آخر نسخة
+    const lastVersion = this._db.prepare(`
+      SELECT id, version FROM knowledge_versions
+      WHERE knowledge_id = ?
+      ORDER BY version DESC LIMIT 1
+    `).get(knowledgeId) as any;
+
+    const newVersion = (lastVersion?.version ?? 0) + 1;
+    const id = crypto.randomUUID();
+
+    this._db.prepare(`
+      INSERT INTO knowledge_versions
+        (id, knowledge_id, knowledge_type, version, content,
+         change_summary, parent_version_id, changed_by, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id, knowledgeId, knowledgeType, newVersion,
+      content, changeSummary,
+      lastVersion?.id ?? null,
+      changedBy, Date.now()
+    );
+
+    IQRALogger.info(
+      `📚 [KUMIHO] ${knowledgeType}:${knowledgeId.slice(0,8)} ` +
+      `v${newVersion} — ${changeSummary.slice(0,50)}`
+    );
+
+    return id;
+  }
+
+  /**
+   * يسترجع تاريخ تطور معرفة معينة
+   * "كيف تطور فهم IQRA لهذا الموضوع؟"
+   */
+  static getKnowledgeHistory(knowledgeId: string): KnowledgeVersion[] {
+    this._ensureInit();
+    return this._db.prepare(`
+      SELECT * FROM knowledge_versions
+      WHERE knowledge_id = ?
+      ORDER BY version ASC
+    `).all(knowledgeId) as KnowledgeVersion[];
+  }
+
+  /**
+   * يسترجع أحدث نسخة من معرفة
+   */
+  static getLatestVersion(knowledgeId: string): KnowledgeVersion | null {
+    this._ensureInit();
+    const result = this._db.prepare(`
+      SELECT * FROM knowledge_versions
+      WHERE knowledge_id = ?
+      ORDER BY version DESC LIMIT 1
+    `).get(knowledgeId) as KnowledgeVersion | undefined;
+    return result ?? null;
+  }
+
+  /**
+   * يُقارن نسختين من نفس المعرفة
+   */
+  static compareVersions(
+    knowledgeId: string,
+    v1: number,
+    v2: number
+  ): { v1: KnowledgeVersion | null; v2: KnowledgeVersion | null; evolved: boolean } {
+    this._ensureInit();
+    const ver1 = this._db.prepare(
+      'SELECT * FROM knowledge_versions WHERE knowledge_id=? AND version=?'
+    ).get(knowledgeId, v1) as KnowledgeVersion | null;
+
+    const ver2 = this._db.prepare(
+      'SELECT * FROM knowledge_versions WHERE knowledge_id=? AND version=?'
+    ).get(knowledgeId, v2) as KnowledgeVersion | null;
+
+    return {
+      v1: ver1,
+      v2: ver2,
+      evolved: ver1?.content !== ver2?.content,
+    };
   }
 
   // ── Private Helpers ───────────────────────────────────────────────────────
