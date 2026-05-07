@@ -1,0 +1,24 @@
+id: curiosity_topology_v1
+title: "تفعيل دفتر مكافآت الفضول الطوبولوجي وربطه بحلقة التطور"
+goal: >
+  إنشاء ledger في الذاكرة الدلالية لتسجيل مكافآت (R_n, R_q, R_t, P_h)
+  واستعماله في closed_loop.ts لاختيار المهام التالية، بدون mocks.
+constraints:
+  - "No mocks – hit real Qdrant/Redis/OS metrics"
+  - "DoctrinalGuard must protect all Quran claims"
+  - "Increase test coverage"
+phases:
+  - plan
+  - implement_ledger_module
+  - integrate_evolution_loop
+  - validate_ledger_and_guard
+  - document
+rolesAssignment:
+  planner:
+    skill: reasoning_strong
+  implementer:
+    skill: code_ts
+  validator:
+    skill: tests_vitest
+  historian:
+    skill: historian

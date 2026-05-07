@@ -75,34 +75,29 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
 
     // ── 4. Compute real embedding + novelty via cosineSimilarity ──────────────
     // القاعدة ١+٢: generateEmbedding حقيقي، novelty عبر cosineSimilarity مع آخر 10
-    let novelty_score = 0.5;
+    let novelty_score = 1.0; // Default to 1.0 (pure novelty) if no history exists
     let realEmbedding: number[] = [];
 
-    try {
-      const contentToEmbed = `${research.evidence} ${research.reasoning}`;
+    const contentToEmbed = `${research.evidence} ${research.reasoning}`;
 
-      // [fetched] Google AI embedding أو [prior-training] SHA-256 fallback
-      realEmbedding = await IQRAMemory.generateEmbedding(contentToEmbed);
+    // [fetched] Google AI embedding أو [prior-training] SHA-256 fallback
+    // generateEmbedding internalizes the fallback logic constitutionally.
+    realEmbedding = await IQRAMemory.generateEmbedding(contentToEmbed);
 
-      // computeNovelty يستخدم cosineSimilarity داخلياً مع آخر 10 تضمينات
-      novelty_score = await IQRAMemory.computeNovelty(realEmbedding, 10);
+    // computeNovelty يستخدم cosineSimilarity داخلياً مع آخر 10 تضمينات
+    novelty_score = await IQRAMemory.computeNovelty(realEmbedding, 10);
 
-      // حفظ التضمين في السجل للمقارنات المستقبلية
-      await IQRAMemory.appendList('embeddings_history', {
-        vector: realEmbedding,
-        timestamp: Date.now(),
-        mission_id: scope.mission_id,
-        verse: scope.verse,
-        field: scope.field_of_inquiry,
-      });
+    // حفظ التضمين في السجل للمقارنات المستقبلية
+    await IQRAMemory.appendList('embeddings_history', {
+      vector: realEmbedding,
+      timestamp: Date.now(),
+      mission_id: scope.mission_id,
+      verse: scope.verse,
+      field: scope.field_of_inquiry,
+    });
 
-      implemented.push(`[fetched] Embedding generated (${realEmbedding.length} dims)`);
-      implemented.push(`[fetched] Novelty via cosineSimilarity: ${novelty_score.toFixed(4)}`);
-
-    } catch (err: any) {
-      issues.push(`Embedding/Novelty error: ${err.message} — using default 0.5`);
-      IQRALogger.warn(`⚠️ [REPORTER] Embedding failed: ${err.message}`);
-    }
+    implemented.push(`[fetched] Embedding generated (${realEmbedding.length} dims)`);
+    implemented.push(`[fetched] Novelty via cosineSimilarity: ${novelty_score.toFixed(4)}`);
 
     // ── 5. Topology score ─────────────────────────────────────────────────────
     const topology_score = 1.0;
@@ -168,7 +163,8 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
           scope.field_of_inquiry,
           validation.resonance_score,
           realEmbedding,
-          scope.mission_id
+          scope.mission_id,
+          research.fractal_depth || 0.5
         );
         implemented.push(`[fetched] PatternMemory stored: ${patternId}`);
       } catch (err: any) {

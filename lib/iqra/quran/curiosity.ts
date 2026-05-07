@@ -8,24 +8,23 @@
  *   - Node.js / Mission Pipeline: عبر discoverResonance() بدون env
  */
 
-import { IQRALogger } from '../logger.ts';
 import {
-  TopologicalCuriosity,
   TopologicalCuriosityEngine,
+  TopologicalCuriosity,
   type TopologicalResonance,
   type CuriosityDiscovery,
   type ResonanceType,
 } from './topological_curiosity.ts';
 import { VectorEngine } from './vector_engine.ts';
 import { IQRAMemory } from '../memory.ts';
+import { IQRALogger } from '../logger.ts';
 
 export type { CuriosityDiscovery, TopologicalResonance, ResonanceType };
 
-// ── IQRAMemory Adapter ────────────────────────────────────────────────────────
-// IQRAMemory هي static class — TopologicalCuriosity تحتاج instance.
-// هذا الـ adapter يُحوّل الـ static methods إلى instance interface.
 class IQRAMemoryAdapter {
-  async storeQuantum(entry: Parameters<typeof IQRAMemory.storeQuantum>[0]) {
+  // TopologicalCuriosity expects IQRAMemory instance which might have specific methods.
+  // We use this to bridge static IQRAMemory to expected instance behavior.
+  async storeQuantum(entry: any) {
     return IQRAMemory.storeQuantum(entry);
   }
 }
@@ -58,8 +57,9 @@ export class CuriosityEngine {
     IQRALogger.info(`🌀 [CURIOSITY] Session [${sessionId}] exploring: ${input.substring(0, 50)}...`);
     try {
       const vectorEngine = new VectorEngine(env);
-      const memoryAdapter = new IQRAMemoryAdapter();
-      const engine = new TopologicalCuriosity(vectorEngine, memoryAdapter as any);
+      // We pass the static IQRAMemory class cast as any if the instance is required,
+      // or use the adapter if specific instance behavior is needed.
+      const engine = new TopologicalCuriosity(vectorEngine, IQRAMemory as any);
       return await engine.explore(input);
     } catch (err: any) {
       IQRALogger.warn(`⚠️ [CURIOSITY] Exploration failed: ${err.message}`);
