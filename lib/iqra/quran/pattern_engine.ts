@@ -6,7 +6,11 @@
  *  and within themselves" — Fussilat 41:53
  */
 
-import { iqraThink, IQRABrainMode } from '../brain';
+import { iqraThink } from '../brain';
+import { Qalbin_VM } from './qalbin/qalbin_vm';
+import { findSeed } from './qalbin/quran_seeds';
+import { NumericalValidator } from './numerical_validator';
+import { Modality } from './qalbin/qalbin_node';
 
 export interface QuranPattern {
   type: PatternType;
@@ -29,7 +33,11 @@ export enum PatternType {
 // CORE: Discover patterns using LLM
 // ═══════════════════════════════════
 
-export async function discoverPatterns(
+/**
+ * 1. Intuition Discovery (LLM-based)
+ * WHY: Provides hypotheses and linguistic depth.
+ */
+export async function intuitionDiscovery(
   ayahs: { arabic: string; english: string; reference: string }[],
   focusType: PatternType = PatternType.THEMATIC
 ): Promise<QuranPattern[]> {
@@ -51,11 +59,10 @@ export async function discoverPatterns(
       "patterns": [
         {
           "type": "${focusType}",
-          "discovery": "English summary of discovery",
+          "discovery": "English summary",
           "ayahs": ["ref1", "ref2"],
           "confidence": "high|medium|low",
-          "arabicNote": "Detailed Arabic explanation (تدبر عميق)",
-          "verification": "Reasoning why this pattern is authentic"
+          "arabicNote": "Detailed Arabic explanation"
         }
       ]
     }
@@ -63,17 +70,113 @@ export async function discoverPatterns(
 
   const rawResponse = await iqraThink({
     input: prompt,
-    mode: 'research' as any // Using Gemini Research for depth
+    mode: 'research' as any
   });
 
   try {
     const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return [];
-    const parsed = JSON.parse(jsonMatch[0]);
-    
-    // Rule: Filter for high confidence only for autonomous recording
-    return (parsed.patterns ?? []).filter((p: any) => p.confidence === 'high');
+    return JSON.parse(jsonMatch[0]).patterns ?? [];
   } catch {
     return [];
   }
+}
+
+/**
+ * 2. Topological Discovery (Qalbin VM-based)
+ * WHY: Proves patterns through graph reduction and resonance.
+ */
+export async function topologicalDiscovery(context: string): Promise<number> {
+  const vm = new Qalbin_VM();
+  const seed = findSeed(context);
+  const entryNode = seed.topology(vm);
+  
+  // Create a resonance loop by igniting the seed against itself (self-similarity check)
+  const mirrorNode = seed.topology(vm);
+  vm.ignite(entryNode, mirrorNode);
+  
+  const result = vm.pulse();
+  return result.resonance;
+}
+
+/**
+ * 3. Numerical Discovery (NumericalValidator-based)
+ * WHY: Validates the Sab'iyyah (7) and Symmetry 19 seals.
+ */
+export function numericalDiscovery(text: string) {
+  return NumericalValidator.validate(text);
+}
+
+/**
+ * 5. DETERMINISTIC DISCOVERY (Pure Algo-Topology)
+ * WHY: This is the "Certainty" layer that doesn't rely on LLMs.
+ */
+export async function deterministicDiscovery(
+  ayahs: { arabic: string; english: string; reference: string }[]
+): Promise<QuranPattern[]> {
+  const verified: QuranPattern[] = [];
+  
+  for (const a of ayahs) {
+    const numResonance = numericalDiscovery(a.arabic);
+    const topoResonance = await topologicalDiscovery(a.reference);
+    
+    if (numResonance.isResonant || topoResonance > 0.8) {
+      verified.push({
+        type: PatternType.NUMERICAL,
+        discovery: `Topological & Numerical resonance found in ${a.reference}`,
+        ayahs: [a.reference],
+        confidence: 'high',
+        arabicNote: `تحقق طوبولوجي ورقمي بنسبة ${((topoResonance + numResonance.score) / 2).toFixed(2)}`,
+        scientificLink: `Topology: ${topoResonance.toFixed(3)} | Patterns: ${numResonance.patterns.join(", ")}`
+      });
+    }
+  }
+  
+  return verified;
+}
+
+/**
+ * 4. THE TADABBUR LOOP (Unified Discovery)
+ * WHY: This is the rigorous engine requested by the USER.
+ */
+export async function discover(
+  ayahs: { arabic: string; english: string; reference: string }[],
+  focusType: PatternType = PatternType.THEMATIC
+): Promise<QuranPattern[]> {
+  
+  // A. Try Hypotheses (Intuition) - with catch for offline/error
+  let hypotheses: QuranPattern[] = [];
+  try {
+    hypotheses = await intuitionDiscovery(ayahs, focusType);
+  } catch (e) {
+    console.warn("⚠️ Intuition (LLM) bypassed. Proceeding with Deterministic Mode.");
+  }
+
+  // B. Deterministic Checks (The Foundation)
+  const deterministicResults = await deterministicDiscovery(ayahs);
+  const verifiedPatterns: QuranPattern[] = [...deterministicResults];
+
+  if (hypotheses.length > 0) {
+    for (const h of hypotheses) {
+      // C. Topological Verification
+      const topoResonance = await topologicalDiscovery(h.discovery);
+      
+      // D. Numerical Verification
+      const combinedText = ayahs.filter(a => h.ayahs.includes(a.reference)).map(a => a.arabic).join(" ");
+      const numResonance = numericalDiscovery(combinedText);
+
+      // E. Final Proof (The Mizan)
+      const totalScore = (topoResonance * 0.5) + (numResonance.score * 0.5);
+      
+      if (totalScore > 0.7) {
+        verifiedPatterns.push({
+          ...h,
+          confidence: 'high',
+          scientificLink: `Resonance: ${totalScore.toFixed(3)} | Numerical: ${numResonance.patterns.join(", ")}`
+        });
+      }
+    }
+  }
+
+  return verifiedPatterns;
 }

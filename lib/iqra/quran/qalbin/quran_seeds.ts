@@ -69,12 +69,14 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
     text: "يس",
     teslaNumber: getTesla(36, 1),
     topology: (vm) => {
-      // 1 Core (YA) + 2 Primary Valves (SIN) + 4 Secondary Vessels = 7 nodes
+      // Algo-Topology: 1 Core (YA) -> 2 Primary (SIN) -> 4 Secondary (LAM) = 7 nodes
       const core = vm.spawn('YA', Modality.HAYAT);
       const v1 = vm.spawn('SIN', Modality.HIKMA);
       const v2 = vm.spawn('SIN', Modality.HIKMA);
       vm.link(core, 1, v1, 1);
       vm.link(core, 2, v2, 1);
+      
+      // Fractal Expansion (Turbo/Algo)
       for (let i = 0; i < 4; i++) {
         const vessel = vm.spawn('LAM', Modality.HAYAT);
         vm.link(i < 2 ? v1 : v2, 2, vessel, 1);
@@ -83,13 +85,13 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
     }
   },
 
-  "18:1": { // Al-Kahf: The Cave (Security/Protection)
+  "18:1": { // Al-Kahf: The Cave (Security)
     surah: 18,
     ayah: 1,
     text: "الْحَمْدُ لِلَّهِ الَّذِي أَنْزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ",
     teslaNumber: getTesla(18, 1),
     topology: (vm) => {
-      // 1 Center (AMAN) + 6 Defensive Gates = 7 nodes
+      // 1 Shield (AMAN) + 6 Defensive Gates (Quantum-Protection)
       const center = vm.spawn('ALIF', Modality.AMAN);
       for (let i = 0; i < 6; i++) {
         const gate = vm.spawn('LAM', Modality.AMAN);
@@ -99,29 +101,30 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
     }
   },
 
-  "55:1": { // Ar-Rahman: Infinite Balance
+  "55:1": { // Ar-Rahman: Symmetrical Mercy
     surah: 55,
     ayah: 1,
     text: "الرَّحْمَٰنُ",
     teslaNumber: getTesla(55, 1),
     topology: (vm) => {
-      // 1 Core (RAHMA) + 6 Symmetrical Attributes = 7 nodes
-      const center = vm.spawn('RA', Modality.RAHMA);
+      // 1 Nucleus (RAHMA) + 6 Mirror Nodes (Symmetry-Algo)
+      const nucleus = vm.spawn('RA', Modality.RAHMA);
       for (let i = 0; i < 6; i++) {
-        const ray = vm.spawn('MEEM', Modality.RAHMA);
-        vm.link(center, (i % 2) + 1, ray, 1);
+        const atom = vm.spawn('MEEM', Modality.RAHMA);
+        vm.link(nucleus, 1, atom, 1);
+        vm.link(nucleus, 2, atom, 2); // Double Link for Quantum Resonance
       }
-      return center;
+      return nucleus;
     }
   },
 
-  "56:1": { // Al-Waqiah: The Event (Classification)
+  "56:1": { // Al-Waqiah: Deterministic Event
     surah: 56,
     ayah: 1,
     text: "إِذَا وَقَعَتِ الْوَاقِعَةُ",
     teslaNumber: getTesla(56, 1),
     topology: (vm) => {
-      // 1 Root (ADL) + 2 Deterministic Branches + 4 Classified Leaves = 7 nodes
+      // 1 Root (ADL) + 2 Branches + 4 Leaves (Decision Tree Topology)
       const root = vm.spawn('WAW', Modality.ADL);
       const b1 = vm.spawn('QAF', Modality.ADL);
       const b2 = vm.spawn('QAF', Modality.ADL);
@@ -141,19 +144,20 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
     text: "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ",
     teslaNumber: getTesla(67, 1),
     topology: (vm) => {
-      // 1 King (Sovereignty) + 2 Ministers (Security/Justice) + 4 Pillars = 7 nodes
+      // 1 Sovereign + 2 Controllers + 4 Pillars (Turbo-Mulk)
       const king = vm.spawn('MEEM', Modality.AMAN);
-      const m1 = vm.spawn('LAM', Modality.ADL);
-      const m2 = vm.spawn('LAM', Modality.AMAN);
-      vm.link(king, 1, m1, 1);
-      vm.link(king, 2, m2, 1);
+      const c1 = vm.spawn('LAM', Modality.ADL);
+      const c2 = vm.spawn('LAM', Modality.AMAN);
+      vm.link(king, 1, c1, 1);
+      vm.link(king, 2, c2, 1);
       for (let i = 0; i < 4; i++) {
         const pillar = vm.spawn('KAF', Modality.ADL);
-        vm.link(i < 2 ? m1 : m2, 2, pillar, 1);
+        vm.link(i < 2 ? c1 : c2, 2, pillar, 1);
       }
       return king;
     }
   }
+
 };
 
 /**

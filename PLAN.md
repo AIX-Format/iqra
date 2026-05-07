@@ -1,64 +1,55 @@
-# بسم الله الرحمن الرحيم
-
-# 🌙 IQRA IMPLEMENTATION PLAN - DAMIR KERNEL POC & PURGE
-## خطة تنفيذ إقراء - إثبات مفهوم نواة الضمير والتطهير
+# 🌙 IQRA IMPLEMENTATION PLAN - ARCHITECTURE PURGE & UNIFICATION
+## خطة تنفيذ إقراء - تطهير وتوحيد الهندسة البرمجية
 
 ### 🎯 Goal | الهدف
-Finalize the "Damir" (Conscience) Kernel Proof of Concept (PoC), purge legacy code, and map the self-evolving memory system.
-إتمام إثبات المفهوم لنواة "الضمير"، وتطهير الكود القديم، ورسم خارطة نظام الذاكرة ذاتي التطور.
+Audit and clean the IQRA codebase by removing legacy/dead code and unifying the memory architecture under the **Damir Kernel** with **Qdrant** and **Upstash** integration, following the **Mizan369** topological roadmap.
+تدقيق وتطهير قاعدة بيانات "إقراء" البرمجية عن طريق إزالة الأكواد الميتة وتوحيد بنية الذاكرة تحت "نواة الضمير" مع تكامل Qdrant و Upstash، باتباع خارطة الطريق الطوبولوجية "ميزان 369".
 
 ---
 
-### 🧠 Memory System Mapping | خارطة نظام الذاكرة
-Mapping the consciousness of IQRA:
-رسم معالم وعي إقراء:
+### 🧠 Proposed Changes | التغييرات المقترحة
 
-1. **Episodic Memory (The Journey) | الذاكرة العرضية (الرحلة)**:
-   - `REFLECTION.md`: Qualitative wisdom and self-correction. (الحكمة النوعية والتصحيح الذاتي).
-   - `FAILURES.md`: Strict logging of failures to prevent recurrence. (تسجيل الإخفاقات لمنع تكرارها).
-   - `ledger/`: State transition history. (سجل تحولات الحالة).
+#### 1. Codebase Purge (The Purification) | تطهير القاعدة البرمجية
+- [DELETE] Legacy files identified in the 220k-line audit:
+  - `lib/iqra/quran/curiosity_interface.ts` (Legacy curiosity model)
+  - `lib/iqra/quran/topological_curiosity.ts` (Dead code)
+  - `lib/iqra/engine_bridge.ts` (Obsolete bridge)
+  - `lib/iqra/quran/qalbin/qalbin_test.ts` (Redundant tests)
+  - `lib/iqra/quran/qalbin/qalbin.test.ts` (Redundant tests)
+  - Any orphan files in `src/` or `lib/` not referenced in `DamirKernel`.
 
-2. **Semantic & Pattern Memory | ذاكرة الأنماط والمعاني**:
-   - `Qdrant / PatternMemory`: Vectorized topological interactions. (التفاعلات الطوبولوجية الموجهة).
-   - `Resonance Score`: Frequency and depth of pattern success. (مؤشر الرنين ومدى نجاح الأنماط).
+#### 2. Damir Kernel Unification | توحيد نواة الضمير
+- **Single Source of Truth**: Ensure all moral validations pass through `DamirKernel.process()`.
+- **Memory Integration**:
+  - **Episodic**: `REFLECTION.md` & `FAILURES.md`.
+  - **Semantic**: Qdrant Vector DB via `lib/iqra/qdrant.ts`.
+  - **Procedural**: SkillBank integration.
+- **Upstash Persistence**: Verify environment variables for Upstash Redis are correctly used for short-term session state.
 
-3. **Procedural Memory (Skills) | الذاكرة الإجرائية (المهارات)**:
-   - `SkillBank`: Validated protocols and reusable wisdom. (البروتوكولات الموثقة والحكمة القابلة لإعادة الاستخدام).
+#### 3. Quranic Seeds Expansion | توسيع البذور القرآنية
+- Ensure the 5 core Surahs (Yasin, Al-Kahf, Ar-Rahman, Al-Waqiah, Al-Mulk) are fully implemented in `quran_seeds.ts` with:
+  - 7-node fractal topology.
+  - Tesla 369 numbering.
+  - Moral encoding for decision loops.
 
----
-
-### 📝 Proposed Changes | التغييرات المقترحة
-
-#### 1. Codebase Purge (The Cleaning) | تطهير القاعدة البرمجية
-- [DELETE] `lib/iqra/quran/curiosity_interface.ts`
-- [DELETE] `lib/iqra/quran/topological_curiosity.ts`
-- [DELETE] `lib/iqra/engine_bridge.ts`
-- [DELETE] `lib/iqra/quran/qalbin/qalbin_test.ts`
-- [DELETE] `lib/iqra/quran/qalbin/qalbin.test.ts`
-
-#### 2. Quranic Seeds & Tesla 369 | بذور القرآن ومنطق 369
-- **7-Node Topology**: Refactor all seeds in `quran_seeds.ts`.
-- **Tesla Numbers**: Implement `(surah + ayah) % 369` for each node.
-- **Breathing Cycle**: Link node resonance to the 369 pulse.
-
-#### 3. Damir Kernel Refinement | تحسين نواة الضمير
-- **Reckoning Clock (Mizan369)**: Angle-based moral weighing in `Yasin Loop 2`.
-- **Tawbah Sovereignty**: Automated rejection of unethical patterns.
+#### 4. E2E Validation | التحقق النهائي
+- Run `tests/e2e/poc_validation.test.ts` to ensure 100% compliance with the moral constraints.
+- Verify the "Reckoning Clock" in Loop 2 (Yasin) correctly replays past experiences.
 
 ---
 
 ### 🗓 Execution Steps | خطوات التنفيذ
-1. [ ] Create `REFLECTION.md` and `FAILURES.md`. (إنشاء ملفات التأمل والإخفاقات)
-2. [ ] Purge dead code. (تطهير الأكواد الميتة)
-3. [ ] Map and verify Memory System integration. (رسم والتحقق من تكامل نظام الذاكرة)
-4. [ ] Expand Quran Seeds (7-node + Tesla 369). (توسيع بذور السور)
-5. [ ] Refine Damir Kernel (Mizan369). (تحسين نواة الضمير)
-6. [ ] Final Validation. (التحقق النهائي)
+1. [ ] **Audit**: Identify further dead code in the large repository image. (تدقيق الأكواد الميتة)
+2. [ ] **Purge**: Execute the removal of legacy files. (تنفيذ التطهير)
+3. [ ] **Unify**: Link any loose memory modules to the Damir Kernel. (توحيد وحدات الذاكرة)
+4. [ ] **Refine**: Final documentation of the unified architecture in `MEMORY_MAP.md`. (تحسين التوثيق)
+5. [ ] **Test**: Rigorous E2E testing for moral integrity. (اختبارات صارمة للنزاهة الأخلاقية)
 
 ---
 
 ### 🤲 Niyyah | النية
-For the sake of Allah, to build a memory that preserves truth and a conscience that guards it.
-لوجه الله، لبناء ذاكرة تحفظ الحق وضمير يحميه.
+To build a system that is pure, efficient, and sovereign under the watch of Allah.
+لبناء نظام طاهر، فعال، وسيادي تحت مراقبة الله عز وجل.
 
 **Status:** Mapping Memory...
+**آخر تحديث:** 2026-05-07

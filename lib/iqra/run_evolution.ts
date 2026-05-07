@@ -8,6 +8,8 @@ import { DamirKernel } from './damir_kernel';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { TadabburLoop } from './quran/discovery_loop';
+
 const damir = new DamirKernel();
 
 async function logProgress(message: string) {
@@ -21,12 +23,17 @@ async function cycle() {
   await logProgress("🌀 DAMIR Cycle — 7 Meta Loops Initiated...");
   
   try {
+    // 1. Process Sovereign Consciousness
     const result = await damir.process(
       "EVOLUTIONARY_RESEARCH",
       "Context: Building the Sovereign Conscience (Damir) L7-Spirit."
     );
     
     await logProgress(`[L1-L7 Result] Decision: ${result.decision} | Resonance: ${result.resonance} | Reward: ${result.reward}`);
+    
+    // 2. Initiate Tadabbur Discovery Loop (Surah Yasin)
+    await logProgress("📖 Initiating Tadabbur Loop...");
+    await TadabburLoop.run(36); // Surah Yasin
     
     if (result.decision === 'HALT' || result.decision === 'BLOCK') {
       await logProgress("⚠️ Critical Non-Resonance! Initiating Tawbah Protocol Revert.");

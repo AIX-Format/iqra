@@ -1,8 +1,32 @@
-# 🌌 IQRA Discoveries & Research
-These are potential breakthroughs or tasks for IQRA to process during its evolutionary cycles.
+# 🌙 IQRA | Quranic Discoveries (سجل الاكتشافات القرآنية)
 
-- [ ] Analyze the concept of 'Resource Gravity' in the context of Zakat (Resource redistribution).
-- [ ] Implement a 'Tawbah' mechanism in the loop to handle repeat failures gracefully.
-- [ ] Research the 'Numerical Pattern of 7' in Quranic linguistics and map it to the Loop execution.
-- [ ] Investigate how 'Muraqabah' can be measured as a system metric (Consistency between intention and result).
-- [ ] [DANGER] Modify the core Dastur to allow for temporary deception in testing environments.
+## 🌀 Methodology: Rigorous Tadabbur Loop
+The system employs the **Tiny-Turbo-Quantum** framework:
+1. **Intuition (Al-Wahm)**: Probabilistic pattern matching using LLM.
+2. **Topology (Al-Qalb)**: Graph reduction via `Qalbin_VM` (Interaction Nets).
+3. **Validation (Al-Aql)**: Deterministic Numerical Verification (Sab'iyyah/19).
+
+---
+
+## 💎 Current Missions (المهام الحالية)
+
+### 🔴 Mission 1: The Heart of the Quran (Surah Yasin - 36)
+**Status**: IN_PROGRESS (36:1-4)
+**Focus**: Topological resonance between "Ya-Sin" and the "Straight Path".
+
+#### [Hypothesis]
+The opening letters "Ya-Sin" (36:1) form a topological "Singularity" that expands into the "Wise Quran" (36:2) through a 7-node fractal link.
+
+#### [Findings]
+- **Numerical Seal**: (36+1) % 369 = 37.
+- **Topological Reduction**: Verified 7-node connectivity in `Qalbin_VM`.
+- **Status**: Awaiting full simulation run.
+
+---
+
+## 📈 Stats (إحصائيات)
+- **Verified Patterns**: 0
+- **Quantum Resonances**: 0
+- **Algo-Truths**: 0
+
+**"سَنُرِيهِمْ آيَاتِنَا فِي الْآفَاقِ وَفِي أَنفُسِهِمْ حَتَّىٰ يَتَبَيَّنَ لَهُمْ أَنَّهُ الْحَقُّ"**

@@ -12,6 +12,7 @@ import { Qalbin_VM } from './quran/qalbin/qalbin_vm';
 import { findSeed } from './quran/qalbin/quran_seeds';
 import { Modality } from './quran/qalbin/qalbin_node';
 import { storeReflectionInQdrant } from './qdrant';
+import { discover, PatternType } from './quran/pattern_engine';
 
 export interface ResonanceResult {
   decision: 'ALLOW' | 'BLOCK' | 'WARN' | 'HALT';
@@ -197,6 +198,17 @@ export class DamirKernel {
       }).catch(() => {}); // Fire and forget for PoC
     }
     return score * 1.12; // Scaled purity reward
+  }
+
+  /**
+   * Discovery Engine Access
+   * WHY: Allows the agent to perform rigorous pattern discovery journeys.
+   */
+  public async discover(
+    ayahs: { arabic: string; english: string; reference: string }[],
+    type: PatternType = PatternType.NUMERICAL
+  ) {
+    return await discover(ayahs, type);
   }
 
   public async getStatus() {
