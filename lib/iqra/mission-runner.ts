@@ -22,7 +22,7 @@ import { executePlanner }          from './workers/planner.ts';
 import { executeResearcher }       from './workers/researcher.ts';
 import { executeBuilder }          from './workers/builder.ts';
 import { executeMissionValidator } from './workers/mission_validator.ts';
-import { executeReporter }         from './workers/reporter.ts';
+import { executeResonanceWorker }   from './workers/resonance.ts';
 import { appendToTrustChain }      from './security.ts';
 import { IQRALogger }              from './logger.ts';
 
@@ -78,36 +78,31 @@ export async function runMission(
   appendToTrustChain('MISSION:START', scope.mission_id, `dir:${tmpDir}`, 1.0);
 
   try {
-    // ── Step 1: Planner ───────────────────────────────────────────────────
-    IQRALogger.info('📋 [MISSION_RUNNER] Step 1/5: Planner');
-    const planResult = await executePlanner(context);
-    _assertSuccess(planResult, 'Planner');
-    stepsCompleted.push('Planner');
-    allArtifacts.push(...planResult.artifacts);
-    context.previousOutput = planResult.data;
+    // ── Step 3: Resonance ─────────────────────────────────────────────────
+    IQRALogger.info('🌀 [MISSION_RUNNER] Step 3/6: Resonance');
+    const resonanceResult = await executeResonanceWorker(context);
+    _assertSuccess(resonanceResult, 'Resonance');
+    stepsCompleted.push('Resonance');
+    allArtifacts.push(...resonanceResult.artifacts);
+    context.previousOutput = {
+      ...researchResult.data,
+      ...resonanceResult.data,
+    };
 
-    // ── Step 2: Researcher ────────────────────────────────────────────────
-    IQRALogger.info('🔬 [MISSION_RUNNER] Step 2/5: Researcher');
-    const researchResult = await executeResearcher(context);
-    _assertSuccess(researchResult, 'Researcher');
-    stepsCompleted.push('Researcher');
-    allArtifacts.push(...researchResult.artifacts);
-    context.previousOutput = researchResult.data;
-
-    // ── Step 3: Builder ───────────────────────────────────────────────────
-    IQRALogger.info('🏗️ [MISSION_RUNNER] Step 3/5: Builder');
+    // ── Step 4: Builder ───────────────────────────────────────────────────
+    IQRALogger.info('🏗️ [MISSION_RUNNER] Step 4/6: Builder');
     const buildResult = await executeBuilder(context);
     _assertSuccess(buildResult, 'Builder');
     stepsCompleted.push('Builder');
     allArtifacts.push(...buildResult.artifacts);
     // Merge previous output so Validator gets both research path and node path
     context.previousOutput = {
-      ...researchResult.data,
+      ...context.previousOutput,
       ...buildResult.data,
     };
 
-    // ── Step 4: Validator ─────────────────────────────────────────────────
-    IQRALogger.info('✅ [MISSION_RUNNER] Step 4/5: Validator');
+    // ── Step 5: Validator ─────────────────────────────────────────────────
+    IQRALogger.info('✅ [MISSION_RUNNER] Step 5/6: Validator');
     const validationResult = await executeMissionValidator(context);
     _assertSuccess(validationResult, 'Validator');
     stepsCompleted.push('Validator');
@@ -117,8 +112,8 @@ export async function runMission(
       ...validationResult.data,
     };
 
-    // ── Step 5: Reporter ──────────────────────────────────────────────────
-    IQRALogger.info('📊 [MISSION_RUNNER] Step 5/5: Reporter');
+    // ── Step 6: Reporter ──────────────────────────────────────────────────
+    IQRALogger.info('📊 [MISSION_RUNNER] Step 6/6: Reporter');
     const reportResult = await executeReporter(context);
     _assertSuccess(reportResult, 'Reporter');
     stepsCompleted.push('Reporter');

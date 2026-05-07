@@ -102,22 +102,9 @@ async function callLLMForResearch(
     }
   }
 
-  // Simulated mode — only for testing, clearly marked
-  if (provider === 'simulated') {
-    IQRALogger.warn('⚠️ [RESEARCHER] Using SIMULATED provider — not for production');
-    return {
-      evidence: `[SIMULATED] Topological resonance between ${verse} and ${field}`,
-      resonance_score: 0.72,
-      reasoning: '[SIMULATED] Test mode — real API not called',
-      source_type: 'scientific',
-      is_trivial: false,
-      provider: 'simulated',
-      model: 'simulated',
-    } as any;
-  }
-
   return null;
 }
+
 
 // ── Main Worker ───────────────────────────────────────────────────────────────
 

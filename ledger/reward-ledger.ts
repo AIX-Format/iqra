@@ -10,7 +10,7 @@ import { RewardEntry } from '../rewards/types';
  */
 
 export class RewardLedger {
-  private static LEDGER_PATH = path.join(process.cwd(), 'ledger/rewards.jsonl');
+  private static LEDGER_PATH = path.join(process.cwd(), 'iqra-core/data/reward_ledger.jsonl');
 
   /**
    * Append a new reward entry to the ledger.
