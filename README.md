@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-07` |
-| 💡 **آخر خطوة \| Last Step** | refactor: reorganize mission configurations and core documentation into dedicated directories |
-| 🔗 **الـ Commit** | `3dac7e7` |
+| 💡 **آخر خطوة \| Last Step** | refactor: transition memory architecture to persistent SQLite and introduce vectorized storage while removing legacy scratch files. |
+| 🔗 **الـ Commit** | `9c5e9a9` |
 
 <!-- IQRA-LATEST-END -->
 
