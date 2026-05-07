@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | feat: LightRAG + SimpleMem + Project MCP config |
-| 🔗 **الـ Commit** | `f100915` |
+| 💡 **آخر خطوة \| Last Step** | feat: Voice v0.369 + Causal Graph + Kumiho Versioning |
+| 🔗 **الـ Commit** | `c244366` |
 
 <!-- IQRA-LATEST-END -->
 
