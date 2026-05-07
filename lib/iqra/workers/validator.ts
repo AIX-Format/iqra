@@ -1,5 +1,5 @@
 import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
-import { MissionHandoff } from '../../../agents/contracts.ts';
+import type { MissionHandoff } from '../../../agents/contracts.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -38,6 +38,8 @@ export class ValidationWorker extends SovereignWorker {
         const violator = forbidden.find(word => textToValidate.toLowerCase().includes(word));
         this.logIssue(`Potential Dastur violation detected: "${violator}"`);
         this.report.procedures_followed = false;
+        this.report.status = 'FAIL';
+        this.report.exit_code = 1;
         return {
           success: false,
           error: `Dastur Compliance Failure: Violation of "${violator}" prohibited.`,
@@ -59,13 +61,9 @@ export class ValidationWorker extends SovereignWorker {
       this.markImplemented('Input keywords validated against full Dastur HARAM_LIST');
       this.report.procedures_followed = true;
       
-      return {
-        success: true,
-        data: { validated: true },
-        report: this.report,
-        updatedState,
+
       const handoff: MissionHandoff = {
-        mission_id: state.metadata.missionId,
+        mission_id: state.metadata.mission_id,
         from_worker: this.id,
         to_worker: 'ExecutionWorker',
         timestamp: Date.now(),
@@ -80,8 +78,8 @@ export class ValidationWorker extends SovereignWorker {
         success: true,
         data: { validated: true },
         report: this.report,
-        updatedState,
-        nextHandoff: handoff
+        updated_state: updatedState,
+        next_handoff: handoff
       };
     } catch (error: any) {
       this.logIssue(`ValidationWorker Error: ${error.message}`);

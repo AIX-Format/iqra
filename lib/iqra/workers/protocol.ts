@@ -4,17 +4,18 @@
  * Defines the structure for sovereign handoffs and reports.
  */
 
-import { WorkerReport, MissionHandoff } from '../../../agents/contracts.ts';
-import { Provider } from '../../../src/connectors/index.ts';
+import type { WorkerReport, MissionHandoff, CommandLog } from '../../../agents/contracts.ts';
+export type { WorkerReport, MissionHandoff, CommandLog };
+import type { Provider } from '../../../src/connectors/index.ts';
 
 export interface MissionState {
-  initialInput: string;
+  initial_input: string;
   reports: WorkerReport[];
   context: Record<string, any>;
-  assignedSkills?: string[]; // Dynamic skills assigned by the Orchestrator
+  assigned_skills?: string[]; // Dynamic skills assigned by the Orchestrator
   metadata: {
-    startTime: number;
-    missionId: string;
+    start_time: number;
+    mission_id: string;
   };
 }
 
@@ -23,8 +24,8 @@ export interface WorkerResult {
   data?: any;
   error?: string;
   report: WorkerReport;
-  nextHandoff?: MissionHandoff;
-  updatedState?: MissionState;
+  next_handoff?: MissionHandoff;
+  updated_state?: MissionState;
 }
 
 export abstract class SovereignWorker {
@@ -44,6 +45,8 @@ export abstract class SovereignWorker {
       issues_discovered: [],
       skills_used: [],
       procedures_followed: true,
+      status: 'PASS',
+      exit_code: 0,
       timestamp: Date.now()
     };
   }
@@ -54,8 +57,35 @@ export abstract class SovereignWorker {
 
   setProvider(provider: Provider) {
     this.provider = provider;
-    if (!this.report.model_metadata) this.report.model_metadata = { provider, model: 'unknown' };
-    else this.report.model_metadata.provider = provider;
+    if (!this.report.model_metadata) {
+      this.report.model_metadata = { provider, model: 'unknown' };
+    } else {
+      this.report.model_metadata.provider = provider;
+    }
+  }
+
+  setModel(model: string) {
+    if (!this.report.model_metadata) {
+      this.report.model_metadata = { provider: this.provider, model };
+    } else {
+      this.report.model_metadata.model = model;
+    }
+  }
+
+  setTemperature(temperature: number) {
+    if (!this.report.model_metadata) {
+      this.report.model_metadata = { provider: this.provider, model: 'unknown', temperature };
+    } else {
+      this.report.model_metadata.temperature = temperature;
+    }
+  }
+
+  setLatency(latencyMs: number) {
+    if (!this.report.model_metadata) {
+      this.report.model_metadata = { provider: this.provider, model: 'unknown', latency_ms: latencyMs };
+    } else {
+      this.report.model_metadata.latency_ms = latencyMs;
+    }
   }
 
   setSkills(skills: string[]) {
@@ -84,5 +114,29 @@ export abstract class SovereignWorker {
     this.report.undone.push(task);
   }
 
+  protected markSerendipity(note: string) {
+    this.report.serendipity = { found: true, note };
+  }
+
   abstract execute(input: any, state: MissionState): Promise<WorkerResult>;
+}
+
+/**
+ * 🌉 Compatibility Bridge | جسر التوافق
+ * Ensures a WorkerReport from the protocol layer is compatible with the central contracts.
+ */
+export function ensureCompatibility(report: WorkerReport): WorkerReport {
+  return {
+    ...report,
+    status: report.status || 'PASS',
+    exit_code: report.exit_code ?? 0,
+    timestamp: report.timestamp || Date.now(),
+    implemented: report.implemented || [],
+    undone: report.undone || [],
+    commands_run: report.commands_run || [],
+    issues_discovered: report.issues_discovered || [],
+    skills_used: report.skills_used || [],
+    procedures_followed: report.procedures_followed ?? true,
+    serendipity: report.serendipity || { found: false, note: '' }
+  };
 }
