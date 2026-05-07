@@ -9,7 +9,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    testTimeout: 60000,      // 60s — LLM calls need time
+    testTimeout: 120000,     // 120s — mission loop needs more time
     hookTimeout: 30000,
     reporters: ['verbose'],
     include: ['tests/**/*.test.ts', 'tests/**/*.e2e.ts'],

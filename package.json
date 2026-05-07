@@ -16,6 +16,8 @@
     "iqra:deep": "npx tsx scripts/interact.ts --mode deep",
     "iqra:quran": "npx tsx scripts/interact.ts --mode quran",
     "iqra:en": "npx tsx scripts/interact.ts --lang en",
+    "run-mission": "npx tsx scripts/run_mission.ts",
+    "run-mission:test": "npx tsx scripts/run_mission.ts missions/topological-curiosity.yaml",
     "engine:start": "cd services/go-engine && go run .",
     "engine:build": "cd services/go-engine && go build -o ../../bin/iqra-engine main.go"
   },

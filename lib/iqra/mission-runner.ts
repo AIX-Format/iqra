@@ -1,0 +1,189 @@
+/**
+ * 🚀 IQRA Mission Runner — المنسق الرئيسي
+ * النية: تنفيذ حلقة مهمة كاملة من YAML إلى مكافأة في السجل
+ * المرجع: "فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى اللَّهِ" — آل عمران: 159
+ *
+ * التسلسل: Planner → Researcher → Builder → Validator → Reporter
+ * القاعدة: Serial beats parallel — كل عامل ينتظر السابق.
+ * القاعدة: أي فشل يوقف الحلقة فوراً مع تقرير واضح.
+ */
+
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import yaml from 'js-yaml';
+import {
+  parseMissionScope,
+  updateMissionStatus,
+  type MissionContext,
+  type MissionScope,
+} from './mission-context.ts';
+import { executePlanner }          from './workers/planner.ts';
+import { executeResearcher }       from './workers/researcher.ts';
+import { executeBuilder }          from './workers/builder.ts';
+import { executeMissionValidator } from './workers/mission_validator.ts';
+import { executeReporter }         from './workers/reporter.ts';
+import { appendToTrustChain }      from './security.ts';
+import { IQRALogger }              from './logger.ts';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export interface MissionResult {
+  mission_id: string;
+  status: 'completed' | 'failed';
+  workingDir: string;
+  total_reward?: number;
+  discovery_level?: string;
+  steps_completed: string[];
+  steps_failed: string[];
+  all_artifacts: string[];
+  duration_ms: number;
+  error?: string;
+}
+
+// ── Main Runner ───────────────────────────────────────────────────────────────
+
+export async function runMission(
+  missionPath: string,
+  workingDir?: string
+): Promise<MissionResult> {
+
+  const startTime = Date.now();
+
+  // ── 0. Parse scope ────────────────────────────────────────────────────────
+  const scope = parseMissionScope(missionPath);
+  IQRALogger.info(`🚀 [MISSION_RUNNER] Starting: ${scope.mission_id}`);
+  IQRALogger.info(`   Verse: ${scope.verse} | Field: ${scope.field_of_inquiry}`);
+  IQRALogger.info(`   Provider: ${scope.provider || 'google'}`);
+
+  // ── 1. Working directory ──────────────────────────────────────────────────
+  const tmpDir = workingDir || fs.mkdtempSync(path.join(os.tmpdir(), `iqra-${scope.mission_id}-`));
+  if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+
+  const context: MissionContext = {
+    missionId: scope.mission_id,
+    scope,
+    workingDir: tmpDir,
+    previousOutput: null,
+    startTime,
+  };
+
+  const stepsCompleted: string[] = [];
+  const stepsFailed: string[] = [];
+  const allArtifacts: string[] = [];
+
+  // Mark mission as running
+  try { updateMissionStatus(missionPath, scope, 'running'); } catch { /* non-fatal */ }
+
+  appendToTrustChain('MISSION:START', scope.mission_id, `dir:${tmpDir}`, 1.0);
+
+  try {
+    // ── Step 1: Planner ───────────────────────────────────────────────────
+    IQRALogger.info('📋 [MISSION_RUNNER] Step 1/5: Planner');
+    const planResult = await executePlanner(context);
+    _assertSuccess(planResult, 'Planner');
+    stepsCompleted.push('Planner');
+    allArtifacts.push(...planResult.artifacts);
+    context.previousOutput = planResult.data;
+
+    // ── Step 2: Researcher ────────────────────────────────────────────────
+    IQRALogger.info('🔬 [MISSION_RUNNER] Step 2/5: Researcher');
+    const researchResult = await executeResearcher(context);
+    _assertSuccess(researchResult, 'Researcher');
+    stepsCompleted.push('Researcher');
+    allArtifacts.push(...researchResult.artifacts);
+    context.previousOutput = researchResult.data;
+
+    // ── Step 3: Builder ───────────────────────────────────────────────────
+    IQRALogger.info('🏗️ [MISSION_RUNNER] Step 3/5: Builder');
+    const buildResult = await executeBuilder(context);
+    _assertSuccess(buildResult, 'Builder');
+    stepsCompleted.push('Builder');
+    allArtifacts.push(...buildResult.artifacts);
+    // Merge previous output so Validator gets both research path and node path
+    context.previousOutput = {
+      ...researchResult.data,
+      ...buildResult.data,
+    };
+
+    // ── Step 4: Validator ─────────────────────────────────────────────────
+    IQRALogger.info('✅ [MISSION_RUNNER] Step 4/5: Validator');
+    const validationResult = await executeMissionValidator(context);
+    _assertSuccess(validationResult, 'Validator');
+    stepsCompleted.push('Validator');
+    allArtifacts.push(...validationResult.artifacts);
+    context.previousOutput = {
+      ...context.previousOutput,
+      ...validationResult.data,
+    };
+
+    // ── Step 5: Reporter ──────────────────────────────────────────────────
+    IQRALogger.info('📊 [MISSION_RUNNER] Step 5/5: Reporter');
+    const reportResult = await executeReporter(context);
+    _assertSuccess(reportResult, 'Reporter');
+    stepsCompleted.push('Reporter');
+    allArtifacts.push(...reportResult.artifacts);
+
+    // ── Done ──────────────────────────────────────────────────────────────
+    const duration = Date.now() - startTime;
+    const reward = reportResult.data?.rewardOutput?.total_reward ?? 0;
+    const level  = reportResult.data?.rewardOutput?.discovery_level ?? 'unknown';
+
+    try { updateMissionStatus(missionPath, scope, 'completed'); } catch { /* non-fatal */ }
+
+    appendToTrustChain(
+      'MISSION:COMPLETE',
+      scope.mission_id,
+      `reward:${reward.toFixed(4)}:steps:${stepsCompleted.length}`,
+      1.0
+    );
+
+    IQRALogger.info(
+      `🏁 [MISSION_RUNNER] COMPLETE in ${duration}ms | ` +
+      `Reward: ${reward.toFixed(4)} | Level: ${level}`
+    );
+
+    return {
+      mission_id: scope.mission_id,
+      status: 'completed',
+      workingDir: tmpDir,
+      total_reward: reward,
+      discovery_level: level,
+      steps_completed: stepsCompleted,
+      steps_failed: stepsFailed,
+      all_artifacts: allArtifacts,
+      duration_ms: duration,
+    };
+
+  } catch (err: any) {
+    const duration = Date.now() - startTime;
+    const failedStep = err.message.match(/\[(\w+)\]/)?.[1] || 'unknown';
+    stepsFailed.push(failedStep);
+
+    try { updateMissionStatus(missionPath, scope, 'failed'); } catch { /* non-fatal */ }
+
+    appendToTrustChain('MISSION:FAILED', scope.mission_id, err.message.slice(0, 100), 0.0);
+
+    IQRALogger.error(`❌ [MISSION_RUNNER] FAILED at ${failedStep}: ${err.message}`);
+
+    return {
+      mission_id: scope.mission_id,
+      status: 'failed',
+      workingDir: tmpDir,
+      steps_completed: stepsCompleted,
+      steps_failed: stepsFailed,
+      all_artifacts: allArtifacts,
+      duration_ms: duration,
+      error: err.message,
+    };
+  }
+}
+
+// ── Helper ────────────────────────────────────────────────────────────────────
+
+function _assertSuccess(result: { status: string; worker: string; issues: string[] }, step: string): void {
+  if (result.status !== 'success') {
+    const reason = result.issues.join('; ') || 'unknown failure';
+    throw new Error(`[${step}] INTEGRITY_ERR: ${reason}`);
+  }
+}
