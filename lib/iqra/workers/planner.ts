@@ -13,6 +13,7 @@ import yaml from 'js-yaml';
 import { MissionContext, HandoffResult } from '../mission-context.ts';
 import { appendToTrustChain } from '../security.ts';
 import { IQRALogger } from '../logger.ts';
+import { SkillBank } from '../skill_bank.ts';
 
 export interface PlanStep {
   id: string;
@@ -72,6 +73,8 @@ export async function executePlanner(context: MissionContext): Promise<HandoffRe
 
   try {
     const experience = analyzeExperience(workingDir);
+    const availableSkills = SkillBank.listSkills();
+    const skillsContent = availableSkills.map(s => SkillBank.getSkillContent(s)).filter(Boolean);
 
     // Build deterministic plan from scope
     const plan: MissionPlan = {
@@ -82,6 +85,7 @@ export async function executePlanner(context: MissionContext): Promise<HandoffRe
       historical_context: {
         identified_risks: experience.risks,
         previous_failures: experience.failures,
+        available_skills: availableSkills,
       },
       steps: [
         {

@@ -37,6 +37,8 @@ import { executeResonanceWorker }  from './workers/resonance.ts';
 import { executeReporter }         from './workers/reporter.ts';
 import { appendToTrustChain }      from './security.ts';
 import { IQRALogger }              from './logger.ts';
+import { SoulEngine }              from './soul_engine.ts';
+import { SkillBank }               from './skill_bank.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -184,7 +186,7 @@ export async function runMission(
       `Reward: ${reward.toFixed(4)} | Level: ${level}`
     );
 
-    return {
+    const result: MissionResult = {
       mission_id: scope.mission_id,
       status: 'completed',
       workingDir: tmpDir,
@@ -195,6 +197,11 @@ export async function runMission(
       all_artifacts: allArtifacts,
       duration_ms: duration,
     };
+
+    // Pulse the Soul Engine on success
+    await SoulEngine.pulse(scope.mission_id, true);
+
+    return result;
 
   } catch (err: any) {
     const duration = Date.now() - startTime;
@@ -207,7 +214,7 @@ export async function runMission(
 
     IQRALogger.error(`❌ [MISSION_RUNNER] FAILED at ${failedStep}: ${err.message}`);
 
-    return {
+    const result: MissionResult = {
       mission_id: scope.mission_id,
       status: 'failed',
       workingDir: tmpDir,
@@ -217,6 +224,14 @@ export async function runMission(
       duration_ms: duration,
       error: err.message,
     };
+
+    // Pulse the Soul Engine even on failure
+    await SoulEngine.pulse(scope.mission_id, false);
+    
+    return result;
+  } finally {
+    // Pulse the Soul Engine on success (if catch didn't run, status will be handled by success block)
+    // Actually, it's cleaner to pulse inside the blocks to know success status.
   }
 }
 
