@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { logToIQRAFile, appendToTrustChain } from './security.ts';
 import { ResourceFactory } from './conscience/resource_factory.ts';
+import { RewardEngine } from './rewards/engine.ts';
 
 // ── Damir يُحمَّل lazily لتجنب circular imports ──────────────────────────────
 let _missionDamir: import('./damir_conscience.ts').DamirConscience | null = null;
@@ -250,11 +251,30 @@ export class MissionControl {
     this.reports.push(execResult.report);
 
     IQRALogger.info('🏁 [MISSION_CONTROL] Chain completed successfully.');
-    
+
+    // ── بناء PathKey ومنح المكافأة ────────────────────────────────────────
+    const pathKey = RewardEngine.buildPathKey(this.reports);
+    const resonance = state.context?.resonance?.topological_score ?? 0.3;
+
+    const rewardEntry = await RewardEngine.grantFromReports(
+      state.metadata.mission_id,
+      this.reports,
+      resonance
+    );
+
+    IQRALogger.info(
+      `🏆 [MISSION_CONTROL] Reward: ${rewardEntry.total_reward.toFixed(3)} | ` +
+      `${rewardEntry.pristine_multiplier_applied ? '🌟 PRISTINE PATH' : 'repeated path'}`
+    );
+
     return {
       response: execResult.data || "Processing complete.",
       reports: this.reports,
-      context: state.context
+      context: {
+        ...state.context,
+        reward: rewardEntry,
+        path_key: pathKey,
+      },
     };
   }
 

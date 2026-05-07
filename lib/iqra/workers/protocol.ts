@@ -29,6 +29,8 @@ export interface WorkerResult {
   report: WorkerReport;
   next_handoff?: MissionHandoff;
   updated_state?: MissionState;
+  /** مفتاح المسار — يُبنى في MissionControl بعد اكتمال الحلقة */
+  path_key?: string;
 }
 
 /**
