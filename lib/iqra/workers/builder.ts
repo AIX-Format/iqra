@@ -32,9 +32,12 @@ export async function executeBuilder(context: MissionContext): Promise<HandoffRe
     const research: ResearchOutput = JSON.parse(fs.readFileSync(researchPath, 'utf-8'));
 
     // Validate we have real data — not empty
-    if (!research.evidence || research.evidence.includes('[SIMULATED]') === false && research.evidence.length < 20) {
+    if (!research.evidence || (research.evidence.includes('[SIMULATED]') === false && research.evidence.length < 20)) {
       issues.push('Evidence is suspiciously short');
     }
+
+    // Ensure resonance_score exists
+    const resonanceScore = research.resonance_score ?? 0.5;
 
     // Build the knowledge node
     const nodeId = scope.mission_id.replace(/[^a-z0-9]/gi, '-').toLowerCase();
@@ -52,7 +55,7 @@ export async function executeBuilder(context: MissionContext): Promise<HandoffRe
 mission_id: "${scope.mission_id}"
 verse: "${research.verse}"
 field_of_inquiry: "${research.field_of_inquiry}"
-resonance_candidate: ${research.resonance_score.toFixed(4)}
+resonance_candidate: ${resonanceScore.toFixed(4)}
 source_type: "${research.source_type}"
 is_trivial: ${research.is_trivial}
 provider: "${research.provider}"
@@ -76,7 +79,7 @@ ${research.evidence}
 ${research.reasoning}
 
 ## درجة الرنين
-${research.resonance_score.toFixed(4)} / 1.0 — ${research.source_type}
+${resonanceScore.toFixed(4)} / 1.0 — ${research.source_type}
 
 ---
 *بُني هذا الاكتشاف بواسطة IQRA Builder في ${timestamp}*
@@ -85,7 +88,7 @@ ${research.resonance_score.toFixed(4)} / 1.0 — ${research.source_type}
 
     fs.writeFileSync(nodePath, nodeContent, 'utf-8');
     implemented.push(`knowledge node written: ${nodePath}`);
-    implemented.push(`resonance_candidate: ${research.resonance_score.toFixed(4)}`);
+    implemented.push(`resonance_candidate: ${resonanceScore.toFixed(4)}`);
     implemented.push(`source_type: ${research.source_type}`);
 
     IQRALogger.info(`🏗️ [BUILDER] Node created: ${nodePath}`);
@@ -93,8 +96,8 @@ ${research.resonance_score.toFixed(4)} / 1.0 — ${research.source_type}
     appendToTrustChain(
       'BUILDER:NODE_CREATED',
       scope.mission_id,
-      `node:${nodeId}:score:${research.resonance_score.toFixed(3)}`,
-      research.resonance_score
+      `node:${nodeId}:score:${resonanceScore.toFixed(3)}`,
+      resonanceScore
     );
 
     return {

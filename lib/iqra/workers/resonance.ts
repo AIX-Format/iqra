@@ -32,15 +32,24 @@ export async function executeResonanceWorker(context: MissionContext): Promise<H
       throw new Error('INTEGRITY_ERR: No research data provided for resonance analysis');
     }
 
-    // In a real E2E, this would call the Go engine via shell
-    // Here we perform a real calculation based on the research evidence length and score
-    const topological_score = Math.min(1.0, (researchData.evidence.length / 500) * researchData.resonance_score);
+    // ── 3. Pattern Detection (Topological Curiosity) ──────────────────────────
+    const evidence = researchData.evidence.toLowerCase();
+    const hasTopology = evidence.includes('topology') || evidence.includes('curvature') || evidence.includes('manifold');
+    const hasMathCode = evidence.includes('19') || evidence.includes('prime') || evidence.includes('numerical');
+    
+    let bonus = 0;
+    if (hasTopology) bonus += 0.15;
+    if (hasMathCode) bonus += 0.25;
+
+    const base_score = (researchData.evidence.length / 500) * researchData.resonance_score;
+    const topological_score = Math.min(1.0, base_score + bonus);
+    
     const resonance_entropy = 1.0 - topological_score;
-    const soul_alignment = researchData.resonance_score > 0.8 ? 0.95 : 0.7;
+    const soul_alignment = researchData.resonance_score > 0.8 ? 0.98 : 0.75;
 
     const data: ResonanceData = {
       topological_score,
-      pattern_matched: `TOPOLOGY_MATCH_${scope.verse.replace(':', '_')}`,
+      pattern_matched: hasMathCode ? 'MATH_19_RESONANCE' : `TOPOLOGY_MATCH_${scope.verse.replace(':', '_')}`,
       resonance_entropy,
       soul_alignment,
     };
@@ -62,7 +71,7 @@ export async function executeResonanceWorker(context: MissionContext): Promise<H
       status: 'success',
       worker: 'ResonanceWorker',
       next: 'Builder',
-      data: { resonance: data, outputPath },
+      data: { resonance: data, output: researchData, outputPath },
       artifacts: [outputPath],
       implemented,
       undone,

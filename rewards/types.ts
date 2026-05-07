@@ -18,6 +18,8 @@ export interface RewardInput {
   novelty_score: number;      // 0.0 - 1.0
   resonance_score: number;    // 0.0 - 1.0
   topology_score: number;     // 0.0 - 1.0
+  fractal_depth?: number;     // 0.0 - 1.0 (New: Depth of interpretation)
+  lid_factor?: number;        // 0.0 - 1.0 (New: LID inverse resonance)
   hallucination_penalty: number; // 0.0 - 1.0
   timestamp: number;
 }
@@ -26,6 +28,8 @@ export interface RewardVector {
   novelty: number;
   resonance: number;
   topology: number;
+  fractal: number;
+  lid: number;
   penalty: number;
 }
 

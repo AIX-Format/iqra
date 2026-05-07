@@ -23,6 +23,7 @@ import { executeResearcher }       from './workers/researcher.ts';
 import { executeBuilder }          from './workers/builder.ts';
 import { executeMissionValidator } from './workers/mission_validator.ts';
 import { executeResonanceWorker }   from './workers/resonance.ts';
+import { executeReporter }        from './workers/reporter.ts';
 import { appendToTrustChain }      from './security.ts';
 import { IQRALogger }              from './logger.ts';
 
@@ -78,16 +79,29 @@ export async function runMission(
   appendToTrustChain('MISSION:START', scope.mission_id, `dir:${tmpDir}`, 1.0);
 
   try {
+    // ── Step 1: Planner ───────────────────────────────────────────────────
+    IQRALogger.info('📋 [MISSION_RUNNER] Step 1/6: Planner');
+    const plannerResult = await executePlanner(context);
+    _assertSuccess(plannerResult, 'Planner');
+    stepsCompleted.push('Planner');
+    allArtifacts.push(...plannerResult.artifacts);
+    context.previousOutput = plannerResult.data;
+
+    // ── Step 2: Researcher ────────────────────────────────────────────────
+    IQRALogger.info('🔬 [MISSION_RUNNER] Step 2/6: Researcher');
+    const researchResult = await executeResearcher(context);
+    _assertSuccess(researchResult, 'Researcher');
+    stepsCompleted.push('Researcher');
+    allArtifacts.push(...researchResult.artifacts);
+    context.previousOutput = researchResult.data;
+
     // ── Step 3: Resonance ─────────────────────────────────────────────────
     IQRALogger.info('🌀 [MISSION_RUNNER] Step 3/6: Resonance');
     const resonanceResult = await executeResonanceWorker(context);
     _assertSuccess(resonanceResult, 'Resonance');
     stepsCompleted.push('Resonance');
     allArtifacts.push(...resonanceResult.artifacts);
-    context.previousOutput = {
-      ...researchResult.data,
-      ...resonanceResult.data,
-    };
+    context.previousOutput = resonanceResult.data;
 
     // ── Step 4: Builder ───────────────────────────────────────────────────
     IQRALogger.info('🏗️ [MISSION_RUNNER] Step 4/6: Builder');

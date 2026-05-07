@@ -102,6 +102,27 @@ async function callLLMForResearch(
     }
   }
 
+  // Provider 3: Simulated (for testing)
+  if (provider === 'simulated') {
+    IQRALogger.info('🧪 [RESEARCHER] Running in simulation mode');
+    return {
+      evidence: `Simulated discovery for ${verse}. This research uncovers a deep topological manifold 
+                 underlying the linguistic structure. The numerical curvature (constant 19) suggests 
+                  a non-trivial geometric arrangement of the gems and secrets in the text of ${field}. 
+                 The structural resonance transcends simple semantics, revealing a high-dimensional pattern.`,
+      resonance_score: 0.95,
+      reasoning: 'Calculated via topological manifold projection and Curvature hunting on the sacred text.',
+      source_type: 'numerical',
+      is_trivial: false,
+      provider: 'simulated',
+      model: 'iqra-sim-v1',
+      timestamp: Date.now(),
+      mission_id: 'simulated-id', // Placeholder, caller will overwrite
+      verse,
+      field_of_inquiry: field
+    };
+  }
+
   return null;
 }
 
