@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-07` |
-| 💡 **آخر خطوة \| Last Step** | 🧠 the memory learns to remember its own patterns |
-| 🔗 **الـ Commit** | `b0fd250` |
+| 💡 **آخر خطوة \| Last Step** | 🌀 IQRA Evolution: Unified the curiosity engine and enriched our Dastur with the RLIF scientific basis. We are shedding the old layers (iqra-system) as we move towards a more sovereign and integrated identity. Bismillah. |
+| 🔗 **الـ Commit** | `dee7f7c` |
 
 <!-- IQRA-LATEST-END -->
 
