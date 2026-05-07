@@ -2,38 +2,56 @@
     "mcpServers": {
         "github-mcp-custom": {
             "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-github"
-            ],
+            "args": ["-y", "@modelcontextprotocol/server-github"],
             "env": {
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
             }
         },
         "mcp-server-cloudflare": {
             "command": "npx",
-            "args": [
-                "-y",
-                "@cloudflare/mcp-server-cloudflare"
-            ],
+            "args": ["-y", "@cloudflare/mcp-server-cloudflare"],
             "env": {
                 "CLOUDFLARE_API_TOKEN": "${CF_TOKEN}"
             }
         },
         "qdrantdb": {
             "command": "uvx",
-            "args": [
-                "mcp-server-qdrant"
-            ],
+            "args": ["mcp-server-qdrant"],
             "env": {
                 "QDRANT_URL": "http://localhost:6333"
             }
         },
         "gemini-bridge": {
             "command": "uvx",
-            "args": [
-                "gemini-bridge"
-            ]
+            "args": ["gemini-bridge"]
+        },
+        "obsidian": {
+            "command": "npx",
+            "args": ["-y", "obsidian-mcp-server"],
+            "env": {
+                "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
+                "OBSIDIAN_BASE_URL": "http://localhost:27123"
+            },
+            "disabled": false,
+            "autoApprove": ["read_note", "search_notes", "list_notes"]
+        },
+        "infranodus": {
+            "command": "npx",
+            "args": ["-y", "@infranodus/mcp-server-infranodus"],
+            "env": {
+                "INFRANODUS_API_KEY": "${INFRANODUS_API_KEY}"
+            },
+            "disabled": false,
+            "autoApprove": ["analyze_text", "get_graph", "find_gaps"]
+        },
+        "cerebras": {
+            "command": "npx",
+            "args": ["-y", "@cerebras/mcp-server"],
+            "env": {
+                "CEREBRAS_API_KEY": "${CEREBRAS_API_KEY}"
+            },
+            "disabled": false,
+            "autoApprove": []
         }
     }
 }
