@@ -51,8 +51,8 @@ The core logic of IQRA is powered by the **Resonance Engine**, which uses high-d
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | feat: implement sovereign trading architecture, memory governance, and topological resonance analysis engine |
-| 🔗 **الـ Commit** | `b1aee4e` |
+| 💡 **آخر خطوة \| Last Step** | feat: implement ethical curvature, topological resonance, sacred confirmation, and MCTS-based simulation engine |
+| 🔗 **الـ Commit** | `665eb0f` |
 
 <!-- IQRA-LATEST-END -->
 
