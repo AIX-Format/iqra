@@ -32,3 +32,8 @@ index_name = "iqra-vectors"
 
 [ai]
 binding = "AI"
+
+[[r2_buckets]]
+binding = "IQRA_BUCKET"
+bucket_name = "iqra-storage"
+

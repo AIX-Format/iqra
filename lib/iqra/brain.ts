@@ -23,7 +23,8 @@ import { MissionControl } from './sovereign_orchestrator';
 import { gemma4Local, isLocalMode, IQRA_LOCAL_TOOLS } from './llm/ollama.ts';
 import { SkillBank } from './skill_bank.ts';
 
-import { FULL_SYSTEM_PROMPT } from './prompts.ts';
+import { FULL_SYSTEM_PROMPT, IQRA_SOUL } from './prompts.ts';
+export { FULL_SYSTEM_PROMPT, IQRA_SOUL };
 
 // ── Skill Router ──────────────────────────────────────────────────────────────
 
