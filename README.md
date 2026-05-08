@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | 🔧 refactor(tawbah): Enhanced error recovery with directory creation |
-| 🔗 **الـ Commit** | `0673f99` |
+| 💡 **آخر خطوة \| Last Step** | 🛡️ fix(gitignore): أُغلق الباب على البيانات المحلية |
+| 🔗 **الـ Commit** | `f7ee6b1` |
 
 <!-- IQRA-LATEST-END -->
 
