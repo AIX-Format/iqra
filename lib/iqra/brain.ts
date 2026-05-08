@@ -33,29 +33,13 @@ export { FULL_SYSTEM_PROMPT, IQRA_SOUL };
  * يُحدد المهارة المناسبة للمدخل
  * بدلاً من محادثة مفتوحة → مهارة محكمة = 90% توفير في tokens
  */
-function detectSkill(input: string): string | null {
-  const lower = input.toLowerCase();
-
-  // quran_search
+  // trading_skill
   if (
-    lower.includes('آية') || lower.includes('سورة') || lower.includes('قرآن') ||
-    lower.includes('verse') || lower.includes('surah') || lower.includes('quran') ||
-    lower.includes('ابحث') || lower.includes('search') ||
-    /\d+:\d+/.test(input) // نمط "2:255"
-  ) return 'quran_search';
-
-  // damir_check
-  if (
-    lower.includes('هل يمكن') || lower.includes('هل أستطيع') ||
-    lower.includes('can i') || lower.includes('is it ok') ||
-    lower.includes('نية') || lower.includes('intention')
-  ) return 'damir_check';
-
-  // pattern_validate
-  if (
-    lower.includes('نمط') || lower.includes('عددي') || lower.includes('إعجاز') ||
-    lower.includes('pattern') || lower.includes('numerical') || lower.includes('حروف')
-  ) return 'pattern_validate';
+    lower.includes('تداول') || lower.includes('سعر') || lower.includes('رصيد') ||
+    lower.includes('trade') || lower.includes('price') || lower.includes('ticker') ||
+    lower.includes('balance') || lower.includes('buy') || lower.includes('sell') ||
+    lower.includes('شراء') || lower.includes('بيع') || lower.includes('رنين')
+  ) return 'trading_skill';
 
   return null; // لا مهارة محددة → محادثة عامة
 }
@@ -71,10 +55,16 @@ function detectSkill(input: string): string | null {
  *
  * التوفير: ~50 token/طلب بدلاً من ~500 token
  */
+interface SkillResult {
+  result: unknown;
+  raw_json: Record<string, unknown>;
+  skill: string;
+}
+
 export async function executeWithSkill(
   skillName: string,
   userInput: string
-): Promise<{ result: any; raw_json: any; skill: string }> {
+): Promise<SkillResult> {
   const skillContent = SkillBank.getSkillContent(skillName);
   if (!skillContent) {
     throw new Error(`Skill not found: ${skillName}`);
@@ -123,7 +113,7 @@ export async function executeWithSkill(
   }
 
   // استخراج JSON
-  let parsed: any = {};
+  let parsed: Record<string, any> = {};
   try {
     // تنظيف الرد من أي نص خارج JSON
     const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
@@ -151,7 +141,7 @@ export async function executeWithSkill(
 /**
  * يُنفّذ الأداة المحلية بناءً على JSON المُرجَع من المهارة
  */
-async function _executeSkillAction(skillName: string, parsed: any): Promise<any> {
+async function _executeSkillAction(skillName: string, parsed: Record<string, any>): Promise<unknown> {
   switch (skillName) {
 
     case 'quran_search': {
@@ -223,6 +213,20 @@ async function _executeSkillAction(skillName: string, parsed: any): Promise<any>
         patterns_verified: patterns,
         matches_verified: patterns.length > 0,
       };
+    }
+
+    case 'trading_skill': {
+      const { TradingAgent } = await import('./workers/trading_agent');
+      const agent = new TradingAgent();
+      // تنفيذ المهمة عبر الوكيل السيادي
+      const state = { 
+        metadata: { mission_id: `trade_${Date.now()}` },
+        context: {},
+        logs: []
+      } as any;
+      
+      const result = await agent.execute(parsed, state);
+      return result.success ? result.updated_state?.context?.trading : { error: result.error };
     }
 
     default:
@@ -403,6 +407,24 @@ function _formatSkillResponse(skill: string, result: any, raw_json: any): string
         return `✨ نمط عددي مكتشف!\n${v.details}\nالأنماط: ${v.patterns_verified.join(', ')}\nعدد الأحرف: ${v.char_count_verified} | عدد الكلمات: ${v.word_count_verified}`;
       }
       return `📊 لا يوجد نمط 7 أو 19\nعدد الأحرف: ${v.char_count_verified} | عدد الكلمات: ${v.word_count_verified}`;
+    }
+
+    case 'trading_skill': {
+      if (result.error) return `❌ فشل التداول: ${result.error}`;
+      
+      if (raw_json.action === 'get_ticker') {
+        return `📊 سعر ${raw_json.params.symbol} الحالي: **${result.price}**\n${raw_json.reasoning}`;
+      }
+      if (raw_json.action === 'get_balance') {
+        return `💰 رصيدك الحالي في المنصة:\n${JSON.stringify(result.balances, null, 2)}`;
+      }
+      if (raw_json.action === 'execute_trade') {
+        return `🚀 تم تنفيذ أمر ${raw_json.params.side === 'buy' ? 'شراء' : 'بيع'} بنجاح!\nالرمز: ${raw_json.params.symbol}\nالكمية: ${raw_json.params.amount}\nالنية: ${raw_json.params.niyyah}`;
+      }
+      if (raw_json.action === 'analyze_resonance') {
+        return `📈 نتيجة تحليل الرنين الطوبولوجي:\nالسكور: ${result.score}\nالتشخيص: ${result.diagnosis}`;
+      }
+      return JSON.stringify(result, null, 2);
     }
 
     default:

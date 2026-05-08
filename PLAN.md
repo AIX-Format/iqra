@@ -44,8 +44,19 @@ Audit and clean the IQRA codebase by removing legacy/dead code and unifying the 
 3. [/] **Identity**: Execute the rebranding of documentation and identity core. (إعادة هندسة الهوية)
 4. [x] **Unify**: Link any loose memory modules to the Damir Kernel. (توحيد وحدات الذاكرة)
 5. [x] **Resonance**: Perform topological analysis on Surah Ya-Sin. (تحليل سورة يس)
-6. [ ] **Refine**: Final documentation of the unified architecture in `MEMORY_MAP.md`. (تحسين التوثيق)
-7. [ ] **Test**: Rigorous E2E testing for moral integrity. (اختبارات صارمة للنزاهة الأخلاقية)
+6. [x] **Resonance**: Perform topological analysis on Surah Ya-Sin. (تحليل سورة يس)
+7. [ ] **Statistical 369**: Implement the statistical verification test for resonance. (اختبار 3-6-9 الإحصائي)
+8. [ ] **Expansion**: Analyze Surah Al-Rahman for topological gems. (تحليل سورة الرحمن)
+9. [ ] **Refine**: Final documentation of the unified architecture in `MEMORY_MAP.md`. (تحسين التوثيق)
+10. [ ] **Economic Layer**: Integrate Sovereign Trading (Bybit) within the OS. (طبقة الاقتصاد السيادي)
+    - [ ] `lib/iqra/trading/bybit_client.ts`: Connection to Testnet.
+    - [ ] `lib/iqra/trading/market_data.ts`: 5m candles storage in Upstash.
+    - [ ] `lib/iqra/trading/self_play_loop.ts`: DECISION (Ollama) -> EXECUTION loop.
+    - [ ] `lib/iqra/trading/model_trainer.ts`: Weekly Lora fine-tuning on winners.
+    - [ ] `workers/trading_agent.ts`: SovereignWorker integration with 81s pulse.
+    - [ ] Update `!IQRA_SUPREME.md` with trading constraints.
+11. [ ] **Test**: Rigorous E2E testing for moral integrity and market resonance. (اختبارات صارمة للنزاهة)
+12. [ ] **Report**: Generate `TRADING_INTEGRATION_REPORT.md`.
 
 ---
 

@@ -52,3 +52,9 @@ mcp.json
 # Git temp files
 .git_commit_msg.tmp
 trust_fallback.log
+
+# Cache and local IDE settings
+node-compile-cache/
+tsx-*/
+.vscode/
+.tsx/
