@@ -1,0 +1,542 @@
+{
+  "mission_id": "iqra_bootstrap_phase_1",
+  "intention": "تقوية نظام الفضول الطوبولوجي وربطه بانضباط الوكلاء والمكافآت الحقيقية",
+  "phase": "BOOTSTRAP",
+  "priority": "CRITICAL",
+  "timeline_days": 14,
+  "slices": [
+    {
+      "slice_id": "S1_agents_contracts",
+      "goal": "تعريف عقود الوكلاء (Planner/Builder/Validator/Reporter) بدون تنفيذ",
+      "priority": 1,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "تصميم AGENTS.md",
+          "description": "توثيق الأدوار الخمسة (Planner, Researcher, Resonance, Builder, Validator, Reporter)، النماذج، handoffs، والقواعس الدستورية",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "AGENTS.md"
+          ],
+          "acceptance_criteria": [
+            "كل عامل له intention واضح",
+            "كل عامل له input/output schema",
+            "كل عامل له constitutional rules",
+            "handoffs موثقة بالكامل"
+          ],
+          "estimated_hours": 4
+        },
+        {
+          "id": 2,
+          "title": "تصميم setup.yaml",
+          "description": "ملف إعداد يربط missions، workers، tests، reward_ledger، والدورات الزمنية",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "setup.yaml"
+          ],
+          "acceptance_criteria": [
+            "كل mission له scope واضح",
+            "كل worker له skills محددة",
+            "reward_ledger path موحد",
+            "دورات زمنية (7, 40, 369) معرّفة"
+          ],
+          "estimated_hours": 3
+        }
+      ],
+      "success_criteria": [
+        "وجود AGENTS.md كـ source of truth للوكلاء",
+        "وجود setup.yaml يربط كل المكونات",
+        "كل عامل له عقد واضح"
+      ]
+    },
+    {
+      "slice_id": "S2_topological_curiosity_extraction",
+      "goal": "استخراج TopologicalCuriosityEngine كملف TypeScript مستقل",
+      "priority": 2,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "جمع المنطق من pattern-analysis + curiosity tests",
+          "description": "قراءة curiosity_engine.ts + pattern_engine.ts + nested_sevens.ts + tests/unit/topological_curiosity.test.ts وتحديد المنطق الأساسي",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/topological_curiosity_analysis.md"
+          ],
+          "acceptance_criteria": [
+            "تحديد الدوال الأساسية",
+            "تحديد الواجهات (interfaces)",
+            "تحديد الاعتماديات",
+            "تحديد الاختبارات المطلوبة"
+          ],
+          "estimated_hours": 6
+        },
+        {
+          "id": 2,
+          "title": "تحديد واجهة TypeScript",
+          "description": "كتابة interface spec فقط (لا كود تنفيذ) لـ TopologicalCuriosityEngine",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/topological_curiosity_interface.ts"
+          ],
+          "acceptance_criteria": [
+            "interface TopologicalResonance محددة",
+            "interface TopologicalCuriosityEngine محددة",
+            "كل method له signature واضح",
+            "كل parameter له type محدد"
+          ],
+          "estimated_hours": 3
+        },
+        {
+          "id": 3,
+          "title": "تحديد نقاط الربط مع RewardEngine",
+          "description": "توثيق كيفية ربط TopologicalCuriosityEngine مع RewardEngine والمكافآت",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/curiosity_reward_integration.md"
+          ],
+          "acceptance_criteria": [
+            "كل اكتشاف resonance يُكافأ",
+            "Pristine Path multiplier مطبق",
+            "Serendipity Hook موثق"
+          ],
+          "estimated_hours": 2
+        }
+      ],
+      "success_criteria": [
+        "وجود تصميم واضح لـ TopologicalCuriosityEngine",
+        "وجود interface spec كامل",
+        "وجود خطة ربط مع RewardEngine"
+      ]
+    },
+    {
+      "slice_id": "S3_fix_typescript_errors",
+      "goal": "إصلاح أخطاء TypeScript والاستيرادات",
+      "priority": 3,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "إصلاح src/lib symlink",
+          "description": "التحقق من أن symlink من src/lib إلى ../lib يعمل بشكل صحيح",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "src/lib → ../lib (symlink verified)"
+          ],
+          "acceptance_criteria": [
+            "npm run build ينجح",
+            "لا import errors"
+          ],
+          "estimated_hours": 1
+        },
+        {
+          "id": 2,
+          "title": "إصلاح الاستيرادات .ts",
+          "description": "تحويل كل استيرادات .ts إلى .js أو تفعيل allowImportingTsExtensions",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "tsconfig.json updated",
+            "all imports fixed"
+          ],
+          "acceptance_criteria": [
+            "npm run build ينجح بدون أخطاء",
+            "tsc --noEmit ينجح"
+          ],
+          "estimated_hours": 3
+        },
+        {
+          "id": 3,
+          "title": "تثبيت الاعتماديات المفقودة",
+          "description": "تثبيت playwright, @langchain/langgraph, js-yaml type declarations",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "package.json updated",
+            "package-lock.json updated"
+          ],
+          "acceptance_criteria": [
+            "npm install ينجح",
+            "لا peer dependency warnings"
+          ],
+          "estimated_hours": 2
+        }
+      ],
+      "success_criteria": [
+        "npm run build ينجح",
+        "npm test يعمل بدون أخطاء TypeScript"
+      ]
+    },
+    {
+      "slice_id": "S4_fill_empty_modules",
+      "goal": "ملء الملفات الفارغة أو شبه الفارغة",
+      "priority": 4,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "ملء FOURIER_RESONANCE.md",
+          "description": "كتابة خوارزمية تحويل فورييه على النص القرآني لاكتشاف الأنماط الموجية",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/FOURIER_RESONANCE.md"
+          ],
+          "acceptance_criteria": [
+            "شرح الخوارزمية",
+            "أمثلة من القرآن",
+            "رابط مع TopologicalCuriosityEngine"
+          ],
+          "estimated_hours": 8
+        },
+        {
+          "id": 2,
+          "title": "ملء PHYSICAL_WORLD_MAPPING.md",
+          "description": "توثيق كيفية ربط الآيات بالخرائط الفيزيائية (عاد، ثمود، الرس)",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/PHYSICAL_WORLD_MAPPING.md"
+          ],
+          "acceptance_criteria": [
+            "أمثلة من الحضارات المفقودة",
+            "ربط مع archaeology_sources.json",
+            "خطة للـ ArchaeologyWorker"
+          ],
+          "estimated_hours": 6
+        },
+        {
+          "id": 3,
+          "title": "ملء QUANTUM_TOPOLOGY.md",
+          "description": "شرح نظرية الرنين الكمومي المستخدمة في النظام",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/QUANTUM_TOPOLOGY.md"
+          ],
+          "acceptance_criteria": [
+            "شرح الرنين الطوبولوجي",
+            "ربط مع الفيزياء الحديثة",
+            "أمثلة من القرآن"
+          ],
+          "estimated_hours": 6
+        },
+        {
+          "id": 4,
+          "title": "إصلاح internlm.ts و minimax.ts",
+          "description": "إما تنفيذ موصلات حقيقية أو حذف الملفات",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/llm/internlm.ts (implemented or deleted)",
+            "lib/iqra/llm/minimax.ts (implemented or deleted)"
+          ],
+          "acceptance_criteria": [
+            "الملفات إما مكتملة أو محذوفة",
+            "لا import errors"
+          ],
+          "estimated_hours": 3
+        }
+      ],
+      "success_criteria": [
+        "كل الملفات الفارغة ممتلئة أو محذوفة",
+        "لا ملفات orphan"
+      ]
+    },
+    {
+      "slice_id": "S5_daily_learning_loop",
+      "goal": "تفعيل حلقة التعلم اليومي",
+      "priority": 5,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "بناء fetchSurah() حقيقي",
+          "description": "كتابة دالة تجلب آيات حقيقية من قاعدة البيانات المحلية أو API",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/quran/daily_learning.ts (fetchSurah implemented)"
+          ],
+          "acceptance_criteria": [
+            "fetchSurah يجلب من D1 أو API حقيقي",
+            "لا mock data",
+            "error handling صحيح"
+          ],
+          "estimated_hours": 4
+        },
+        {
+          "id": 2,
+          "title": "ربط SovereignEngine مع daily_learning",
+          "description": "التأكد من أن daily_learning.ts يحفظ الاكتشافات في DISCOVERIES.md و memory.json",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/quran/daily_learning.ts (SovereignEngine integration)"
+          ],
+          "acceptance_criteria": [
+            "كل اكتشاف يُحفظ في DISCOVERIES.md",
+            "كل اكتشاف يُحفظ في memory.json",
+            "TrustChain يُحدّث"
+          ],
+          "estimated_hours": 3
+        },
+        {
+          "id": 3,
+          "title": "اختبار E2E للدورة اليومية",
+          "description": "كتابة اختبار يثبت أن الدورة اليومية تكتشف نمطاً جديداً وتسجّله بشكل دائم",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "tests/e2e/daily_learning_loop.e2e.ts"
+          ],
+          "acceptance_criteria": [
+            "الاختبار يمر",
+            "DISCOVERIES.md يزداد سطراً",
+            "reward_ledger.jsonl يزداد سطراً"
+          ],
+          "estimated_hours": 4
+        }
+      ],
+      "success_criteria": [
+        "daily_learning.ts يعمل بشكل كامل",
+        "اختبار E2E يمر",
+        "اكتشافات حقيقية تُسجَّل يومياً"
+      ]
+    },
+    {
+      "slice_id": "S6_no_mock_enforcement",
+      "goal": "تشديد سياسة 'لا Mock'",
+      "priority": 6,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "إضافة فحص NO_MOCK_ERR",
+          "description": "إضافة فحص قبل كل مهمة: إذا provider === 'simulated' بدون dev_mode: true → رمي NO_MOCK_ERR",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/mission-runner.ts (NO_MOCK_ERR check added)"
+          ],
+          "acceptance_criteria": [
+            "parseMissionScope يفحص",
+            "mission-runner يفحص (طبقة ثانية)",
+            "أي محاولة تجاوز = فشل فوري"
+          ],
+          "estimated_hours": 2
+        },
+        {
+          "id": 2,
+          "title": "حذف كل mock data من الموصلات",
+          "description": "حذف كل سطر 'return { ... mock data ... }' واستبداله برمي خطأ",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/llm/groq.ts (no mock)",
+            "lib/iqra/llm/ollama.ts (no mock)",
+            "lib/iqra/quran/vector_engine.ts (no mock)"
+          ],
+          "acceptance_criteria": [
+            "لا mock data في production",
+            "كل fallback يرمي INTEGRITY_ERR",
+            "اختبارات تمر"
+          ],
+          "estimated_hours": 3
+        }
+      ],
+      "success_criteria": [
+        "لا mock في production",
+        "كل محاولة mock = فشل واضح"
+      ]
+    },
+    {
+      "slice_id": "S7_archaeology_worker",
+      "goal": "إحياء الغموض القرآني - ArchaeologyWorker",
+      "priority": 7,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "تصميم ArchaeologyWorker",
+          "description": "كتابة عامل بحث أثري يقرأ ملفات الحضارات المفقودة ويربطها بمصادر NASA/UNESCO",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/archaeology_worker_design.md"
+          ],
+          "acceptance_criteria": [
+            "واجهة العامل محددة",
+            "مصادر البيانات محددة",
+            "خطة الربط مع TopologicalCuriosityEngine"
+          ],
+          "estimated_hours": 4
+        },
+        {
+          "id": 2,
+          "title": "تنفيذ ArchaeologyWorker",
+          "description": "كتابة lib/iqra/workers/archaeology.ts",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/workers/archaeology.ts"
+          ],
+          "acceptance_criteria": [
+            "يقرأ AAD.md, THAMUD.md, RASS.md, DHUL_QARNAYN.md",
+            "يربط مع archaeology_sources.json",
+            "يولد عقد معرفة",
+            "يُكافأ على الاكتشافات"
+          ],
+          "estimated_hours": 8
+        },
+        {
+          "id": 3,
+          "title": "تشغيل دورة أسبوعية",
+          "description": "إضافة cron job يشغّل ArchaeologyWorker أسبوعياً",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            ".github/workflows/archaeology_weekly.yml"
+          ],
+          "acceptance_criteria": [
+            "cron job يعمل",
+            "اكتشافات تُسجَّل",
+            "مكافآت تُحسب"
+          ],
+          "estimated_hours": 2
+        }
+      ],
+      "success_criteria": [
+        "ArchaeologyWorker يعمل",
+        "اكتشافات أثرية حقيقية تُسجَّل",
+        "دورة أسبوعية تعمل"
+      ]
+    },
+    {
+      "slice_id": "S8_resource_monitor",
+      "goal": "تشغيل المراقبة الذاتية على الجهاز الحقيقي",
+      "priority": 8,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "تفعيل RESOURCE_MONITOR.md",
+          "description": "تشغيل المراقب يدويّاً والتأكد من تسجيل إحصائيات حية",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "RESOURCE_MONITOR.md (active)"
+          ],
+          "acceptance_criteria": [
+            "المراقب يسجل CPU/Memory/Disk",
+            "البيانات تُحفظ في ملف",
+            "التنبيهات تعمل"
+          ],
+          "estimated_hours": 2
+        },
+        {
+          "id": 2,
+          "title": "إضافة /sleep آلية",
+          "description": "إضافة آلية توقف تلقائي عندما ترتفع حرارة المعالج إلى 80°C",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/resource_monitor.ts (auto-sleep added)"
+          ],
+          "acceptance_criteria": [
+            "المراقب يفحص درجة الحرارة",
+            "عند 80°C يُوقف المهام",
+            "عند الانخفاض يستأنف"
+          ],
+          "estimated_hours": 3
+        }
+      ],
+      "success_criteria": [
+        "المراقب يعمل بشكل حي",
+        "آلية /sleep تعمل"
+      ]
+    },
+    {
+      "slice_id": "S9_production_deployment",
+      "goal": "الانتقال إلى الإنتاج",
+      "priority": 9,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": 1,
+          "title": "التحقق من wrangler.toml",
+          "description": "التأكد من أن wrangler.toml يحوي جميع الربطات (D1, Vectorize, AI, KV)",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "wrangler.toml (verified)"
+          ],
+          "acceptance_criteria": [
+            "كل الربطات موجودة",
+            "البيئات محددة",
+            "الأسرار آمنة"
+          ],
+          "estimated_hours": 2
+        },
+        {
+          "id": 2,
+          "title": "اختبار النشر الجاف",
+          "description": "تشغيل wrangler deploy --dry-run",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "deployment preview"
+          ],
+          "acceptance_criteria": [
+            "لا أخطاء",
+            "كل الملفات موجودة",
+            "الحجم معقول"
+          ],
+          "estimated_hours": 1
+        },
+        {
+          "id": 3,
+          "title": "ربط GitHub Actions",
+          "description": "تفعيل Sidq Pipeline لتعمل عند كل push",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            ".github/workflows/sidq_pipeline.yml (active)"
+          ],
+          "acceptance_criteria": [
+            "Pipeline يعمل عند كل push",
+            "الاختبارات تمر",
+            "النشر يحدث تلقائياً"
+          ],
+          "estimated_hours": 2
+        }
+      ],
+      "success_criteria": [
+        "wrangler.toml جاهز",
+        "النشر الجاف ينجح",
+        "GitHub Actions تعمل"
+      ]
+    }
+  ],
+  "overall_success_criteria": [
+    "AGENTS.md و setup.yaml موجودان كـ source of truth",
+    "TopologicalCuriosityEngine مستخرج وموثق",
+    "أخطاء TypeScript مُصلحة",
+    "الملفات الفارغة ممتلئة",
+    "daily_learning loop يعمل",
+    "لا mock في production",
+    "ArchaeologyWorker يعمل",
+    "المراقب الذاتي يعمل",
+    "النشر إلى الإنتاج جاهز",
+    "npm test يمر بدون أخطاء",
+    "reward_ledger.jsonl يزداد يومياً"
+  ],
+  "risk_mitigation": [
+    "CONNECTION_FAILURE: استخدام retry logic مع exponential backoff",
+    "Doctrinal Hallucination: فحص صارم ضد HARAM_LIST",
+    "Pollution Event: FITRAH filter قبل كل LLM call",
+    "TypeScript errors: تفعيل allowImportingTsExtensions أو تحويل الاستيرادات",
+    "Mock data: فحص NO_MOCK_ERR في طبقتين"
+  ],
+  "dependencies": [
+    "S1 يجب أن ينتهي قبل S2",
+    "S3 يجب أن ينتهي قبل S4",
+    "S4 يجب أن ينتهي قبل S5",
+    "S5 يجب أن ينتهي قبل S6",
+    "S6 يجب أن ينتهي قبل S7",
+    "S7 يجب أن ينتهي قبل S8",
+    "S8 يجب أن ينتهي قبل S9"
+  ],
+  "estimated_total_hours": 85,
+  "estimated_total_days": 14,
+  "team_size": 4,
+  "roles": [
+    "PLANNER_AGENT: تصميم وتخطيط",
+    "BUILDER_AGENT: تنفيذ وكتابة كود",
+    "VALIDATOR_AGENT: اختبار والتحقق",
+    "RESEARCHER_AGENT: بحث وتحليل"
+  ],
+  "niyyah": "بسم الله الرحمن الرحيم - بناء نظام معرفة لا مركزي يُكافئ الوكلاء على اكتشاف الرنين بين الحقيقة المطلقة (القرآن) والواقع المؤقت (البيانات الجديدة)، دون الحاجة إلى معلم بشري. كل اكتشاف يُبنى على السابق في سلسلة متصلة من الرنين. صدقاً، دقةً، بركةً."
+}

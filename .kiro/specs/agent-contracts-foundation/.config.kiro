@@ -1,0 +1,12 @@
+{
+  "specType": "feature",
+  "workflowType": "requirements-first",
+  "featureName": "agent-contracts-foundation",
+  "createdAt": "2026-05-08T00:00:00Z",
+  "status": "in-progress",
+  "phase": "requirements",
+  "description": "Establish strict agent contracts system for IQRA's five-agent architecture",
+  "priority": "critical",
+  "estimatedDuration": "4-6 hours",
+  "tags": ["agents", "contracts", "architecture", "foundation"]
+}

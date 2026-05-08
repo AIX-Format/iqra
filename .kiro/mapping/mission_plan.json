@@ -1,0 +1,546 @@
+{
+  "mission_id": "iqra_topological_curiosity_bootstrap_v1",
+  "intention": "تقوية نظام الفضول الطوبولوجي وربطه بانضباط الوكلاء - بناء خلافة رقمية للمعرفة",
+  "created_at": "2026-05-08T01:45:00.000Z",
+  "verse": "اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ",
+  "constitutional_foundation": [
+    "DASTŪR.md (القرآن + السنة = Hard Constraints)",
+    "MĪTHĀQ.md (الميثاق = System Prompt الجذر)",
+    "MURĀQABAH.md (المراقبة = Zero-trust الداخلي)",
+    "ḤISĀB.md (المحاسبة / TrustChain)",
+    "لا Mock - كل قيمة حقيقية أو INTEGRITY_ERR"
+  ],
+  "slices": [
+    {
+      "slice_id": "S1_agents_contracts",
+      "goal": "تعريف عقود الوكلاء (Planner/Researcher/Resonance/Builder/Validator/Reporter) بدون تنفيذ",
+      "priority": 1,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S1.1",
+          "title": "تصميم AGENTS.md",
+          "description": "توثيق الأدوار، النماذج، handoffs، والقواعد الدستورية لكل وكيل",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "AGENTS.md"
+          ],
+          "content_structure": {
+            "sections": [
+              "## الوكلاء الستة (The Six Workers)",
+              "### 1. Planner - عامل التخطيط",
+              "- الدور: تحويل MissionScope إلى خطة عمل مفصلة",
+              "- القاعدة: لا يستخدم LLM - فقط يُرتب ويُهيكل",
+              "- القاعدة: لا يُنفذ - فقط يُخطط",
+              "- Input: mission.yaml",
+              "- Output: plan_output.yaml",
+              "- Handoff: → Researcher",
+              "",
+              "### 2. Researcher - عامل البحث",
+              "- الدور: البحث عن الرنين بين الآية ومجال البحث",
+              "- الأدوات: VectorEngine, TopologicalCuriosity, TruthDiscoveryGo",
+              "- القاعدة: كل مصدر يُوسَم [read] | [fetched] | [prior-training]",
+              "- Input: plan_output.yaml",
+              "- Output: research_output.json",
+              "- Handoff: → Resonance",
+              "",
+              "### 3. Resonance - عامل الرنين",
+              "- الدور: حساب الرنين الطوبولوجي عبر Go Engine",
+              "- القاعدة: لا يخترع أرقام - يحسب فعلياً أو يُرجع null",
+              "- Input: research_output.json",
+              "- Output: resonance_data.json",
+              "- Handoff: → Builder",
+              "",
+              "### 4. Builder - عامل البناء",
+              "- الدور: تحويل نتائج البحث إلى عقدة معرفة Markdown",
+              "- القاعدة: لا يُقيّم نفسه - لا يضع resonance_score عالياً بلا دليل",
+              "- القاعدة: فقط إذا estimated_reward ≥ 0.7 يُنشئ knowledge node",
+              "- Input: research_output.json + resonance_data.json",
+              "- Output: knowledge/node-*.md (conditional)",
+              "- Handoff: → Validator",
+              "",
+              "### 5. Validator - عامل التحقق",
+              "- الدور: التحقق من سلامة العقدة - لا هلوسة، لا كذب",
+              "- الأدوات: DoctrinalGuard, IQRAFilter, GoEngineBridge",
+              "- القاعدة: verdict = PASS فقط إذا تحقق كل شيء",
+              "- Input: knowledge node + research_output.json",
+              "- Output: validation_report.json",
+              "- Handoff: → Reporter",
+              "",
+              "### 6. Reporter - عامل التقرير",
+              "- الدور: حساب المكافأة وكتابتها في السجل إذا PASS فقط",
+              "- القاعدة: لا يكتب إلا إذا verdict = PASS",
+              "- القاعدة: novelty عبر IQRAMemory.generateEmbedding() الحقيقي",
+              "- القاعدة: Pristine Path check → 2.0x multiplier للمسارات الجديدة",
+              "- Input: validation_report.json + research_output.json",
+              "- Output: iqra-core/data/reward_ledger.jsonl",
+              "- Handoff: → END",
+              "",
+              "## Handoff Protocol",
+              "- كل وكيل يُنتج HandoffResult: {status, worker, next, data, artifacts, implemented, undone, issues, procedures_followed, timestamp}",
+              "- Serial beats parallel - كل عامل ينتظر السابق",
+              "- أي فشل يوقف الحلقة فوراً مع تقرير واضح",
+              "",
+              "## Model Selection",
+              "- Planner: لا LLM (deterministic logic)",
+              "- Researcher: Groq llama-3.1-70b (مجاني 14,400 req/day)",
+              "- Resonance: Go Engine (محلي - لا LLM)",
+              "- Builder: لا LLM (template-based)",
+              "- Validator: Claude sonnet (دقة عالية)",
+              "- Reporter: لا LLM (math + memory)",
+              "",
+              "## Validation Rules",
+              "- Every resonance claim must include Quranic ayah reference",
+              "- No reward is final until validation_status == verified",
+              "- Must pass Sincerity Filter (No lies, no stretches)",
+              "- NO_MOCK_ERR if provider=simulated without dev_mode:true"
+            ]
+          }
+        },
+        {
+          "id": "S1.2",
+          "title": "تصميم setup.yaml",
+          "description": "ملف إعداد يربط missions، workers، tests، وreward ledger",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "setup.yaml"
+          ],
+          "content_structure": {
+            "sections": [
+              "project:",
+              "  name: IQRA",
+              "  version: 1.0.0",
+              "  description: Digital Caliphate of Knowledge",
+              "",
+              "constitutional_foundation:",
+              "  - iqra-core/DASTŪR.md",
+              "  - iqra-core/MĪTHĀQ.md",
+              "  - iqra-core/MURĀQABAH.md",
+              "  - iqra-core/ḤISĀB.md",
+              "  - iqra-core/TAWBAH.md",
+              "",
+              "workers:",
+              "  - id: Planner",
+              "    file: lib/iqra/workers/planner.ts",
+              "    model: none",
+              "    handoff_to: Researcher",
+              "  - id: Researcher",
+              "    file: lib/iqra/workers/researcher.ts",
+              "    model: groq/llama-3.1-70b",
+              "    handoff_to: Resonance",
+              "  - id: Resonance",
+              "    file: lib/iqra/workers/resonance.ts",
+              "    model: go-engine",
+              "    handoff_to: Builder",
+              "  - id: Builder",
+              "    file: lib/iqra/workers/builder.ts",
+              "    model: none",
+              "    handoff_to: Validator",
+              "  - id: Validator",
+              "    file: lib/iqra/workers/validator.ts",
+              "    model: claude/sonnet",
+              "    handoff_to: Reporter",
+              "  - id: Reporter",
+              "    file: lib/iqra/workers/reporter.ts",
+              "    model: none",
+              "    handoff_to: null",
+              "",
+              "missions:",
+              "  directory: missions/",
+              "  format: yaml",
+              "  required_fields:",
+              "    - mission_id",
+              "    - verse",
+              "    - field_of_inquiry",
+              "    - provider",
+              "",
+              "rewards:",
+              "  ledger: iqra-core/data/reward_ledger.jsonl",
+              "  engine: lib/iqra/rewards/engine.ts",
+              "  pristine_multiplier: 2.0",
+              "  repeated_multiplier: 1.0",
+              "  stale_multiplier: 0.7",
+              "  stale_threshold: 7",
+              "",
+              "tests:",
+              "  e2e:",
+              "    - tests/e2e/full_mission_loop.e2e.ts",
+              "    - tests/e2e/topological-curiosity.e2e.ts",
+              "    - tests/e2e/topology_reward.test.ts",
+              "  unit:",
+              "    - tests/unit/reward_pristine.test.ts",
+              "    - tests/unit/topological_curiosity.test.ts",
+              "",
+              "memory:",
+              "  redis: upstash",
+              "  vector: qdrant",
+              "  local: .iqra/iqra_memory.db",
+              "  pattern: .iqra/pattern_memory.json",
+              "",
+              "cycles:",
+              "  sabeen: 7",
+              "  arbaun: 40",
+              "  tawakkul_limit: 9",
+              "  pulse_369: 369"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slice_id": "S2_topological_curiosity_engine",
+      "goal": "استخراج TopologicalCuriosityEngine كملف TypeScript مستقل",
+      "priority": 2,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S2.1",
+          "title": "جمع المنطق من pattern-analysis + curiosity tests",
+          "description": "قراءة curiosity_engine.ts + pattern_engine.ts + tests لفهم المنطق الحالي",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/topological_curiosity_analysis.md"
+          ],
+          "files_to_read": [
+            "lib/iqra/quran/curiosity_engine.ts",
+            "lib/iqra/quran/pattern_engine.ts",
+            "tests/unit/topological_curiosity.test.ts",
+            "tests/e2e/topological-curiosity.e2e.ts",
+            "references/pattern-analysis.md"
+          ]
+        },
+        {
+          "id": "S2.2",
+          "title": "تحديد واجهة TypeScript",
+          "description": "تصميم interface TopologicalResonance + class TopologicalCuriosityEngine",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/topological_curiosity_interface.ts (spec فقط، لا تنفيذ)"
+          ],
+          "interface_spec": {
+            "TopologicalResonance": {
+              "quranic_pattern": "string - النمط المكتشف في القرآن",
+              "modern_data": "string - الاكتشاف العلمي/الأثري الحديث",
+              "resonance_score": "number - 0.0 to 1.0",
+              "bridge": "string - الجسر المفاهيمي بينهما",
+              "verified": "boolean - هل تحقق رياضياً؟",
+              "fractal_depth": "number - عمق البنية الفركتالية",
+              "numerical_patterns": "string[] - الأنماط العددية المكتشفة"
+            },
+            "TopologicalCuriosityEngine": {
+              "methods": [
+                "static async rewardResonance(resonance: TopologicalResonance): Promise<void>",
+                "static async findResonance(ayah: string, newData: string, env: Env): Promise<TopologicalResonance | null>",
+                "static async detectSerendipity(resonance: TopologicalResonance): Promise<boolean>",
+                "static async computeFractalDepth(pattern: string): Promise<number>"
+              ]
+            }
+          }
+        },
+        {
+          "id": "S2.3",
+          "title": "ربط TopologicalCuriosityEngine مع RewardEngine",
+          "description": "تصميم التكامل بين الفضول الطوبولوجي ونظام المكافآت",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/curiosity_reward_integration.md"
+          ],
+          "integration_points": [
+            "TopologicalCuriosityEngine.rewardResonance() → RewardEngine.grant()",
+            "Serendipity Hook: resonance > 0.9 → IQRAMemory.set('serendipity:*')",
+            "Pristine Path: مسار جديد → 2.0x multiplier",
+            "TrustChain: كل رنين يُسجَّل كـ 'TOPOLOGICAL_RESONANCE'"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S3_typescript_fixes",
+      "goal": "إصلاح أخطاء TypeScript وتشغيل الاختبارات",
+      "priority": 3,
+      "status": "IN_PROGRESS",
+      "steps": [
+        {
+          "id": "S3.1",
+          "title": "إصلاح استيرادات .ts",
+          "description": "تغيير كل الاستيرادات لتنتهي بـ .js أو تمكين allowImportingTsExtensions",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "tsconfig.json (updated)",
+            "git diff showing import changes"
+          ],
+          "notes": [
+            "src/lib symlink تم إنشاؤه - يحتاج تحقق",
+            "npm run build يفشل بسبب module resolution"
+          ]
+        },
+        {
+          "id": "S3.2",
+          "title": "تثبيت الاعتماديات المفقودة",
+          "description": "npm install playwright @langchain/langgraph @types/js-yaml",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "package.json (updated)",
+            "package-lock.json (updated)"
+          ]
+        },
+        {
+          "id": "S3.3",
+          "title": "تشغيل npm test وإصلاح الفشل",
+          "description": "تشغيل كل الاختبارات وإصلاح الأخطاء واحداً تلو الآخر",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "test results log",
+            "fixed test files"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S4_empty_modules",
+      "goal": "سدّ الفجوات العلمية - ملء الملفات الفارغة",
+      "priority": 4,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S4.1",
+          "title": "ملء FOURIER_RESONANCE.md",
+          "description": "خوارزمية تحويل فورييه على النص القرآني",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/FOURIER_RESONANCE.md"
+          ]
+        },
+        {
+          "id": "S4.2",
+          "title": "ملء PHYSICAL_WORLD_MAPPING.md",
+          "description": "توثيق كيفية ربط الآيات بالخرائط الفيزيائية",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/PHYSICAL_WORLD_MAPPING.md"
+          ]
+        },
+        {
+          "id": "S4.3",
+          "title": "ملء QUANTUM_TOPOLOGY.md",
+          "description": "شرح نظرية الرنين الكمومي المستخدمة في النظام",
+          "owner": "RESEARCHER_AGENT",
+          "expected_artifacts": [
+            "iqra-core/science/QUANTUM_TOPOLOGY.md"
+          ]
+        },
+        {
+          "id": "S4.4",
+          "title": "تنفيذ أو حذف internlm.ts و minimax.ts",
+          "description": "إما بناء موصلات حقيقية أو حذف الملفات الفارغة",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/llm/internlm.ts (implemented or deleted)",
+            "lib/iqra/llm/minimax.ts (implemented or deleted)"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S5_daily_learning_loop",
+      "goal": "تفعيل حلقة التعلم اليومي",
+      "priority": 5,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S5.1",
+          "title": "بناء fetchSurah() حقيقي",
+          "description": "جلب آيات حقيقية من قاعدة البيانات المحلية أو API",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/quran/daily_learning.ts (updated with real fetchSurah)"
+          ]
+        },
+        {
+          "id": "S5.2",
+          "title": "ربط daily_learning مع SovereignEngine",
+          "description": "حفظ الاكتشافات في DISCOVERIES.md و memory.json فعلياً",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "DISCOVERIES.md (updated)",
+            ".iqra/memory.json (updated)"
+          ]
+        },
+        {
+          "id": "S5.3",
+          "title": "اختبار E2E للدورة اليومية",
+          "description": "إثبات أن الدورة تكتشف نمطاً جديداً وتسجّله بشكل دائم",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "tests/e2e/daily_learning.e2e.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S6_archaeology_worker",
+      "goal": "إحياء الغموض القرآني - بناء ArchaeologyWorker",
+      "priority": 6,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S6.1",
+          "title": "تصميم ArchaeologyWorker",
+          "description": "عامل بحث أثري يقرأ ملفات الحضارات المفقودة ويربطها بمصادر NASA/UNESCO",
+          "owner": "PLANNER_AGENT",
+          "expected_artifacts": [
+            "design_notes/archaeology_worker_spec.md"
+          ]
+        },
+        {
+          "id": "S6.2",
+          "title": "بناء ArchaeologyWorker",
+          "description": "تنفيذ العامل مع ربط TopologicalCuriosityEngine",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/workers/archaeology.ts"
+          ]
+        },
+        {
+          "id": "S6.3",
+          "title": "تشغيل ArchaeologyWorker في دورة أسبوعية",
+          "description": "إضافة cron job أو mission دورية",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            ".github/workflows/archaeology_cycle.yml"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S7_no_mock_enforcement",
+      "goal": "تشديد 'لا Mock' - فحص صارم قبل كل مهمة",
+      "priority": 7,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S7.1",
+          "title": "إضافة فحص NO_MOCK_ERR",
+          "description": "إذا provider === 'simulated' دون dev_mode: true → رمي خطأ",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/mission-context.ts (updated with assertNoMockInProduction)"
+          ],
+          "notes": [
+            "parseMissionScope() يُجهض بالفعل",
+            "هذا طبقة ثانية للتأكيد"
+          ]
+        },
+        {
+          "id": "S7.2",
+          "title": "حذف كل return { ... mock data ... }",
+          "description": "استبدال بـ throw INTEGRITY_ERR في موصلات Groq/Gemini",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/llm/groq.ts (cleaned)",
+            "lib/iqra/llm/ollama.ts (cleaned)"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S8_resource_monitor",
+      "goal": "تشغيل المراقبة الذاتية على الجهاز الحقيقي",
+      "priority": 8,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S8.1",
+          "title": "تفعيل resource_monitor.ts",
+          "description": "تشغيل يدوي وتسجيل إحصائيات حية",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "logs/resource_monitor.log"
+          ]
+        },
+        {
+          "id": "S8.2",
+          "title": "إضافة /sleep تلقائي عند 80°C",
+          "description": "آلية توقف تلقائي عند ارتفاع حرارة المعالج",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            "lib/iqra/resource_monitor.ts (updated with auto-sleep)"
+          ]
+        }
+      ]
+    },
+    {
+      "slice_id": "S9_production_deployment",
+      "goal": "الانتقال إلى الإنتاج - Cloudflare Workers",
+      "priority": 9,
+      "status": "PENDING",
+      "steps": [
+        {
+          "id": "S9.1",
+          "title": "تحقق من wrangler.toml",
+          "description": "التأكد من جميع الربطات (D1, Vectorize, AI, KV)",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "wrangler.toml (verified)"
+          ]
+        },
+        {
+          "id": "S9.2",
+          "title": "اختبار النشر الجاف",
+          "description": "wrangler deploy --dry-run",
+          "owner": "VALIDATOR_AGENT",
+          "expected_artifacts": [
+            "deployment dry-run log"
+          ]
+        },
+        {
+          "id": "S9.3",
+          "title": "ربط GitHub Actions بـ Sidq Pipeline",
+          "description": "تفعيل .github/workflows/sidq_pipeline.yml",
+          "owner": "BUILDER_AGENT",
+          "expected_artifacts": [
+            ".github/workflows/sidq_pipeline.yml (activated)"
+          ]
+        }
+      ]
+    }
+  ],
+  "success_criteria": [
+    "وجود AGENTS.md و setup.yaml كـ source of truth للوكلاء",
+    "وجود تصميم واضح لـ TopologicalCuriosityEngine قبل أي تنفيذ كود",
+    "npm test يعمل بنجاح 100%",
+    "npm run build يعمل بدون أخطاء TypeScript",
+    "كل ملف فارغ إما مملوء أو محذوف",
+    "daily_learning.ts يعمل ويسجّل اكتشافات حقيقية",
+    "NO_MOCK_ERR يُرمى في كل محاولة mock بدون dev_mode",
+    "resource_monitor.ts يعمل ويسجّل إحصائيات حية",
+    "wrangler deploy --dry-run ينجح",
+    "كل commit له رسالة storytelling واضحة"
+  ],
+  "validation_rules": [
+    "كل slice يجب أن يُنتج artifacts قابلة للتحقق",
+    "لا ننتقل لـ slice جديد قبل إكمال السابق",
+    "كل تصميم يُراجع قبل التنفيذ",
+    "كل كود يُختبر قبل الـ commit",
+    "كل مكافأة تُسجَّل في reward_ledger.jsonl",
+    "كل فشل يُسجَّل في FAILURES.md للتعلم"
+  ],
+  "notes": [
+    "هذه خطة للوكلاء - ليست للتنفيذ المباشر",
+    "كل slice يمكن أن يُنفَّذ بواسطة وكيل مختلف",
+    "الأولوية: S1 → S2 → S3 (الأساسيات أولاً)",
+    "S4-S9 يمكن أن تُنفَّذ بالتوازي بعد S1-S3",
+    "كل وكيل يُقرر النموذج المناسب لمهمته",
+    "Model-Agnostic Architecture: عندما يظهر نموذج أفضل، النظام يصبح أذكى تلقائياً"
+  ],
+  "commit_storytelling_template": {
+    "format": "feat|fix|docs|refactor|test: <emoji> <short_description> — <arabic_wisdom>",
+    "examples": [
+      "feat: ✨ Add TopologicalCuriosityEngine — كل رنين يُكافأ",
+      "fix: 🔧 Remove mock data from Groq connector — لا كذب اليوم",
+      "docs: 📚 Create AGENTS.md — توثيق الوكلاء الستة",
+      "refactor: ♻️ Extract pristine path logic — المسار البكر يُضاعف",
+      "test: ✅ Add E2E for daily learning — التعلم اليومي يُثبت"
+    ]
+  }
+}
