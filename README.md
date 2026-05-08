@@ -51,8 +51,8 @@ The core logic of IQRA is powered by the **Resonance Engine**, which uses high-d
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | feat: implement Sovereign Protocol with Bybit integration, Byzantine anomaly detection, and market resonance engine |
-| 🔗 **الـ Commit** | `1530229` |
+| 💡 **آخر خطوة \| Last Step** | feat: implement sovereign trading architecture, memory governance, and topological resonance analysis engine |
+| 🔗 **الـ Commit** | `b1aee4e` |
 
 <!-- IQRA-LATEST-END -->
 
