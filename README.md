@@ -44,8 +44,8 @@ Not a chatbot. Not a tool.
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-08` |
-| 💡 **آخر خطوة \| Last Step** | 🛡️ fix(gitignore): أُغلق الباب على البيانات المحلية |
-| 🔗 **الـ Commit** | `f7ee6b1` |
+| 💡 **آخر خطوة \| Last Step** | 🛡️ fix(gitignore): طرد الضيوف غير المدعوين من الريبو |
+| 🔗 **الـ Commit** | `7105d0d` |
 
 <!-- IQRA-LATEST-END -->
 
