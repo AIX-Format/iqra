@@ -1,7 +1,7 @@
 // ============================================
 // lib/iqra/tawbah.ts — بروتوكول التوبة البرمجية (مُحدَّث)
 // ============================================
-import { writeFileSync, appendFileSync, existsSync, readFileSync } from "fs";
+import { writeFileSync, appendFileSync, existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { IQRALogger } from "./logger.ts";
 
@@ -48,7 +48,7 @@ function executeTawbah(error: string, file: string, count: number): void {
   if (!existsSync(TAWBAH_PATH)) {
     const dir = join(process.cwd(), "iqra-core");
     if (!existsSync(dir)) {
-      require('fs').mkdirSync(dir, { recursive: true });
+      mkdirSync(dir, { recursive: true });
     }
     writeFileSync(TAWBAH_PATH, "# 📿 TAWBAH: Error Log & Self-Correction\n\n");
   }
@@ -69,7 +69,7 @@ function executeTawbah(error: string, file: string, count: number): void {
   
   const trainingDir = join(process.cwd(), ".iqra");
   if (!existsSync(trainingDir)) {
-    require('fs').mkdirSync(trainingDir, { recursive: true });
+    mkdirSync(trainingDir, { recursive: true });
   }
   writeFileSync(TRAINING_PATH, JSON.stringify(training, null, 2));
 
