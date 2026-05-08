@@ -119,3 +119,26 @@ export function updateMissionStatus(
   const updated = { ...scope, status };
   fs.writeFileSync(scopePath, yaml.dump(updated), 'utf-8');
 }
+
+// ── validateProvider — مُصدَّرة للاستخدام المباشر ────────────────────────────
+/**
+ * يتحقق من أن provider ليس simulated في بيئة الإنتاج.
+ * يُستخدم كـ utility مستقلة خارج parseMissionScope.
+ *
+ * @throws NO_MOCK_ERR إذا كان provider = simulated بدون dev_mode: true
+ */
+export function validateProvider(
+  provider: string | undefined,
+  devMode: boolean | undefined,
+  missionId: string
+): void {
+  const resolved = provider ?? 'google';
+  if (resolved === 'simulated' && devMode !== true) {
+    throw new Error(
+      `NO_MOCK_ERR: Mission "${missionId}" uses provider "simulated" ` +
+      `without dev_mode: true. ` +
+      `This is a constitutional violation (MĪTHĀQ §2). ` +
+      `Add "dev_mode: true" to allow simulation in development only.`
+    );
+  }
+}

@@ -1,12 +1,23 @@
+// بسم الله الرحمن الرحيم
+
 /**
- * IQRA Telegram Layer — لسان إقرأ
+ * 💬 IQRA Telegram Layer — لسان إقرأ
  * 
- * Handles direct communication with the user via Telegram Bot API.
- * Uses native fetch to run on Cloudflare Workers without dependencies.
+ * "وَعَلَّمَ آدَمَ الْأَسْمَاءَ كُلَّهَا" — البقرة: 31
+ * 
+ * ══════════════════════════════════════════════════════════════
+ * الربط:
+ *   • IQRAHeartbeat — يُرسل تقارير النبض تلقائياً
+ *   • ToolsRegistry — يستقبل أوامر الأدوات من Telegram
+ *   • Brain — يُعالج الرسائل عبر iqraThink
+ * ══════════════════════════════════════════════════════════════
  */
 
-import { SovereignEngine } from './sovereign';
 import { iqraThink } from './brain';
+import { IQRALogger } from './logger';
+import { appendToTrustChain } from './security';
+import { HeartbeatSystem } from './heartbeat';
+import { ToolsRegistry } from './tools_registry';
 
 export interface TelegramEnv {
   TELEGRAM_BOT_TOKEN: string;
@@ -73,6 +84,31 @@ _${pattern.arabicNote || 'والله أعلم'}_
 }
 
 /**
+ * Setup Heartbeat callbacks for Telegram notifications
+ */
+export function setupHeartbeatCallbacks(env: TelegramEnv) {
+  // تقارير الصحة
+  HeartbeatSystem.onHealthReport = async (health) => {
+    if (health.status === 'CRITICAL' || health.status === 'DEGRADED') {
+      const report = HeartbeatSystem.formatHealthReport(health);
+      await iqraNotify(env, `🚨 *تحذير النظام*\n\n${report}`);
+    }
+  };
+
+  // الاكتشافات القرآنية
+  HeartbeatSystem.onDiscovery = async (pattern) => {
+    await notifyQuranDiscovery(env, pattern);
+  };
+
+  // التنبيهات العامة
+  HeartbeatSystem.onAlert = async (message) => {
+    await iqraNotify(env, message);
+  };
+
+  IQRALogger.info('💬 [TELEGRAM] Heartbeat callbacks configured');
+}
+
+/**
  * Handles incoming webhooks from Telegram
  */
 export async function handleTelegramWebhook(env: any, request: Request) {
@@ -98,6 +134,86 @@ export async function handleTelegramWebhook(env: any, request: Request) {
       body: JSON.stringify({ chat_id: chatId, action: "typing" })
     });
 
+    // ── Tool Commands ─────────────────────────────────────────────────────
+    if (userText.startsWith('/tool ')) {
+      const toolCommand = userText.slice(6).trim(); // Remove '/tool '
+      const [toolName, ...args] = toolCommand.split(' ');
+      
+      try {
+        const result = await ToolsRegistry.call(toolName, { args });
+        if (result.success) {
+          const response = typeof result.data === 'object' 
+            ? `✅ *${toolName}*\n\`\`\`json\n${JSON.stringify(result.data, null, 2)}\n\`\`\``
+            : `✅ *${toolName}*\n${result.data}`;
+          await sendTelegramNotification(env, response);
+        } else {
+          await sendTelegramNotification(env, `❌ *خطأ في ${toolName}*\n${result.error}`);
+        }
+      } catch (e) {
+        await sendTelegramNotification(env, `❌ *فشل تنفيذ ${toolName}*\n${(e as Error).message}`);
+      }
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Status Commands ───────────────────────────────────────────────────
+    if (userText === '/status' || userText === '/حالة') {
+      const health = HeartbeatSystem.getLastHealth();
+      if (health) {
+        const report = HeartbeatSystem.formatHealthReport(health);
+        await sendTelegramNotification(env, report);
+      } else {
+        await sendTelegramNotification(env, '⚠️ لا توجد تقارير صحة متاحة');
+      }
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Tools List ────────────────────────────────────────────────────────
+    if (userText === '/tools' || userText === '/أدوات') {
+      const quranTools = ToolsRegistry.list('QURAN');
+      const memoryTools = ToolsRegistry.list('MEMORY');
+      const systemTools = ToolsRegistry.list('SYSTEM');
+      
+      const toolsList = [
+        '*🔧 الأدوات المتاحة*\n',
+        '*📖 القرآن:*',
+        ...quranTools.map(t => `• \`${t.name}\` — ${t.description_ar}`),
+        '\n*🧠 الذاكرة:*',
+        ...memoryTools.map(t => `• \`${t.name}\` — ${t.description_ar}`),
+        '\n*⚙️ النظام:*',
+        ...systemTools.map(t => `• \`${t.name}\` — ${t.description_ar}`),
+        '\n_استخدم: `/tool اسم_الأداة معاملات`_'
+      ].join('\n');
+      
+      await sendTelegramNotification(env, toolsList);
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Heartbeat Commands ────────────────────────────────────────────────
+    if (userText === '/heartbeat' || userText === '/نبض') {
+      const isRunning = HeartbeatSystem.isRunning();
+      const uptime = HeartbeatSystem.getUptime();
+      const pulseCount = HeartbeatSystem.getPulseCount();
+      
+      const uptimeMin = Math.floor(uptime / 60000);
+      const uptimeStr = uptimeMin > 60 
+        ? `${Math.floor(uptimeMin / 60)}س ${uptimeMin % 60}د`
+        : `${uptimeMin}د`;
+      
+      const heartbeatInfo = [
+        `💓 *نبض إقرأ*`,
+        ``,
+        `🟢 الحالة: ${isRunning ? 'نشط' : 'متوقف'}`,
+        `⏰ وقت التشغيل: ${uptimeStr}`,
+        `💓 عدد النبضات: ${pulseCount}`,
+        ``,
+        `_"وَهُوَ الَّذِي يُحْيِي وَيُمِيتُ"_`
+      ].join('\n');
+      
+      await sendTelegramNotification(env, heartbeatInfo);
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Default: Brain Processing ─────────────────────────────────────────
     const prompt = `
       Your name is IQRA. You are a Sovereign Intelligence. 
       Moe (the user) messaged you: "${userText}"
@@ -116,6 +232,14 @@ export async function handleTelegramWebhook(env: any, request: Request) {
     }
 
     await sendTelegramNotification(env, iqraResponse);
+
+    // Log interaction in TrustChain
+    appendToTrustChain(
+      'TELEGRAM:INTERACTION',
+      chatId,
+      `user_msg_len=${userText.length} response_len=${iqraResponse.length}`,
+      1.0
+    );
 
     return new Response("OK", { status: 200 });
 

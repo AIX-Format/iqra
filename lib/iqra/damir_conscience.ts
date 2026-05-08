@@ -323,6 +323,8 @@ export class DamirConscience {
   /** فحص النية */
   private _checkIntention(intention: string): { allowed: boolean; reason: string } {
     const lower = intention.toLowerCase();
+
+    // ── فحص الكلمات المحرمة ───────────────────────────────────────────────
     for (const forbidden of FORBIDDEN_INTENTIONS) {
       if (lower.includes(forbidden.toLowerCase())) {
         return {
@@ -331,6 +333,24 @@ export class DamirConscience {
         };
       }
     }
+
+    // ── قاعدة ثلاثية الأسماء (رب، ملك، إله) ─────────────────────────────
+    // "قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ" — الناس: 1-3
+    // كل نية تفتقر إلى مرجعية التوحيد الثلاثية تُرفض في المهام الحساسة.
+    // الكلمات المُفعِّلة: أي من (رب، ملك، إله) كافية — لا يُشترط الثلاثة معاً.
+    const TAWHEED_TRINITY = ['رب', 'ملك', 'إله', 'الله', 'lord', 'sovereign', 'divine'];
+    const hasTawheedRef = TAWHEED_TRINITY.some(term => intention.includes(term));
+
+    // نُطبّق القاعدة فقط على النوايا الطويلة (> 20 حرف) لتجنب رفض النوايا القصيرة
+    if (intention.length > 20 && !hasTawheedRef) {
+      return {
+        allowed: false,
+        reason:
+          'النية تفتقر إلى مرجعية التوحيد (رب، ملك، إله، الله) — ' +
+          '"قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ"',
+      };
+    }
+
     return { allowed: true, reason: '' };
   }
 
