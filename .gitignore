@@ -14,22 +14,40 @@ dist/
 *.tmp
 npm-debug.log*
 
-# IQRA Sovereign Data — never commit raw training data or secrets
-# كل محتوى .iqra/ محلي — لا يُرفع أبداً
+# ── IQRA Sovereign Data — لا يُرفع أبداً ──────────────────────────
+# كل محتوى .iqra/ بيانات محلية سيادية
 .iqra/
 .iqra_loop_state
 
-# reward ledger — بيانات محلية
-iqra-core/data/reward_ledger.jsonl
-iqra-core/data/*.jsonl
-iqra-core/data/*.json
-
 # Build artifacts
+tsconfig.tsbuildinfo
+*.tsbuildinfo
 raw_api_payload*.json
 *.bak
 
+# Repomix output — ضخم جداً ولا فائدة منه في git
+repomix*.txt
+repomix*.json
+
+# Kiro local planning & mapping — خطط محلية
+.kiro/mapping/
+.kiro/planning/
+
+# Obsidian local settings
+.obsidian/
+
+# Knowledge nodes — ملفات محلية متولدة
+knowledge/node-*.md
+knowledge/simulated/
+
+# Local benchmark & data results
+iqra-core/benchmark_results.json
+iqra-core/data/reward_ledger.jsonl
+iqra-core/data/*.jsonl
+
 # MCP local config (may contain tokens)
 .ag/mcp.json
+mcp.json
 
 # Git temp files
 .git_commit_msg.tmp
