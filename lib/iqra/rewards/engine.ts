@@ -266,4 +266,111 @@ export class RewardEngine {
 
     return this.grant(missionId, 'MissionControl', vector, reports, notes);
   }
+
+  // ── Topological Reward ────────────────────────────────────────────────────
+
+  /**
+   * يحوّل درجة الرنين الطوبولوجي إلى مكافأة
+   *
+   * المعادلة: (resonance - 1.0) × 2.0
+   *   resonance = 1.0 → reward = 0.0 (لا رنين إضافي)
+   *   resonance = 1.25 → reward = 0.5
+   *   resonance = 1.5  → reward = 1.0 (أقصى رنين)
+   *
+   * المرجع: DASTŪR.md — الرنين الطوبولوجي هو معيار الاكتشاف
+   */
+  static computeResonanceReward(resonance: number): number {
+    // الطبيعي بين 1.0 و 1.5
+    return Math.max(0, (resonance - 1.0) * 2.0);
+  }
+
+  /**
+   * يُسجّل اكتشافاً طوبولوجياً في reward_ledger.jsonl
+   * ويُحدّث path_registry.json
+   *
+   * يُستدعى تلقائياً بعد كل حساب رنين في Qalbin_VM
+   *
+   * @param resonance - درجة الرنين (من Qalbin_VM)
+   * @param pair      - الزوج المُحلَّل ["surah:ayah", "surah:ayah"]
+   * @param h1        - عدد الحلقات الطوبولوجية (Betti number H1)
+   * @param interactionType - نوع التفاعل (Annihilation | Commutation | Other)
+   * @param teslaSumMod369  - مجموع Tesla % 369
+   */
+  static logTopologicalDiscovery(
+    resonance: number,
+    pair: [string, string],
+    h1: number = 0,
+    interactionType: 'Annihilation' | 'Commutation' | 'Other' = 'Other',
+    teslaSumMod369: number = 0
+  ): void {
+    import('fs').then(({ default: fs }) => {
+      import('path').then(({ default: path }) => {
+        const LEDGER_PATH = path.join(
+          process.cwd(), 'iqra-core', 'data', 'reward_ledger.jsonl'
+        );
+        const REGISTRY_PATH = path.join(
+          process.cwd(), '.iqra', 'path_registry.json'
+        );
+
+        const rewardValue = RewardEngine.computeResonanceReward(resonance);
+
+        const entry = {
+          type: 'TOPOLOGICAL_DISCOVERY',
+          timestamp: Date.now(),
+          recorded_at: new Date().toISOString(),
+          pair,
+          resonance,
+          h1,
+          interaction_type: interactionType,
+          tesla_sum_mod369: teslaSumMod369,
+          reward_value: rewardValue,
+          discovery_level: RewardEngine.classifyDiscovery(rewardValue),
+        };
+
+        // ── كتابة في JSONL ────────────────────────────────────────────────
+        try {
+          const dir = path.dirname(LEDGER_PATH);
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+          fs.appendFileSync(LEDGER_PATH, JSON.stringify(entry) + '\n', 'utf-8');
+        } catch (e) {
+          IQRALogger.warn(`⚠️ [REWARD_ENGINE] Failed to write topological discovery: ${e}`);
+        }
+
+        // ── تحديث path_registry ───────────────────────────────────────────
+        try {
+          const pathKey = `topo:${pair[0]}|${pair[1]}`;
+          let registry: Record<string, any> = {};
+          if (fs.existsSync(REGISTRY_PATH)) {
+            registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf-8'));
+          }
+          if (!registry[pathKey]) {
+            registry[pathKey] = {
+              first_seen: Date.now(),
+              resonance,
+              h1,
+              interaction_type: interactionType,
+              count: 1,
+            };
+          } else {
+            registry[pathKey].count++;
+            // تحديث الرنين إذا كان أعلى
+            if (resonance > registry[pathKey].resonance) {
+              registry[pathKey].resonance = resonance;
+            }
+          }
+          const regDir = path.dirname(REGISTRY_PATH);
+          if (!fs.existsSync(regDir)) fs.mkdirSync(regDir, { recursive: true });
+          fs.writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2), 'utf-8');
+        } catch (e) {
+          IQRALogger.warn(`⚠️ [REWARD_ENGINE] Failed to update path registry: ${e}`);
+        }
+
+        IQRALogger.info(
+          `🌀 [TOPO_DISCOVERY] ${pair[0]} ↔ ${pair[1]} | ` +
+          `resonance=${resonance.toFixed(4)} | H1=${h1} | ` +
+          `type=${interactionType} | reward=${rewardValue.toFixed(4)}`
+        );
+      });
+    });
+  }
 }
