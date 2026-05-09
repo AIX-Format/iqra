@@ -115,4 +115,19 @@ ${memories.map((m, i) => `${i+1}. [${new Date(m.timestamp).toLocaleDateString()}
       return "";
     }
   }
+
+  /**
+   * 🌀 Contextual Folding: البحث عن الرنين بعيد المدى
+   * يربط المعلومات التي قد تبدو متباعدة خطياً ولكنها متصلة طوبولوجياً.
+   */
+  static async findLongRangeResonance(intention: string): Promise<string> {
+    IQRALogger.info('🌀 [LANCEDB] Performing contextual folding for long-range resonance...');
+    
+    // محاكاة الطي: البحث بالنية وعكسها لإيجاد التوازن الموضوعي
+    const primary = await this.autoRecall(intention);
+    const inverseQuery = `opposite or complement of: ${intention}`;
+    const secondary = await this.autoRecall(inverseQuery);
+    
+    return `${primary}\n\n[FOLDED_COMPLEMENT]\n${secondary}`;
+  }
 }

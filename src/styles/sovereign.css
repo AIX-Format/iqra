@@ -1,0 +1,114 @@
+/* 
+ * 🌀 IQRA Sovereign Styles — نظام الأنماط السيادي
+ * 
+ * "وَزَيَّنَّا السَّمَاءَ الدُّنْيَا بِمَصَابِيحَ وَحِفْظًا" — فصلت: 12
+ * 
+ * Theme: Cairo Cyberpunk
+ */
+
+:root {
+  /* Core Palette */
+  --iqra-black: #0a0a0a;
+  --iqra-dark: #111111;
+  --iqra-surface: rgba(26, 26, 26, 0.8);
+  --iqra-border: #2a2a2a;
+  
+  /* Neon Accents */
+  --iqra-neon: #39ff14;
+  --iqra-neon-dim: #2ecc0f;
+  --iqra-neon-glow: rgba(57, 255, 20, 0.15);
+  --iqra-neon-glow-strong: rgba(57, 255, 20, 0.3);
+  
+  /* Functional Colors */
+  --iqra-error: #ff3131;
+  --iqra-warning: #ffbd03;
+  --iqra-info: #00d2ff;
+  
+  /* Typography */
+  --iqra-font-ar: 'Noto Sans Arabic', sans-serif;
+  --iqra-font-en: 'Inter', sans-serif;
+}
+
+[dir="rtl"] {
+  font-family: var(--iqra-font-ar);
+}
+
+body {
+  background-color: var(--iqra-black);
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: var(--iqra-font-en);
+}
+
+/* 🧪 Glassmorphism Surface */
+.glass-surface {
+  background: var(--iqra-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--iqra-border);
+  border-radius: 12px;
+}
+
+/* ⚡ Neon Pulse & Glow */
+.neon-text {
+  color: var(--iqra-neon);
+  text-shadow: 0 0 8px var(--iqra-neon-glow);
+}
+
+.neon-border {
+  border: 1px solid var(--iqra-neon);
+  box-shadow: 0 0 15px var(--iqra-neon-glow);
+}
+
+/* 🌀 Keyframes */
+@keyframes neon-pulse {
+  0% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.7; filter: brightness(1.5); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+.pulse-neon {
+  animation: neon-pulse 3s infinite ease-in-out;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.float {
+  animation: float 6s infinite ease-in-out;
+}
+
+/* 📖 Logical Properties (RTL Support) */
+.iqra-padding {
+  padding-inline-start: 1.5rem;
+  padding-inline-end: 1.5rem;
+  padding-block: 1rem;
+}
+
+.iqra-margin {
+  margin-inline-start: auto;
+}
+
+/* 🔗 TrustChain Visualizer */
+.trust-chain-node {
+  position: relative;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--iqra-neon);
+}
+
+.trust-chain-node::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -6px;
+  top: 0.5rem;
+  width: 10px;
+  height: 10px;
+  background: var(--iqra-neon);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--iqra-neon);
+}

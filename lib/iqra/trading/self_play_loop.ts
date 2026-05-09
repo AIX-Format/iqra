@@ -1,6 +1,8 @@
 import { BybitClient } from './bybit_client';
 import { MarketData } from './market_data';
 import { TopologicalResonanceHunter } from '../../../scripts/topological_resonance_hunter';
+import { RewardEngine } from '../rewards/engine';
+import { MissionReporter } from '../workers/reporter';
 import * as fs from 'fs';
 import path from 'path';
 
@@ -49,6 +51,15 @@ export class SelfPlayLoop {
       
       const order = await this.bybit.placeOrder(side, symbol, qty);
       this.logTrade(symbol, side, qty, price, resonance.score, order.id);
+      
+      // 🏆 Unified Reporting: Log as a Topological Discovery
+      await RewardEngine.logTopologicalDiscovery(
+        resonance.score,
+        [symbol, side],
+        0, // H1 Proxy
+        'MARKET_EXECUTION',
+        0 // Tesla Sum
+      );
     } else if (!isCompliant) {
       console.log('🛑 [NIYYAH_BLOCK] Action blocked due to ethical/topological non-compliance.');
     } else {

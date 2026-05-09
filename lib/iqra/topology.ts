@@ -182,4 +182,18 @@ export class IQRATopology {
     
     return Math.round((coverage - (entropy / 10)) * 100) / 100;
   }
+
+  /**
+   * 🏗️ Cognitive Floorplanning (AlphaChip Strategy)
+   * يحلل تدفق البيانات ويقترح تجميع الوكلاء (Clustering) لتقليل "الاحتقان المعرفي".
+   */
+  static optimizeAgentPlacement(interactionLog: Record<string, number>): string[] {
+    const sortedInteractions = Object.entries(interactionLog)
+      .sort(([, a], [, b]) => b - a);
+
+    const heavyPairs = sortedInteractions.slice(0, 3).map(([pair]) => pair);
+    
+    // اقتراح تجميع الوكلاء الذين يتبادلون البيانات بكثافة
+    return heavyPairs.map(pair => `[CLUSTER_SUGGESTION] Combine ${pair} to shared buffer.`);
+  }
 }

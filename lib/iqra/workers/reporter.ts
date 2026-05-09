@@ -22,7 +22,7 @@ import path from 'path';
 import { MissionContext, HandoffResult } from '../mission-context.ts';
 import { appendToTrustChain } from '../security.ts';
 import { IQRALogger } from '../logger.ts';
-import { RewardEngine } from '../../../rewards/engine.ts';
+import { RewardEngine } from '../rewards/engine.ts';
 import { RewardLedger } from '../../../ledger/reward-ledger.ts';
 import { IQRAMemory } from '../memory.ts';
 import { PatternMemory } from '../memory/pattern_memory.ts';

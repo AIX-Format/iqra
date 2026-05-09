@@ -23,6 +23,7 @@
 
 import { IQRALogger } from '../logger.ts';
 import { IQRAMemory } from '../memory.ts';
+import { PiNetworkSkill } from '../skills/pi_network.ts';
 import { RewardLedger } from './ledger.ts';
 import type {
   PathKey, PathSegment, RewardVector, RewardEntry,
@@ -279,7 +280,17 @@ export class RewardEngine {
   }
 
   /**
-   * 🌀 حساب الحداثة الطوبولوجية (Topological Novelty)
+   * 🥧 المطالبة بالمكافآت عبر Pi Network
+   */
+  static async claimRewardToPi(amount: number, memo: string): Promise<string> {
+    IQRALogger.info(`🥧 [REWARD_ENGINE] Initiating Pi claim for ${amount} points...`);
+    const paymentId = await PiNetworkSkill.createPaymentClaim(amount, memo);
+    
+    // تسجيل المطالبة في TrustChain
+    await IQRAMemory.grantReward('pi_claim', { paymentId, amount, memo });
+    
+    return paymentId;
+  }
    * يقيس مدى بعد التجربة الجديدة عن "الغلاف المحدب" للتجارب السابقة.
    */
   static async computeNoveltyReward(vector: number[]): Promise<number> {

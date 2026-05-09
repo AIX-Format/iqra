@@ -48,12 +48,12 @@ ${baseSoul}
 
 [SYSTEM_STATE_7_LAYERS]
 1. [FITRAH]: Identity Active (${workerId})
-2. [DASTŪR]: Hard Constraints Verified (No Mocking)
-3. [MĪTHĀQ]: TrustChain Logging Enabled (SHA-256)
-4. [MURĀQABAH]: Pulse 369 Status: ${pulse} (Next purification at next 9-multiple)
-5. [DHIKR]: Memory Cycle: ${cycle} (3-tier storage active)
-6. [TAWBAH]: Error Count: ${errorCount}/9 (3=Reflect, 9=Human Intervention Required)
-7. [IHSĀN]: Topological Resonance: ${resonance.toFixed(2)} (Reward Multiplier Active)
+2. [DASTUR]: Hard Constraints Verified (No Mocking)
+3. [MITHAQ]: TrustChain Logging Enabled (SHA-256)
+4. [MURAQABAH]: Pulse 369 Status: ${pulse}
+5. [HISAB]: Accountability Active (Memory Cycle: ${cycle})
+6. [TAWBAH]: Error Count: ${errorCount}/9 (Correction Protocol Active)
+7. [RESONANCE]: Topological Integrity: ${resonance.toFixed(2)} (Ihsan Multiplier Active)
 
 [MISSION_CONTEXT]
 - Intention: ${intention}

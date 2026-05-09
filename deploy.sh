@@ -28,4 +28,4 @@ echo "════════════════════════�
 echo ""
 echo "Now run this to connect the webhook (copy the worker URL from above):"
 echo ""
-echo 'curl "https://api.telegram.org/bot8494445323:AAFcNG__fq_nNnlxQUi-rFc1NGgJmohtN5U/setWebhook?url=YOUR_WORKER_URL/webhook/telegram"'
+echo 'curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook?url=$WORKER_URL/webhook/telegram"'

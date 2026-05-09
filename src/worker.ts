@@ -41,6 +41,14 @@ export default {
 
     // Telegram Webhook Endpoint
     if (request.method === "POST" && url.pathname === "/webhook/telegram") {
+      const secretToken = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
+      const expectedToken = env.TELEGRAM_SECRET_TOKEN;
+
+      if (expectedToken && secretToken !== expectedToken) {
+        console.error("🛑 [SECURITY] Unauthorized Telegram Webhook attempt.");
+        return new Response("Unauthorized", { status: 403 });
+      }
+
       return handleTelegramWebhook(env, request);
     }
 

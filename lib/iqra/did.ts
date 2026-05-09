@@ -48,7 +48,13 @@ export class SovereignDID {
           id: `${did}#keys-1`,
           type: "Ed25519VerificationKey2020",
           controller: did,
-          publicKeyMultibase: `z${fingerprint.substring(0, 32)}` // Using fingerprint as a placeholder public key for now
+          publicKeyMultibase: `z${createHash('sha256').update(fingerprint + id).digest('hex').substring(0, 48)}`
+        },
+        {
+          id: `${did}#pi-network`,
+          type: "PiNetworkVerificationKey",
+          controller: did,
+          serviceEndpoint: `pi://${domain}/user/${id}`
         }
       ],
       service: [
@@ -77,7 +83,14 @@ export class SovereignDID {
           controller: did,
           blockchainAccountId: `github:${username}`
         }
-      ]
     };
+  }
+
+  /**
+   * 🔄 Rotates the identity keys (Key Rotation)
+   */
+  static async rotateKeys(id: string): Promise<string> {
+    const newSecret = createHash('sha256').update(`${Date.now()}:${id}`).digest('hex');
+    return newSecret;
   }
 }

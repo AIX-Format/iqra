@@ -1,5 +1,7 @@
 import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
 
 dotenv.config();
 
@@ -13,6 +15,7 @@ export class BybitClient {
   private readonly baseUrl = 'https://api-testnet.bybit.com';
   private readonly apiKey: string;
   private readonly apiSecret: string;
+  private readonly isPaperTrading: boolean = true; // وضع التداول الوهمي افتراضي دائماً
 
   constructor() {
     this.apiKey = process.env.BYBIT_API_KEY || '';
@@ -52,6 +55,12 @@ export class BybitClient {
 
     const url = `${this.baseUrl}${path}${method === 'GET' && data ? `?${data}` : ''}`;
     
+    // 🛡️ Paper Trading Guard
+    if (this.isPaperTrading && method === 'POST' && path.includes('/order/create')) {
+      console.log(`📝 [PAPER_TRADING] Simulated ${method} request to ${path} with params:`, params);
+      return { orderId: `sim_order_${Date.now()}` } as any;
+    }
+
     const response = await fetch(url, {
       method,
       headers,
