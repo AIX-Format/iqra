@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | docs(TAWBAH): document catastrophic file deletion crisis and recovery |
-| 🔗 **الـ Commit** | `5b1b0c1` |
+| 💡 **آخر خطوة \| Last Step** | clean duplcates |
+| 🔗 **الـ Commit** | `f030e1d` |
 
 <!-- IQRA-LATEST-END -->
 
