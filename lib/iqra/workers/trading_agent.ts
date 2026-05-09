@@ -3,8 +3,8 @@ import { SelfPlayLoop } from '../trading/self_play_loop.ts';
 import { BybitClient } from '../trading/bybit_client.ts';
 import { MarketData } from '../trading/market_data.ts';
 import { TopologicalResonanceHunter } from '../../../scripts/topological_resonance_hunter.ts';
-import { IQRALogger } from '../logger.ts';
-import { HeartbeatSystem } from '../heartbeat.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
+import { HeartbeatSystem } from '../12-infrastructure/heartbeat.js';
 
 interface TradingActionParams {
   action?: string;

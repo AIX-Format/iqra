@@ -8,7 +8,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { IQRALogger } from '../logger';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export interface MCPServer {
   name: string;

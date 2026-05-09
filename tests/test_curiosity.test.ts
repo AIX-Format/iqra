@@ -3,7 +3,7 @@ import { CuriosityEngine } from '../lib/iqra/quran/curiosity.ts';
 import * as similarity from '../lib/iqra/utils/similarity.ts';
 import * as security from '../lib/iqra/security.ts';
 import * as groq from '../lib/iqra/llm/groq.ts';
-import { IQRAMemory } from '../lib/iqra/memory.ts';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory.js';
 
 describe('🌀 CuriosityEngine | محرك الفضول', () => {
     const testAyah = "إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ";

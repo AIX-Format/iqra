@@ -1,5 +1,5 @@
-import { AgentCore } from '../lib/iqra/core';
-import { ShuraProtocol, ShuraLevel } from '../lib/iqra/shura';
+import { AgentCore } from '../lib/iqra/01-core/core';
+import { ShuraProtocol, ShuraLevel } from '../lib/iqra/01-core/shura';
 import { IQRAFilter } from '../lib/iqra/filter';
 import fs from 'fs';
 import path from 'path';

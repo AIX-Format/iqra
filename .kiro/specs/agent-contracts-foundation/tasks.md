@@ -26,14 +26,14 @@
 - agents/contracts.ts — هل يحتوي على جميع الواجهات؟
 
 **Sub-tasks:**
-- [ ] قراءة AGENTS.md وتحديد الفجوات
-- [ ] قراءة setup.yaml وتحديد الفجوات
-- [ ] قراءة contracts.ts وتحديد الفجوات
-- [ ] توثيق الفجوات في ملف TODO
+- [x] قراءة AGENTS.md وتحديد الفجوات
+- [x] قراءة setup.yaml وتحديد الفجوات
+- [x] قراءة contracts.ts وتحديد الفجوات
+- [x] توثيق الفجوات في ملف TODO
 
 **معايير القبول:**
-- [ ] قائمة واضحة بالفجوات
-- [ ] توثيق كل فجوة مع السبب
+- [x] قائمة واضحة بالفجوات
+- [x] توثيق كل فجوة مع السبب
 - [ ] توثيق الملفات الموجودة بالفعل
 
 **المخرجات:**
@@ -68,7 +68,7 @@
 - [ ] كل وكيل له قائمة بالأخطاء الشائعة
 - [ ] قسم "الدروس المستفادة" موجود
 - [~] لا dead code
-- [ ] لا duplicates
+- [~] لا duplicates
 
 **المخرجات:**
 ```
@@ -119,9 +119,9 @@
 - validateNoMock() — عدم وجود mock
 
 **Sub-tasks:**
-- [ ] كتابة validateWorkerAction()
-- [ ] كتابة validateSourceAttestations()
-- [ ] كتابة validateNoMock()
+- [~] كتابة validateWorkerAction()
+- [~] كتابة validateSourceAttestations()
+- [~] كتابة validateNoMock()
 - [ ] توثيق كل دالة
 - [ ] إضافة أمثلة الاستخدام
 
@@ -150,16 +150,16 @@
 - دالة validateWorkerAction()
 
 **Sub-tasks:**
-- [ ] إنشاء الملف
-- [ ] تعريف WORKER_CONSTRAINTS
-- [ ] تعريف GLOBAL_CONSTRAINTS
+- [~] إنشاء الملف
+- [~] تعريف WORKER_CONSTRAINTS
+- [~] تعريف GLOBAL_CONSTRAINTS
 - [ ] كتابة validateWorkerAction()
 - [~] توثيق الملف
 
 **معايير القبول:**
-- [ ] الملف موجود
-- [ ] جميع القيود معرّفة
-- [ ] دالة التحقق تعمل
+- [~] الملف موجود
+- [~] جميع القيود معرّفة
+- [~] دالة التحقق تعمل
 
 **المخرجات:**
 ```
@@ -182,13 +182,13 @@
 **Sub-tasks:**
 - [ ] إنشاء الملف
 - [ ] كتابة validateSourceAttestations()
-- [ ] كتابة createAttestation()
-- [ ] كتابة verifyAttestation()
+- [~] كتابة createAttestation()
+- [~] كتابة verifyAttestation()
 - [ ] توثيق الملف
 
 **معايير القبول:**
 - [ ] الملف موجود
-- [ ] جميع الدوال تعمل
+- [~] جميع الدوال تعمل
 - [~] توثيق كامل
 
 **المخرجات:**
@@ -212,8 +212,8 @@
 **Sub-tasks:**
 - [ ] إنشاء الملف
 - [ ] كتابة validateNoMock()
-- [ ] كتابة detectMock()
-- [ ] كتابة throwOnMock()
+- [~] كتابة detectMock()
+- [~] كتابة throwOnMock()
 - [ ] توثيق الملف
 
 **معايير القبول:**
@@ -240,15 +240,15 @@
 - validateHandoffContext() — التحقق من السياق
 
 **Sub-tasks:**
-- [ ] كتابة validateHandoffSequence()
-- [ ] كتابة validateHandoffArtifacts()
-- [ ] كتابة validateHandoffContext()
+- [~] كتابة validateHandoffSequence()
+- [~] كتابة validateHandoffArtifacts()
+- [~] كتابة validateHandoffContext()
 - [ ] توثيق الملف
 
 **معايير القبول:**
 - [ ] جميع الدوال تعمل
 - [ ] توثيق كامل
-- [ ] اختبارات شاملة
+- [~] اختبارات شاملة
 
 **المخرجات:**
 ```
@@ -269,9 +269,9 @@
 - validateReportNoMock() — التحقق من عدم وجود mock
 
 **Sub-tasks:**
-- [ ] كتابة validateReportCompleteness()
-- [ ] كتابة validateReportSources()
-- [ ] كتابة validateReportNoMock()
+- [~] كتابة validateReportCompleteness()
+- [~] كتابة validateReportSources()
+- [~] كتابة validateReportNoMock()
 - [ ] توثيق الملف
 
 **معايير القبول:**
@@ -300,11 +300,11 @@
 - tests/unit/report.test.ts
 
 **Sub-tasks:**
-- [ ] كتابة اختبارات constraints
-- [ ] كتابة اختبارات attestation
-- [ ] كتابة اختبارات no-mock
-- [ ] كتابة اختبارات handoff
-- [ ] كتابة اختبارات report
+- [~] كتابة اختبارات constraints
+- [~] كتابة اختبارات attestation
+- [~] كتابة اختبارات no-mock
+- [~] كتابة اختبارات handoff
+- [~] كتابة اختبارات report
 
 **معايير القبول:**
 - [~] جميع الاختبارات تمر (100%)

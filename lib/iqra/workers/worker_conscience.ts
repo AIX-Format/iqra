@@ -16,7 +16,7 @@ import { DamirConscience } from '../damir_conscience.ts';
 import { ResourceFactory } from '../conscience/resource_factory.ts';
 import { SovereignError, SovereignErrorCode } from '../../../src/errors/sovereign_error.ts';
 import { logToIQRAFile, appendToTrustChain } from '../security.ts';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 
 // ── Singleton per-worker (lazy) ───────────────────────────────────────────────
 const _workerDamirs = new Map<string, DamirConscience>();

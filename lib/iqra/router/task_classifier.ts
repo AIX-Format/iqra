@@ -31,7 +31,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

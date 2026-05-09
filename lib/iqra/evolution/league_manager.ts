@@ -6,8 +6,8 @@
  * Inspired by AlphaStar. Instantiates adversarial roles to pressure-test solutions.
  */
 
-import { ConnectorFactory } from '../../../src/connectors/index.ts';
-import { IQRALogger } from '../logger';
+import { ConnectorFactory } from '../../../src/connectors/index';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export interface LeagueVerdict {
   isStable: boolean;

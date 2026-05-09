@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NumericalValidator } from '../../lib/iqra/quran/numerical_validator.ts';
 import { PatternMemory } from '../../lib/iqra/memory/pattern_memory.ts';
-import { IQRAMemory } from '../../lib/iqra/memory.ts';
+import { IQRAMemory } from '../../lib/iqra/03-memory/memory.js';
 import {
   TopologicalCuriosityEngine,
   type TopologicalResonance,

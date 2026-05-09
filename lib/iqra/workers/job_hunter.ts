@@ -12,7 +12,7 @@
  * - Strategic Partnerships
  */
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
 import { SimulationEngine } from '../intelligence/simulation_engine.ts';
 import { executeWithSkill } from '../brain.ts';

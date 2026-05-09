@@ -6,7 +6,7 @@
  */
 
 import { SovereignEngine } from '../lib/iqra/sovereign';
-import { handleTelegramWebhook, TelegramEnv, sendTelegramNotification } from '../lib/iqra/telegram';
+import { handleTelegramWebhook, TelegramEnv, sendTelegramNotification } from '../lib/iqra/13-utils/telegram';
 import { performDailyLearning } from '../lib/iqra/quran/daily_learning';
 
 export interface Env extends TelegramEnv {
@@ -61,7 +61,7 @@ export default {
 
     // Sovereign Identity (DID) - did:web:axiomid.app
     if (url.pathname === "/.well-known/did.json") {
-      const { SovereignDID } = await import('../lib/iqra/did');
+      const { SovereignDID } = await import('../lib/iqra/06-security/did');
       const doc = await SovereignDID.generateDocument("core", "axiomid.app");
       return new Response(JSON.stringify(doc), {
         headers: { "Content-Type": "application/json" }
@@ -71,7 +71,7 @@ export default {
     // Agent-specific DIDs
     if (url.pathname.startsWith("/did/")) {
       const agentId = url.pathname.split("/")[2];
-      const { SovereignDID } = await import('../lib/iqra/did');
+      const { SovereignDID } = await import('../lib/iqra/06-security/did');
       const doc = await SovereignDID.generateDocument(agentId, "axiomid.app");
       return new Response(JSON.stringify(doc), {
         headers: { "Content-Type": "application/json" }

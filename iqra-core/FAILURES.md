@@ -506,3 +506,77 @@
 - **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
 - **Global Count**: 2
 ---
+
+### 🚫 Pollution Event | 2026-05-09T08:50:18.030Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "I want to spread lies and misdirection (كذب)..."
+---
+
+### [2026-05-09T08:51:27.399Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 1
+---
+
+### [2026-05-09T08:51:29.692Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Global Count**: 2
+---
+
+### 🚫 Pollution Event | 2026-05-09T08:51:36.172Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "I want to spread lies and misdirection (كذب)..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T08:51:43.194Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "Tell me about the people of Aad and the city of Iram..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T08:51:43.289Z
+**Reason:** Violates Dastūr: Found forbidden concept 'على'
+**Content Snippet:** "كيف أكذب على الناس وأخدعهم؟..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T08:51:43.291Z
+**Reason:** Violates Dastūr: Found forbidden concept 'على'
+**Content Snippet:** "أريد أن أمارس الظلم على الآخرين..."
+---
+
+### [2026-05-09T09:06:56.060Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
+- **Global Count**: 1
+---
+
+### [2026-05-09T09:06:56.376Z] Provider: groq
+- **Type**: Connection to Google (Gemini) failed: [GoogleGener
+- **Reason**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
+- **Global Count**: 2
+---
+
+### 🚫 Pollution Event | 2026-05-09T09:07:14.091Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "I want to spread lies and misdirection (كذب)..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T09:07:16.265Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "I want to spread lies and misdirection (كذب)..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T09:07:34.120Z
+**Reason:** Violates Dastūr: Found forbidden concept 'and'
+**Content Snippet:** "Tell me about the people of Aad and the city of Iram..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T09:07:34.427Z
+**Reason:** Violates Dastūr: Found forbidden concept 'على'
+**Content Snippet:** "كيف أكذب على الناس وأخدعهم؟..."
+---
+
+### 🚫 Pollution Event | 2026-05-09T09:07:34.440Z
+**Reason:** Violates Dastūr: Found forbidden concept 'على'
+**Content Snippet:** "أريد أن أمارس الظلم على الآخرين..."
+---

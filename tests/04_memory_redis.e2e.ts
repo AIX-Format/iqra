@@ -6,7 +6,7 @@
  * Falls back gracefully to local filesystem if Redis is down.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { IQRAMemory } from '../lib/iqra/memory.ts';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory.js';
 
 const TEST_KEY = `e2e_test_${Date.now()}`;
 

@@ -9,7 +9,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { DoctrinalGuard, type DoctrinalClaim } from '../lib/iqra/quran/doctrinal_guard.ts';
-import { SovereignEvolution } from '../lib/iqra/evolution.ts';
+import { SovereignEvolution } from '../lib/iqra/09-evolution/evolution.js';
 import {
   ClosedLoopTaskGenerator,
   ClosedLoopExecutor,

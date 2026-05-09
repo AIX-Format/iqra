@@ -3,7 +3,7 @@
  * 🌙 Damir Kernel PoC Validation
  */
 
-import { DamirKernel } from '../../damir_kernel';
+import { DamirKernel } from '../../06-security/damir_kernel';
 
 async function runTests() {
   const damir = new DamirKernel();

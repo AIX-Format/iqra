@@ -7,8 +7,8 @@
  * Detects hidden structural patterns like Chiasmus (Mirror Symmetry) and Resonance.
  */
 
-import { IQRAMemory } from '../memory';
-import { IQRALogger } from '../logger';
+import { IQRAMemory } from '../03-memory/memory';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export interface ResonanceResult {
   resonance: number;

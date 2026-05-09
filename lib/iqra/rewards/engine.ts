@@ -8,8 +8,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { IQRALogger } from '../logger';
-import { IQRAMemory } from '../memory';
+import { IQRALogger } from '../12-infrastructure/logger';
+import { IQRAMemory } from '../03-memory/memory';
 import { PiNetworkSkill } from '../skills/pi_network';
 import { RewardLedger } from './ledger';
 import type {

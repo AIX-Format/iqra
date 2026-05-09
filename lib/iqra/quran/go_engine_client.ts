@@ -2,7 +2,7 @@
 // Go Engine Client — عميل محرك Go المتوازي
 // "وَإِن مِّن شَيْءٍ إِلَّا يُسَبِّحُ بِحَمْدِهِ" — الإسراء: 44
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

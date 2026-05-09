@@ -7,8 +7,8 @@
  */
 import { describe, it, expect, afterAll } from 'vitest';
 import { SovereignEngine } from '../lib/iqra/sovereign.ts';
-import { SovereignEvolution } from '../lib/iqra/evolution.ts';
-import { IQRAMemory } from '../lib/iqra/memory.ts';
+import { SovereignEvolution } from '../lib/iqra/09-evolution/evolution.js';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory.js';
 import { appendToTrustChain } from '../lib/iqra/security.ts';
 import fs from 'fs';
 import path from 'path';

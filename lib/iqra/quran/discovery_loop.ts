@@ -2,7 +2,7 @@ import { PatternType, QuranPattern, topologicalDiscovery } from './pattern_engin
 import { NumericalValidator } from './numerical_validator';
 import { Qalbin_VM } from './qalbin/qalbin_vm';
 import { storeReflectionInQdrant } from '../memory/qdrant';
-import { IQRALogger } from '../logger';
+import { IQRALogger } from '../12-infrastructure/logger';
 import { iqraThink } from '../brain';
 import { goEngine } from './go_engine_client';
 import { spawn } from 'child_process';

@@ -9,9 +9,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MissionContext, HandoffResult } from '../mission-context.ts';
+import { MissionContext, HandoffResult } from '../01-core/mission-context.js';
 import { appendToTrustChain } from '../security.ts';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import type { ResearchOutput } from './researcher.ts';
 
 export interface ValidationReport {

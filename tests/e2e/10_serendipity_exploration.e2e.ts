@@ -1,7 +1,7 @@
 import { it, expect, describe, vi, beforeEach } from 'vitest';
 import { TopologicalLoop } from '../../orchestrator/topological-loop';
 import { MissionControl } from '../../lib/iqra/sovereign_orchestrator';
-import { IQRAMemory } from '../../lib/iqra/memory';
+import { IQRAMemory } from '../../lib/iqra/03-memory/memory';
 import { RewardEngine } from '../../rewards/engine';
 import { RewardLedger } from '../../ledger/reward-ledger';
 import fs from 'fs';

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { IQRAMemory } from '../lib/iqra/memory';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory';
 
 describe('Topological Curiosity', () => {
   it('should calculate higher novelty for orthogonal vectors', async () => {

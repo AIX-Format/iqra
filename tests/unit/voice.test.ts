@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { IQRAVoice, IQRAVoicePersona } from '../../lib/iqra/voice.ts';
+import { IQRAVoice, IQRAVoicePersona } from '../../lib/iqra/13-utils/voice.js';
 
 describe('IQRAVoice v0.369 — الصوت السيادي', () => {
 

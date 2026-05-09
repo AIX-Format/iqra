@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 config({ path: resolve(process.cwd(), '.env') });
 
-import { IQRAVoice, IQRAVoicePersona } from '../lib/iqra/voice.ts';
+import { IQRAVoice, IQRAVoicePersona } from '../lib/iqra/13-utils/voice.js';
 
 async function main() {
   console.log('🎙️ IQRA Voice Test v0.369 — Edge TTS (Free)');

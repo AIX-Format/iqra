@@ -9,8 +9,8 @@
 
 import { EmailAgent } from '../lib/iqra/agents/email_agent';
 import { SocialAgent } from '../lib/iqra/agents/social_agent';
-import { IQRALogger } from '../lib/iqra/logger';
-import { IQRAMemory } from '../lib/iqra/memory';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory';
 
 export class PulseEngine {
   private static isRunning = false;

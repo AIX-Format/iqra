@@ -10,7 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ConnectorFactory } from '../../../src/connectors/index.ts';
-import { IQRALogger } from '../logger';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { GitSkill } from '../skills/git_skill';
 import { InverseDesign } from '../skills/inverse_design';
 

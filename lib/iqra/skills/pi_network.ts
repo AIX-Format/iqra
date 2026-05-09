@@ -6,7 +6,7 @@
  * Integrates with Pi Network SDK for identity and payment claims.
  */
 
-import { IQRALogger } from '../logger';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export class PiNetworkSkill {
   

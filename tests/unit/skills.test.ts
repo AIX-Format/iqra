@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SkillBank } from '../../lib/iqra/skill_bank.ts';
+import { SkillBank } from '../../lib/iqra/08-skills/skill_bank.js';
 import fs from 'fs';
 import path from 'path';
 

@@ -24,7 +24,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
 import { MicroMemory } from './micro_memory.ts';
 import { MemoryBridge } from './memory_bridge.ts';
@@ -266,7 +266,7 @@ export class MemoryTopology {
         case 'topological': {
           // بحث في MicroMemory
           await MicroMemory.init();
-          const { IQRAMemory } = await import('../memory.ts');
+          const { IQRAMemory } = await import('../03-memory/memory.js');
           const embedding = await IQRAMemory.generateEmbedding(query.text);
           const patterns = MicroMemory.getSimilarPatterns(embedding, query.topK ?? 7);
 

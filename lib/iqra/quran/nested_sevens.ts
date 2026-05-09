@@ -7,7 +7,7 @@
  * which is a fundamental signature of Divine creation.
  */
 
-import { SacredGeometry } from '../style';
+import { SacredGeometry } from '../13-utils/style';
 
 export interface QuranicPattern {
   id: string;

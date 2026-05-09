@@ -7,8 +7,8 @@
  * Historical Evolutionary Alignment (Memory Manifolds).
  */
 
-import { IQRAMemory } from '../memory';
-import { IQRALogger } from '../logger';
+import { IQRAMemory } from '../03-memory/memory';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export class FithrahBaseline {
   

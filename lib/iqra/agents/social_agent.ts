@@ -7,9 +7,9 @@
  * Handles social listening, sentiment analysis, and trend alignment.
  */
 
-import { IQRALogger } from '../logger';
-import { IQRAMemory } from '../memory';
-import { IQRAConsciousness } from '../consciousness';
+import { IQRALogger } from '../12-infrastructure/logger';
+import { IQRAMemory } from '../03-memory/memory';
+import { IQRAConsciousness } from '../01-core/consciousness';
 
 export class SocialAgent {
   private static readonly PLATFORMS = ['twitter', 'discord', 'linkedin'];

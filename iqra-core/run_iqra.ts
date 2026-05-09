@@ -1,8 +1,8 @@
-import { AgentCore } from '../lib/iqra/core';
+import { AgentCore } from '../lib/iqra/01-core/core';
 import { IQRABrainMode } from '../lib/iqra/brain';
-import { IQRALogger } from '../lib/iqra/logger';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
 import { IQRAFilter } from '../lib/iqra/filter';
-import { ShuraProtocol } from '../lib/iqra/shura';
+import { ShuraProtocol } from '../lib/iqra/01-core/shura';
 
 async function main() {
   console.log('🌙 IQRA System Startup...');

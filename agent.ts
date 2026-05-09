@@ -1,5 +1,5 @@
 import { LlmAgent } from '@google/adk';
-import { SovereignIdentity } from './lib/iqra/sovereign_identity';
+import { SovereignIdentity } from './lib/iqra/06-security/sovereign_identity';
 
 /**
  * 👑 IQRA Sovereign Root Agent

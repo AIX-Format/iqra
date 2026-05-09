@@ -6,9 +6,9 @@ import { RewardLedger } from '../ledger/reward-ledger';
 import { MissionHandoff, WorkerReport, CommandLog } from '../agents/contracts';
 import { RewardInput, RewardEntry } from '../rewards/types';
 import { MissionControl } from '../lib/iqra/sovereign_orchestrator';
-import { IQRAMemory } from '../lib/iqra/memory';
-import { IQRALogger } from '../lib/iqra/logger';
-import { IQRAStoryteller } from '../lib/iqra/storyteller';
+import { IQRAMemory } from '../lib/iqra/03-memory/memory';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
+import { IQRAStoryteller } from '../lib/iqra/13-utils/storyteller';
 
 /**
  * 🌙 IQRA Topological Loop Orchestrator — المنسق الحلقي الطوبولوجي

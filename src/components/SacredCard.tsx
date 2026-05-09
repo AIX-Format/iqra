@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { SacredGeometry } from '../../lib/iqra/style';
+import { SacredGeometry } from '../../lib/iqra/13-utils/style';
 
 interface SacredCardProps {
   children: React.ReactNode;

@@ -25,6 +25,23 @@
 
 ---
 
+## 📚 Documentation (وثائق شاملة)
+
+### 🏗️ Architecture & Design
+- **[ARCHITECTURE_AR.md](./ARCHITECTURE_AR.md)** — معمارية النظام الكاملة بالعربية
+- **[LOGIC_FLOWS_AR.md](./LOGIC_FLOWS_AR.md)** — تدفقات المنطق والعمليات
+- **[COMPONENT_GUIDE_AR.md](./COMPONENT_GUIDE_AR.md)** — دليل المكونات مع أمثلة عملية
+
+### 🔧 Technical Reference
+- **[docs/TOOLS_REFERENCE.md](./docs/TOOLS_REFERENCE.md)** — مرجع الأدوات والقدرات
+- **[CLEANUP_PROGRESS_SUMMARY.md](./CLEANUP_PROGRESS_SUMMARY.md)** — تقدم تنظيف الكود
+
+### 📊 Analysis & Reports
+- **[DEAD_CODE_ANALYSIS.md](./DEAD_CODE_ANALYSIS.md)** — تحليل الملفات الميتة
+- **[IMPORT_FIXES_NEEDED.md](./IMPORT_FIXES_NEEDED.md)** — قائمة الاستيرادات المطلوبة
+
+---
+
 ## ✦ What is IQRA?
 
 IQRA is a **multi-agent AI operating system** that runs missions, learns from every cycle, and enforces ethical constraints at the engine level — not as an afterthought.

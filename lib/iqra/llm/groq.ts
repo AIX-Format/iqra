@@ -1,4 +1,4 @@
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout.ts';
 
 /**

@@ -232,3 +232,107 @@
 - **Source**: GOOGLE_GENERATE
 - **Recovery**: REFLECT
 ---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.281Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Test Failure
+- **Severity**: HIGH
+- **Source**: TEST_UNIT
+- **Recovery**: RETRY
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.289Z
+- **Code**: HALLUCINATION_DETECTED
+- **Message**: Hallucination in Surah analysis
+- **Severity**: CRITICAL
+- **Source**: ORACLE_CHECK
+- **Recovery**: HALT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.302Z
+- **Code**: MITHAQ_VIOLATION
+- **Message**: Mock data detected in core logic
+- **Severity**: CRITICAL
+- **Source**: INTEGRITY_SCAN
+- **Recovery**: HALT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:27.396Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Severity**: HIGH
+- **Source**: GOOGLE_GENERATE
+- **Recovery**: REFLECT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:29.691Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
+- **Severity**: HIGH
+- **Source**: GOOGLE_GENERATE
+- **Recovery**: REFLECT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.378Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Test Failure
+- **Severity**: HIGH
+- **Source**: TEST_UNIT
+- **Recovery**: RETRY
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.398Z
+- **Code**: HALLUCINATION_DETECTED
+- **Message**: Hallucination in Surah analysis
+- **Severity**: CRITICAL
+- **Source**: ORACLE_CHECK
+- **Recovery**: HALT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.418Z
+- **Code**: MITHAQ_VIOLATION
+- **Message**: Mock data detected in core logic
+- **Severity**: CRITICAL
+- **Source**: INTEGRITY_SCAN
+- **Recovery**: HALT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:06:56.058Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
+- **Severity**: HIGH
+- **Source**: GOOGLE_GENERATE
+- **Recovery**: REFLECT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:06:56.375Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
+- **Severity**: HIGH
+- **Source**: GOOGLE_GENERATE
+- **Recovery**: REFLECT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.535Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Test Failure
+- **Severity**: HIGH
+- **Source**: TEST_UNIT
+- **Recovery**: RETRY
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.626Z
+- **Code**: HALLUCINATION_DETECTED
+- **Message**: Hallucination in Surah analysis
+- **Severity**: CRITICAL
+- **Source**: ORACLE_CHECK
+- **Recovery**: HALT
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.657Z
+- **Code**: MITHAQ_VIOLATION
+- **Message**: Mock data detected in core logic
+- **Severity**: CRITICAL
+- **Source**: INTEGRITY_SCAN
+- **Recovery**: HALT
+---

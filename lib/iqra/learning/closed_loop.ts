@@ -14,9 +14,9 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
-import { IQRAMemory } from '../memory.ts';
+import { IQRAMemory } from '../03-memory/memory.js';
 import { DoctrinalGuard } from '../quran/doctrinal_guard.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

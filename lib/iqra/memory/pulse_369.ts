@@ -28,7 +28,7 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { appendToTrustChain } from '../security.ts';
 import { MemoryBridge, type BridgeEntry } from './memory_bridge.ts';
 
@@ -262,7 +262,7 @@ export class Pulse369 {
       }
 
       // ضغط وتخزين في Cold (Redis/JSON)
-      const { IQRAMemory } = await import('../memory.ts');
+      const { IQRAMemory } = await import('../03-memory/memory.js');
       const archiveKey = `archive:experiences:${Date.now()}`;
       const compressed = oldEntries.map(e => ({
         id: e.id,
@@ -402,7 +402,7 @@ export class Pulse369 {
   ): Promise<void> {
     try {
       // ② تحليل عبر Groq (مع مهارة quran_deep_analysis)
-      const { SkillBank } = await import('../skill_bank.ts');
+      const { SkillBank } = await import('../08-skills/skill_bank.js');
       const skillContent = SkillBank.getSkillContent('quran_deep_analysis');
       if (!skillContent) return;
 
@@ -526,7 +526,7 @@ export class Pulse369 {
    */
   private static async _incrementCounter(): Promise<number> {
     try {
-      const { IQRAMemory } = await import('../memory.ts');
+      const { IQRAMemory } = await import('../03-memory/memory.js');
       const redis = await (IQRAMemory as any).getRedis();
       if (redis) {
         const val = await redis.incr(`iqra:${COUNTER_KEY}`);
@@ -544,7 +544,7 @@ export class Pulse369 {
    */
   static async getCounter(): Promise<number> {
     try {
-      const { IQRAMemory } = await import('../memory.ts');
+      const { IQRAMemory } = await import('../03-memory/memory.js');
       const redis = await (IQRAMemory as any).getRedis();
       if (redis) {
         const val = await redis.get(`iqra:${COUNTER_KEY}`);

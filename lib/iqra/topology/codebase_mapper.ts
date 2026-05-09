@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 
 /**
  * 🌀 CodebaseTopologyMapper — مخطط طوبولوجيا الكود

@@ -32,9 +32,9 @@ import { Modality } from './qalbin/qalbin_node.ts';
 import { QURAN_SEEDS, findSeed } from './qalbin/quran_seeds.ts';
 import { NumericalValidator } from './numerical_validator.ts';
 import { PatternMemory } from '../memory/pattern_memory.ts';
-import { IQRAMemory } from '../memory.ts';
+import { IQRAMemory } from '../03-memory/memory.js';
 import { appendToTrustChain } from '../security.ts';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { CodebaseTopologyMapper } from '../topology/codebase_mapper.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

@@ -19,7 +19,18 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "#core/*": ["./lib/iqra/01-core/*"],
+      "#workers/*": ["./lib/iqra/02-workers/*"],
+      "#memory/*": ["./lib/iqra/03-memory/*"],
+      "#quran/*": ["./lib/iqra/04-quran/*"],
+      "#rewards/*": ["./lib/iqra/05-rewards/*"],
+      "#security/*": ["./lib/iqra/06-security/*"],
+      "#llm/*": ["./lib/iqra/07-llm/*"],
+      "#skills/*": ["./lib/iqra/08-skills/*"],
+      "#evolution/*": ["./lib/iqra/09-evolution/*"],
+      "#topology/*": ["./lib/iqra/10-topology/*"],
+      "#trading/*": ["./lib/iqra/11-trading/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

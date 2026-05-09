@@ -8,7 +8,7 @@
  * It bridges the Fibonacci ratios and the 3-6-9 Tesla harmonics.
  */
 
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { RewardEngine } from '../rewards/engine.ts';
 
 export interface MarketSignal {

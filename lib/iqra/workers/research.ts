@@ -2,7 +2,7 @@ import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
 import type { MissionHandoff } from '../../../agents/contracts.ts';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 import { assertConscience } from './worker_conscience.ts';
 
 /**

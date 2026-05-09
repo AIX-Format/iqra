@@ -11,7 +11,7 @@
  */
 
 import { SurahAnalyzer } from '../lib/iqra/quran/surah_analyzer.ts';
-import { IQRALogger } from '../lib/iqra/logger.ts';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
 
 // ── Parse CLI Args ────────────────────────────────────────────────────────────
 

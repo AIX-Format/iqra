@@ -30,7 +30,7 @@
 
 import { z } from 'zod';
 import { appendToTrustChain } from '../security.ts';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../12-infrastructure/logger.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

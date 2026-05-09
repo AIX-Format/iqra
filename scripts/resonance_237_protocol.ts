@@ -7,8 +7,8 @@
  */
 
 import { RewardEngine } from '../lib/iqra/rewards/engine.ts';
-import { HeartbeatSystem } from '../lib/iqra/heartbeat.ts';
-import { IQRALogger } from '../lib/iqra/logger.ts';
+import { HeartbeatSystem } from '../lib/iqra/12-infrastructure/heartbeat.js';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
 
 async function runSovereignDiscovery() {
   console.log("🌀 Starting Sovereign Resonance Discovery (2-3-7 Protocol)...");

@@ -1,7 +1,7 @@
 import { SelfPlayLoop } from '../lib/iqra/trading/self_play_loop';
 import { MemoryGovernor } from '../lib/iqra/infrastructure/memory_governor';
-import { TelegramBot } from '../lib/iqra/telegram_bot';
-import { IQRALogger } from '../lib/iqra/logger';
+import { TelegramBot } from '../lib/iqra/13-utils/telegram_bot';
+import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
 
 /**
  * 🌀 IQRA Sovereign Trading Pulse

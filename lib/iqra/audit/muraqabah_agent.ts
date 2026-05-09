@@ -8,9 +8,9 @@
  */
 
 import { LlmAgent } from '@google/adk';
-import { SovereignIdentity } from '../sovereign_identity';
-import { IQRALogger } from '../logger';
-import { IQRAMemory } from '../memory';
+import { SovereignIdentity } from '../06-security/sovereign_identity';
+import { IQRALogger } from '../12-infrastructure/logger';
+import { IQRAMemory } from '../03-memory/memory';
 
 export class MuraqabahAgent {
   private static _agent: LlmAgent | null = null;
