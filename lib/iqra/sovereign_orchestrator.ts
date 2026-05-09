@@ -11,6 +11,11 @@ import { logToIQRAFile, appendToTrustChain } from './security.ts';
 import { ResourceFactory } from './conscience/resource_factory.ts';
 import { RewardEngine } from './rewards/engine.ts';
 import { SovereignIdentity } from './sovereign_identity.ts';
+import { TopologicalAnalyzer } from './skills/topological_analyzer.ts';
+import { Search369 } from './evolution/search_369.ts';
+import { LeagueManager } from './evolution/league_manager.ts';
+import { FithrahBaseline } from './audit/fithrah_baseline.ts';
+import { IQRAMemory } from './memory.ts';
 
 // ── Damir يُحمَّل lazily لتجنب circular imports ──────────────────────────────
 let _missionDamir: import('./damir_conscience.ts').DamirConscience | null = null;
@@ -224,6 +229,46 @@ export class MissionControl {
         mission_id: `mission_${Math.random().toString(36).substring(7)}`
       }
     };
+
+    // 🧬 Alpha Evolution: Evolutionary Contemplation (3-6-9 Search)
+    IQRALogger.info('🧬 [MISSION_CONTROL] Initiating Alpha Evolution pulse...');
+    const evolutionWinner = await Search369.evolve(input);
+    const optimizedInput = `[EVOLVED_STRATEGY]: ${evolutionWinner.vector}\n\n[ORIGINAL_OBJECTIVE]: ${input}`;
+    state.context.evolution = {
+      winner: evolutionWinner.vector,
+      score: evolutionWinner.score,
+      simulation: evolutionWinner.simulationResult
+    };
+
+    // 🤺 Alpha League: Adversarial Pressure Test
+    const leagueVerdict = await LeagueManager.adjudicate(evolutionWinner.simulationResult);
+    if (!leagueVerdict.isStable) {
+      IQRALogger.warn(`🤺 [MISSION_CONTROL] League blocked winner! Exploits: ${leagueVerdict.exploitsFound.join(', ')}`);
+      // Re-route to a "Safe Path" or abort
+      return { response: "Mission Aborted: League Stability Failure.", reports: [], context: state.context };
+    }
+
+    // 🌱 Fithrah Check: Evolutionary Alignment
+    const winnerEmbedding = await IQRAMemory.generateEmbedding(evolutionWinner.vector);
+    const alignment = await FithrahBaseline.verifyAlignment(evolutionWinner.vector, winnerEmbedding);
+    if (!alignment.isAligned) {
+      IQRALogger.warn('🌱 [MISSION_CONTROL] Anomaly detected by Fithrah. Proceeding with caution...');
+      state.context.anomaly_detected = true;
+    }
+
+    // 🌀 Topological Pulse Check (If Quranic)
+    if (skills.includes('quran_analysis')) {
+      const segments = input.split('\n'); 
+      const topoResult = await TopologicalAnalyzer.analyze(optimizedInput, segments);
+      state.context.resonance = {
+        ...state.context.resonance,
+        topological_score: topoResult.resonance,
+        symmetry_score: topoResult.symmetryScore,
+        patterns: topoResult.patterns,
+        novelty: topoResult.novelty
+      };
+      IQRALogger.info(`🌀 [MISSION_CONTROL] Topological resonance detected: ${topoResult.resonance.toFixed(4)}`);
+    }
 
     // 1. Resonance Worker
     const resResult = await this.executePhase('resonance', input, state);

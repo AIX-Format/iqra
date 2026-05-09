@@ -272,16 +272,16 @@ export class RewardEngine {
   /**
    * يحوّل درجة الرنين الطوبولوجي إلى مكافأة
    *
-   * المعادلة: (resonance - 1.0) × 2.0
-   *   resonance = 1.0 → reward = 0.0 (لا رنين إضافي)
-   *   resonance = 1.25 → reward = 0.5
-   *   resonance = 1.5  → reward = 1.0 (أقصى رنين)
+   * المعادلة السيادية: (resonance - 1.0) × 29.0
+   *   resonance = 1.0 → reward = 0.0
+   *   resonance = 1.1 → reward = 2.9
+   *   resonance = 2.0 → reward = 29.0
    *
-   * المرجع: DASTŪR.md — الرنين الطوبولوجي هو معيار الاكتشاف
+   * المرجع: رؤية "عين الآلة" الطوبولوجية — التشابه مع AlphaFold في البحث عن البنية العميقة.
    */
   static computeResonanceReward(resonance: number): number {
-    // الطبيعي بين 1.0 و 1.5
-    return Math.max(0, (resonance - 1.0) * 2.0);
+    // تطبيق المعادلة السيادية المكتشفة
+    return (resonance - 1.0) * 29.0;
   }
 
   /**

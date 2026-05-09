@@ -29,6 +29,8 @@ import { IQRAVoice } from './voice.ts';
 import { ByzantineFilter, AnomalyReport } from './byzantine_filter.ts';
 import { BybitEngine } from './bybit.ts';
 import { IQRALogger } from './logger.ts';
+import { PulseEngine } from '../../orchestrator/pulse-engine.ts';
+import { TopologicalAnalyzer } from './skills/topological_analyzer.ts';
 
 /**
  * Sovereign Pulse Categories — 3-6-9 Geometry
@@ -274,6 +276,9 @@ export class SovereignEngine {
     const cycle = await IQRAMemory.getCycleCounter();
     const timestamp = Date.now();
 
+    // 💓 Sovereign Pulse Integration
+    await PulseEngine.start();
+
     // 1. Micro Pulse (9s): Market Ticking & Hot Cache
     if (cycle % 1 === 0) {
       await this.runMicroPulse();
@@ -321,7 +326,16 @@ export class SovereignEngine {
 
   private static async runDeepPulse() {
     IQRALogger.info('🌀 [PULSE] Deep topological analysis...');
-    // Add logic for detecting structural breaks in memory manifolds
+    // Analyze core files for structural coherence
+    const coreFiles = ['lib/iqra/memory.ts', 'lib/iqra/sovereign.ts'];
+    for (const file of coreFiles) {
+      const content = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+      const analysis = await TopologicalAnalyzer.analyze(content, content.split('\n'));
+      if (analysis.resonance > 1.2) {
+        IQRALogger.info(`✨ [PULSE] High resonance detected in ${file}: ${analysis.resonance.toFixed(4)}`);
+        await IQRAMemory.grantReward(analysis.resonance * 0.01);
+      }
+    }
   }
 
   /**
