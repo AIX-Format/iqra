@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | docs: document file recovery process in REFLECTION.md |
-| 🔗 **الـ Commit** | `52937fc` |
+| 💡 **آخر خطوة \| Last Step** | docs: add comprehensive IQRA architecture specification |
+| 🔗 **الـ Commit** | `62e816b` |
 
 <!-- IQRA-LATEST-END -->
 
