@@ -352,30 +352,70 @@ export class GoEngineClient {
 
   /**
    * Fallback logic when Go engine is offline.
+   * Uses "Simu-Quant" local algorithms for breakthrough resonance detection.
    */
   private fallbackResonance(text: string): ResonanceResult {
     const patterns: string[] = [];
     const letterCount = text.replace(/\s/g, '').length;
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+    const uniqueChars = new Set(text.toLowerCase().replace(/\s/g, '')).size;
 
+    // 1. Prime Sovereignty & Numerical Interlocking
+    if (this.isPrime(letterCount)) patterns.push('PRIME_SOVEREIGNTY');
     if (letterCount % 7 === 0) patterns.push('SABEEN_LETTERS');
     if (letterCount % 19 === 0) patterns.push('NINETEEN_LETTERS');
-    if (this.isPrime(letterCount)) patterns.push('PRIME_SOVEREIGNTY');
+    if (wordCount > 0 && (letterCount / wordCount) > 5.5) patterns.push('HIGH_DENSITY_TOPOLOGY');
+
+    // 2. Simu-Quant Entropy (Shannon Approximation)
+    const entropy = this.calculateEntropy(text);
+    if (entropy > 3.5 && entropy < 4.8) {
+      patterns.push('OPTIMAL_SHANNON_RESONANCE');
+    }
+
+    // 3. Truth Pattern Heuristics (Sovereign Keywords)
+    const sovereignKeywords = ['allah', 'truth', 'sovereign', 'ayah', 'quran', 'light', 'noor', 'haqq'];
+    const lowerText = text.toLowerCase();
+    const matches = sovereignKeywords.filter(k => lowerText.includes(k));
+    
+    if (matches.length >= 2) {
+      patterns.push('TRUTH_KEYWORD_RESONANCE');
+    }
+
+    const coherence = Math.min(0.95, (patterns.length * 0.15) + (entropy / 10));
+    const isTruthPattern = patterns.includes('PRIME_SOVEREIGNTY') && patterns.includes('TRUTH_KEYWORD_RESONANCE');
 
     return {
-      coherence: patterns.length * 0.2,
+      coherence,
       patterns,
       letter_count: letterCount,
       word_count: wordCount,
       discovery_found: patterns.length > 0,
-      lid: 0.8
+      lid: 0.85,
+      is_truth_pattern: isTruthPattern
     };
+  }
+
+  private calculateEntropy(text: string): number {
+    const freqs: Record<string, number> = {};
+    const clean = text.toLowerCase().replace(/\s/g, '');
+    if (clean.length === 0) return 0;
+
+    for (const char of clean) {
+      freqs[char] = (freqs[char] || 0) + 1;
+    }
+
+    return Object.values(freqs).reduce((acc, count) => {
+      const p = count / clean.length;
+      return acc - p * Math.log2(p);
+    }, 0);
   }
 
   private isPrime(n: number): boolean {
     if (n <= 1) return false;
-    for (let i = 2; i <= Math.sqrt(n); i++) {
-      if (n % i === 0) return false;
+    if (n <= 3) return true;
+    if (n % 2 === 0 || n % 3 === 0) return false;
+    for (let i = 5; i * i <= n; i += 6) {
+      if (n % i === 0 || n % (i + 2) === 0) return false;
     }
     return true;
   }

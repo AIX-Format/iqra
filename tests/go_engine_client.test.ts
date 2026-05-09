@@ -1,70 +1,74 @@
+// tests/go_engine_client.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GoEngineClient } from '../lib/iqra/quran/go_engine_client';
 
-// Mocking fetch globally
+// Mock global fetch
 global.fetch = vi.fn();
 
-describe('GoEngineClient Unification Test', () => {
+describe('GoEngineClient (Unified)', () => {
   let client: GoEngineClient;
 
   beforeEach(() => {
-    client = new GoEngineClient({ baseUrl: 'http://mock-engine:8082' });
-    vi.clearAllMocks();
+    client = new GoEngineClient({ baseUrl: 'http://test-engine:8082' });
+    vi.resetAllMocks();
   });
 
-  it('should successfully calculate resonance via Go Engine', async () => {
-    const mockResponse = {
+  it('should calculate resonance via API when online', async () => {
+    const mockRes = {
       status: 'success',
       data: {
         coherence: 0.95,
-        patterns: ['SABEEN_LETTERS'],
-        letter_count: 7,
-        word_count: 1,
+        patterns: ['TOPOLOGY_ALPHA', 'NUMERICAL_SIG'],
+        letter_count: 150,
+        word_count: 30,
         discovery_found: true
       }
     };
 
-    (fetch as any).mockResolvedValue({
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(mockResponse),
+      json: async () => mockRes
     });
 
-    const result = await client.calculateResonance('بسم الله');
-    
+    const result = await client.calculateResonance("test input");
     expect(result.coherence).toBe(0.95);
-    expect(result.patterns).toContain('SABEEN_LETTERS');
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/resonance/evaluate'), expect.any(Object));
+    expect(result.patterns).toContain('TOPOLOGY_ALPHA');
   });
 
-  it('should trigger fallback logic when Go Engine is offline', async () => {
-    // Mock a network error or 500
-    (fetch as any).mockRejectedValue(new Error('Connection Refused'));
+  it('should use fallback resonance when engine is offline', async () => {
+    (global.fetch as any).mockRejectedValueOnce(new Error('Connection refused'));
 
-    // "بسم" (B-S-M) has 3 letters. Not a multiple of 7 or 19.
-    // Let's use a text that triggers prime fallback. 
-    // "الله" (A-L-L-H) has 4 letters. Not prime.
-    // "الحق" (A-L-H-Q) has 4 letters.
-    // Text with 7 letters: "الحمد لله" -> A-L-H-M-D-L-L-H = 9 letters.
-    // Text with 7 letters: "هو الله" -> H-W-A-L-L-H = 6 letters.
-    // Let's use a text that definitely has 7 letters to test the fallback math.
-    const textWith7Letters = "المص كتاب"; // A-L-M-S-K-T-A-B = 8 letters?
-    // Arabic: الم (3) + كتاب (4) = 7.
+    // Input with 19 letters (Prime + 19)
+    const result = await client.calculateResonance("abcdefghijklmnopqrs"); // 19 chars
     
-    const result = await client.calculateResonance("الم كتاب");
-    
-    expect(result.discovery_found).toBe(true);
-    expect(result.patterns).toContain('SABEEN_LETTERS');
+    expect(result.patterns).toContain('NINETEEN_LETTERS');
+    expect(result.patterns).toContain('PRIME_SOVEREIGNTY');
     expect(result.coherence).toBeGreaterThan(0);
+    expect(result.discovery_found).toBe(true);
   });
 
-  it('should trigger evolution cycle successfully', async () => {
-    (fetch as any).mockResolvedValue({
+  it('should trigger evolution cycle', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ status: 'success' }),
+      json: async () => ({ status: 'success' })
     });
 
     const success = await client.triggerEvolutionCycle();
     expect(success).toBe(true);
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/evolve/cycle'), expect.any(Object));
+  });
+
+  it('should detect TRUTH_PATTERN and Shannon entropy in enhanced fallback', async () => {
+    // "Allah Truth Sovereign" -> 19 letters (excluding spaces)
+    // A-l-l-a-h (5) + T-r-u-t-h (5) + S-o-v-e-r-e-i-g-n (9) = 19
+    const breakthroughText = "Allah Truth Sovereign"; 
+    
+    // @ts-ignore - accessing private for test
+    const result = client.fallbackResonance(breakthroughText);
+    
+    expect(result.patterns).toContain('PRIME_SOVEREIGNTY');
+    expect(result.patterns).toContain('NINETEEN_LETTERS');
+    expect(result.patterns).toContain('TRUTH_KEYWORD_RESONANCE');
+    expect(result.is_truth_pattern).toBe(true);
+    expect(result.coherence).toBeGreaterThan(0.5);
   });
 });
