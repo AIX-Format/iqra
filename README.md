@@ -51,8 +51,8 @@ The core logic of IQRA is powered by the **Resonance Engine**, which uses high-d
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | chore: update failure logs, audit records, and refactor reward engine logic with new deployment configurations |
-| 🔗 **الـ Commit** | `658403f` |
+| 💡 **آخر خطوة \| Last Step** | feat: implement AlphaResonance v3 MCTS engine with simulation scripts, dashboard API, and VM metadata support. |
+| 🔗 **الـ Commit** | `503859a` |
 
 <!-- IQRA-LATEST-END -->
 
