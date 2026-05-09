@@ -300,6 +300,17 @@
 - تحويل المعرفة المحلية إلى MCP قابل للاستهلاك من IDE أو عميل خارجي
 - الجمع بين SQLite + LightRAG + Entropic Filter
 
+### نقاط A2A/DID على واجهة Next.js (Vercel-ready)
+
+- `pages/.well-known/did.json.ts`
+- `pages/.well-known/agent-card.json.ts`
+- `pages/.well-known/pi-network/validation-key.txt.ts`
+- `pages/validation-key.txt.ts`
+
+**الدور المعماري**:
+- تمكين اكتشاف الوكيل عبر `.well-known` بدون الاعتماد على Worker منفصل
+- تفعيل `did:web` وتحقق نطاق Pi Browser مباشرة من واجهة Next.js
+
 ---
 
 ## 8) إطار المهارات (Skills Framework)

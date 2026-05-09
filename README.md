@@ -191,6 +191,80 @@ npx vitest run tests/unit/
 
 ---
 
+## ✦ Vercel Frontend Deployment (Next.js)
+
+### 1) Build validation (local first)
+
+```bash
+npm run build
+```
+
+### 2) Required environment variables on Vercel
+
+- `NEXT_PUBLIC_APP_URL` (e.g. `https://your-domain.com`)
+- `NEXT_PUBLIC_APP_DOMAIN` (e.g. `your-domain.com`)
+- `PI_VALIDATION_KEY` (for Pi Browser domain claim)
+- `GROQ_API_KEY`
+- `GOOGLE_GENERATIVE_AI_API_KEY`
+- `UPSTASH_REDIS_REST_URL` (if memory cloud is enabled)
+- `UPSTASH_REDIS_REST_TOKEN`
+
+### 3) Deploy
+
+```bash
+npx vercel
+# then
+npx vercel --prod
+```
+
+### 4) Post-deploy checks
+
+- `/.well-known/did.json`
+- `/.well-known/agent-card.json`
+- `/.well-known/pi-network/validation-key.txt`
+- `/validation-key.txt`
+- `/api/iqra/query`
+- `/api/iqra/topology/hidden`
+
+---
+
+## ✦ A2A + DID + Pi Domain Claim
+
+### A2A discovery endpoints
+
+- `/.well-known/agent-card.json` — agent capabilities + methods
+- `/.well-known/did.json` — `did:web` document for sovereign identity
+
+### Pi Browser domain claim
+
+Set `PI_VALIDATION_KEY` on Vercel, then verify:
+
+```bash
+curl https://your-domain.com/.well-known/pi-network/validation-key.txt
+curl https://your-domain.com/validation-key.txt
+```
+
+If both return the same key, domain claim is ready on Pi Developer Portal.
+
+### Hidden topology capture API (browser-driven)
+
+Use this endpoint from network-visualization frontends to detect obscured topology layers, extract hidden connection patterns, and export results in standard formats:
+
+```bash
+curl -X POST https://your-domain.com/api/iqra/topology/hidden \
+  -H "content-type: application/json" \
+  -d '{
+    "layers":[{"id":"L1","name":"core","visible":true},{"id":"L2","name":"overlay","visible":false}],
+    "nodes":[{"id":"n1","layerId":"L1"},{"id":"n2","layerId":"L2"}],
+    "edges":[{"source":"n1","target":"n2"}],
+    "exportFormat":"json"
+  }'
+```
+
+Supported exports: `json`, `csv`, `graphml`.
+
+---
+
 ## ✦ LLM Providers
 
 | Mode | Provider | Model | RAM |
