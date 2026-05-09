@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | feat: implement Agent Contracts Foundation and systematic modular refactor |
-| 🔗 **الـ Commit** | `f64b6c7` |
+| 💡 **آخر خطوة \| Last Step** | chore(arch): final cleanup and path stabilization |
+| 🔗 **الـ Commit** | `d115da1` |
 
 <!-- IQRA-LATEST-END -->
 
