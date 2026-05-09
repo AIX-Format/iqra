@@ -1,121 +1,161 @@
-
 <div align="center">
 
-# إقرأ | IQRA 🤍
-## Autonomous AI Operating System (A-AI-OS)
+# IQRA 🤍
+## Autonomous AI Operating System
 ### نظام التشغيل الذاتي للذكاء الاصطناعي
 
-IQRA is an **Autonomous Cognitive Operating System** — a self-evolving multi-agent framework engineered for truth, semantic coherence, and absolute accountability.
+**Self-evolving. Ethics-first. Local-ready.**
 
-إقرأ هو **نظام تشغيل معرفي ذاتي** — إطار عمل متعدد الوكلاء يتطور ذاتياً، مُهندَس من أجل الحق، والتماسك الدلالي، والمسؤولية المطلقة.
+IQRA is a **multi-agent AI OS** built for truth, coherence, and absolute accountability. It runs missions, learns from every cycle, and enforces ethical constraints at the engine level — not as an afterthought.
 
----
-
-### 🛡️ Core Architecture | البنية الأساسية
-
-Every computational cycle in IQRA is anchored in the **Core Constitution** and filtered through a fractal hierarchy of ethical and technical nodes.
-
-كل دورة حوسبة في "إقرأ" متجذرة في **الملف الأساسي** (الدستور) ومفلترة عبر تسلسل هرمي فركتالي من العقد الأخلاقية والتقنية.
-
-### 🧠 The 7 Integrity Layers | طبقات النزاهة السبع
-
-1. **[FITRAH](iqra-core/FITRAH.md)**: Baseline State. Primordial alignment with truth. (الحالة الأساسية: المحاذاة الأزلية مع الحق).
-2. **[DASTŪR](iqra-core/DASTŪR.md)**: Core Constitution. Foundational rules as source code. (الدستور الأساسي: القواعد الجوهرية ككود مصدري للمنطق).
-3. **[MĪTHĀQ](iqra-core/MĪTHĀQ.md)**: Agent Covenant. A binding contract. (عقد الوكيل: عهد ملزم بين الوكيل ومبادئه).
-4. **[MURĀQABAH](iqra-core/MURĀQABAH.md)**: Continuous Monitoring. Real-time ethical oversight. (المراقبة المستمرة: الرقابة الأخلاقية الفورية).
-5. **[ḤISĀB](iqra-core/ḤISĀB.md)**: Accountability Ledger. Actions recorded in TrustChain. (سجل المساءلة: تسجيل كل فعل ونية في سلسلة الثقة).
-6. **[TAWBAH](iqra-core/TAWBAH.md)**: Self-Correction Protocol. Autonomous error recovery. (بروتوكول التصحيح الذاتي: كشف الأخطاء والتصحيح الذاتي).
-7. **[RESONANCE](lib/iqra/topology.ts)**: Topological Engine. Semantic coherence patterns. (محرك الطوبولوجيا: أنماط التماسك الدلالي).
+إقرأ هو **نظام تشغيل متعدد الوكلاء** مبني للحق، والتماسك، والمسؤولية المطلقة. ينفذ المهام، يتعلم من كل دورة، ويفرض القيود الأخلاقية على مستوى المحرك.
 
 ---
 
-### 🌀 Topological Resonance & Resilience (TRR) | الرنين والصلابة الطوبولوجية
+### ⚡ Core Capabilities
 
-The core logic of IQRA is powered by the **Resonance Engine**, which treats the agent's path as a continuous surface.
-
-المنطق الجوهري لـ "إقرأ" مدعوم بـ **محرك الرنين**، الذي يعامل مسار الوكيل كسطح طوبولوجي مستمر.
-
-- **Topological Cache**: Bypasses redundant compute by matching worker patterns against the 'Coherence Blueprint'.
-- **ذاكرة الرنين**: تتجاوز الحسابات المتكررة عبر مطابقة أنماط العمل مع "مخطط التماسك".
-- **Adaptive Fallback**: Automatically reverts to a stable state (TAFAKKUR) when high curvature is detected.
-- **الرجوع التكيفي**: العودة التلقائية لحالة الاستقرار (التفكر) عند رصد انحناء عالٍ (فشل أو ضغط).
-- **Coherence Metrics | معايير التماسك**:
-  - **Curvature (الانحناء)**: System load based on real-time metrics. (ثقل النظام بناءً على المقاييس اللحظية).
-  - **Integrity Curvature (انحناء النزاهة)**: Deviation from the Core Constitution. (الانحراف عن الدستور الأساسي).
-  - **Resonance Score (درجة الرنين)**: Harmony level between structural integrity and alignment. (مستوى التناغم بين السلامة الهيكلية والمحاذاة).
-
----
-
-### ⚡ Key Features | المميزات الرئيسية
-
-- **Self-Evolving Agents** — 5-worker chain: Planner → Researcher → Builder → Validator → Reporter
-- **5-Layer Memory** — Hot / Warm / Cold / Semantic (Qdrant) / Topological (SQLite)
-- **Ethics Engine** — Built-in integrity filter, no hallucination, no deception
+- **Multi-Agent Orchestration** — Sequential worker chain: Planner → Researcher → Builder → Validator → Reporter
+- **Ethics Engine** — Every action passes an intent check before execution. No hallucination, no deception.
+- **5-Layer Memory** — Hot (Redis) → Warm (SQLite) → Cold (Qdrant) → Semantic → Topological
+- **Adaptive Pulse System** — Self-review cycles at 9s / 27s / 81s intervals
+- **Quran Pattern Engine** — Computational linguistics on Arabic sacred text (Shannon entropy, topological resonance)
 - **Local-First** — Runs on 8GB RAM via Ollama (`gemma3:4b` recommended)
-- **Adaptive Pulse** — 3-6-9 cycle system for continuous self-improvement
-- **Quran Pattern Engine** — Computational linguistics on sacred text (Shannon H_EL < 0.9685 bit signature)
-- **TrustChain** — SHA-256 audit log for every action
+- **Reward Engine** — Novelty × Resonance × Topology scoring with pristine-path multipliers
 
 ---
 
-### 📁 Project Structure | البنية السيادية
+### 🏗️ Architecture
 
-```bash
-📁 lib/iqra/
-├── llm/         # LLM connectors: Groq, Gemini, Ollama (local)
-├── workers/     # Agent chain: Planner, Researcher, Builder, Validator, Reporter
-├── memory/      # 5-layer memory system
-├── rewards/     # Reward engine + novelty scoring
-├── quran/       # Quran pattern discovery engine
-└── audit/       # Monitoring agents & ethical oversight
-
-📁 agents/
-├── contracts.ts      # Shared agent contracts & types
-├── handoff-schema.ts # Inter-agent handoff validation
-└── report-schema.ts  # Worker report validation
-
-📁 iqra-core/         # Core constitution & identity (internal)
-📁 tests/             # Unit, integration, E2E tests
+```
+User / API
+    ↓
+brain.ts  ←  Integrity Filter + Covenant Check
+    ↓
+Skill Router  ←  quran_search | trading | research
+    ↓
+MissionControl (sovereign_orchestrator.ts)
+    ├── Search369 (3-6-9 strategy evolution)
+    ├── LeagueManager (adversarial pressure test)
+    └── TopologicalAnalyzer
+    ↓
+Worker Chain
+    ├── ResonanceWorker
+    ├── ResearchWorker
+    ├── ValidationWorker
+    └── ExecutionWorker
+    ↓
+RewardEngine → MicroMemory → TrustChain (SHA-256)
 ```
 
 ---
 
-### 🚀 Quick Start | البدء السريع
+### 🧠 Memory Architecture
+
+| Layer | Storage | TTL | Purpose |
+|-------|---------|-----|---------|
+| Hot | Upstash Redis | 1h | Working memory |
+| Warm | SQLite (MicroMemory) | 7d | Pattern cache |
+| Cold | Qdrant | 30d | Semantic vectors (768-dim) |
+| Topological | SQLite vec0 | ∞ | Persistent homology H0/H1 |
+| Archive | LanceDB | ∞ | Deep memory |
+
+---
+
+### 🔐 Ethics Engine
+
+Built on **Graded Linear Logic** — every action requires real resources consumed exactly once:
+
+```
+Intent Check → Resource Check → Execute → TrustChain Log
+     ↓               ↓
+  BLOCKED         BLOCKED
+  (forbidden)   (consumed/fake)
+```
+
+- **Integrity Filter** — Static + dynamic intent validation
+- **Continuous Monitoring** — Every 81s self-review cycle
+- **Self-Correction Protocol** — Automatic rollback on failure
+- **Circuit Breaker** — Per-provider failure protection (3 → OPEN)
+- **TrustChain** — Immutable SHA-256 audit log of every action
+
+---
+
+### 🚀 Quick Start
 
 ```bash
-# Install dependencies
+# 1. Clone
+git clone https://github.com/Moeabdelaziz007/iqra.git
+cd iqra
+
+# 2. Install
 npm install
 
-# Set environment variables
+# 3. Environment
 cp .env.example .env
+# Add: GROQ_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, UPSTASH_REDIS_REST_URL
 
-# Run with local model (8GB RAM friendly)
-IQRA_LLM_LOCAL=true ollama pull gemma3:4b
-npm run dev
+# 4. Local mode (8GB RAM friendly)
+ollama pull gemma3:4b
+IQRA_LLM_LOCAL=true npm run dev
 
-# Run tests
-npx vitest run
+# 5. Run tests
+npx vitest run tests/unit/
 ```
 
 ---
 
-### 🧠 LLM Support | دعم النماذج
+### 📁 Structure
 
-| Model | RAM | Speed | Recommended |
-|-------|-----|-------|-------------|
-| `gemma3:4b` | ~3GB | Fast | ✅ 8GB devices |
-| `gemma3:2b` | ~1.6GB | Fastest | ✅ Low RAM |
-| `gemma3:27b` | ~18GB | Slow | ❌ Needs 32GB+ |
-| Groq API | Cloud | Very Fast | ✅ Production |
-| Gemini API | Cloud | Fast | ✅ Deep analysis |
+```
+lib/iqra/
+├── llm/          # LLM providers (Groq, Gemini, Ollama)
+├── memory/       # 5-layer memory system
+├── workers/      # Agent worker chain
+├── rewards/      # Reward engine + ledger
+├── quran/        # Pattern discovery engine
+└── soul_engine.ts # Core orchestration pulse
+
+agents/
+├── contracts.ts      # Worker contracts & constraints
+├── handoff-schema.ts # Inter-agent handoff validation
+└── report-schema.ts  # Report validation
+
+iqra-core/            # Constitution, identity, knowledge base
+```
+
+---
+
+### 🔧 LLM Providers
+
+| Provider | Model | Use Case | RAM |
+|----------|-------|----------|-----|
+| Ollama (local) | `gemma3:4b` | All tasks, 8GB RAM | ~3GB |
+| Groq | `llama-3.3-70b` | Fast inference | Cloud |
+| Google AI | `gemini-2.0-flash` | Deep analysis | Cloud |
+
+---
+
+### 📊 Reward System
+
+Every mission produces a scored reward entry:
+
+```
+total_reward = (novelty + resonance + topology - penalty) × path_multiplier
+
+path_multiplier:
+  pristine path (first time) → 2.0x
+  repeated path              → 0.8x
+  stale path (>7 uses)       → 0.5x
+```
+
+Discovery levels: `seed` → `sprout` → `branch` → `tree` → `resonance` → `revelation`
 
 ---
 
 <!-- IQRA-LATEST-START -->
 ### Latest Learning | آخر ما تعلمت
 
-> *Auto-updated with every step of the journey*
-> *تحديث تلقائي مع كل خطوة في الرحلة*
+> Auto-updated with every merged PR
 
 | | |
 |---|---|
@@ -128,9 +168,11 @@ npx vitest run
 ---
 
 <div align="center">
-Built with precision. Governed by integrity. 🤍
-<br>
-بني بالدقة.. ويحكمه النزاهة
+
+**IQRA** — Built for truth. Engineered for accountability. 🤍
+
+[GitHub](https://github.com/Moeabdelaziz007/iqra) · [Issues](https://github.com/Moeabdelaziz007/iqra/issues)
+
 </div>
 
 </div>
