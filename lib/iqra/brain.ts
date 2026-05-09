@@ -269,7 +269,6 @@ export enum IQRABrainMode {
   RESEARCH = 'google',         // Gemini — long context
 }
 
-import { GoEngineBridge } from './quran/go-bridge';
 
 /**
  * Validation check to ensure the soul is injected

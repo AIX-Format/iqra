@@ -112,6 +112,16 @@ export interface BatchAnalysisResponse {
   };
 }
 
+export interface ResonanceResult {
+  coherence: number;
+  patterns: string[];
+  letter_count: number;
+  word_count: number;
+  discovery_found: boolean;
+  lid?: number;
+  is_truth_pattern?: boolean;
+}
+
 // ── GoEngineClient ────────────────────────────────────────────────────────────
 
 export class GoEngineClient {
@@ -285,6 +295,89 @@ export class GoEngineClient {
       IQRALogger.error(`❌ [GO_ENGINE] Batch analysis failed: ${(e as Error).message}`);
       throw e;
     }
+  }
+
+  // ── Resonance & Evolution (Legacy Bridge Integration) ─────────────────────
+
+  /**
+   * Calculate topological and numerical resonance of a text.
+   */
+  async calculateResonance(input: string): Promise<ResonanceResult> {
+    const start = Date.now();
+    try {
+      const response = await this._fetch('/resonance/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ input })
+      });
+
+      const latency = Date.now() - start;
+      const data = response.data as ResonanceResult;
+
+      appendToTrustChain(
+        'GO_ENGINE:RESONANCE',
+        'evaluate',
+        `latency=${latency}ms coherence=${data.coherence.toFixed(3)} patterns=${data.patterns.length}`,
+        data.coherence
+      );
+
+      return data;
+    } catch (error) {
+      IQRALogger.warn(`⚠️ [GO_ENGINE] Engine unavailable, using TypeScript fallback resonance logic: ${(error as Error).message}`);
+      return this.fallbackResonance(input);
+    }
+  }
+
+  /**
+   * Catch specific patterns in the text.
+   */
+  async calculateCatch(input: string): Promise<string[]> {
+    const res = await this.calculateResonance(input);
+    return res.patterns;
+  }
+
+  /**
+   * Trigger the autonomous evolution cycle in the Go engine.
+   */
+  async triggerEvolutionCycle(): Promise<boolean> {
+    try {
+      const response = await this._fetch('/evolve/cycle', {
+        method: 'GET'
+      });
+      return response.status === 'success';
+    } catch (e) {
+      IQRALogger.warn(`⚠️ [GO_ENGINE] Evolution cycle trigger failed: ${(e as Error).message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Fallback logic when Go engine is offline.
+   */
+  private fallbackResonance(text: string): ResonanceResult {
+    const patterns: string[] = [];
+    const letterCount = text.replace(/\s/g, '').length;
+    const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+
+    if (letterCount % 7 === 0) patterns.push('SABEEN_LETTERS');
+    if (letterCount % 19 === 0) patterns.push('NINETEEN_LETTERS');
+    if (this.isPrime(letterCount)) patterns.push('PRIME_SOVEREIGNTY');
+
+    return {
+      coherence: patterns.length * 0.2,
+      patterns,
+      letter_count: letterCount,
+      word_count: wordCount,
+      discovery_found: patterns.length > 0,
+      lid: 0.8
+    };
+  }
+
+  private isPrime(n: number): boolean {
+    if (n <= 1) return false;
+    for (let i = 2; i <= Math.sqrt(n); i++) {
+      if (n % i === 0) return false;
+    }
+    return true;
   }
 
   // ── Private Helpers ───────────────────────────────────────────────────────

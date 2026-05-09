@@ -20,7 +20,7 @@ import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
 import type { MissionHandoff } from '../../../agents/contracts.ts';
 import { appendToTrustChain } from '../security.ts';
 import { IQRALogger } from '../logger.ts';
-import { GoEngineBridge } from '../quran/go-bridge.ts';
+import { goEngine } from '../quran/go_engine_client.ts';
 import type { MissionContext, HandoffResult } from '../mission-context.ts';
 
 export interface ResonanceData {
@@ -40,8 +40,8 @@ export class ResonanceWorker extends SovereignWorker {
 
     try {
       // 1. Analysis of Input for Resonance | تحليل المدخلات للرنين
-      const goResonance = await GoEngineBridge.calculateResonance(input);
-      const caughtPatterns = await GoEngineBridge.calculateCatch(input);
+      const goResonance = await goEngine.calculateResonance(input);
+      const caughtPatterns = await goEngine.calculateCatch(input);
 
       const hasTopology = caughtPatterns.some((p: string) => p.includes('TOPOLOGY'));
       const hasMathCode = caughtPatterns.some((p: string) => p.includes('NUMERICAL'));
@@ -78,7 +78,7 @@ export class ResonanceWorker extends SovereignWorker {
 
       if (topological_score > 0.85) {
         this.markImplemented("Evolving: High resonance detected, triggering evolution cycle");
-        await GoEngineBridge.triggerEvolutionCycle();
+        await goEngine.triggerEvolutionCycle();
       }
 
       const handoff: MissionHandoff = {

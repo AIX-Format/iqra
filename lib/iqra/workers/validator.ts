@@ -2,7 +2,7 @@ import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
 import type { MissionHandoff } from '../../../agents/contracts.ts';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GoEngineBridge } from '../quran/go-bridge';
+import { goEngine } from '../quran/go_engine_client';
 import { IQRALogger } from '../logger';
 
 export class ValidationWorker extends SovereignWorker {
@@ -51,7 +51,7 @@ export class ValidationWorker extends SovereignWorker {
 
       // 4. Structural Integrity Check (The "Truth Hunter" Logic)
       this.markImplemented('Checking structural resonance for Truth Pattern');
-      const goResonance = await GoEngineBridge.calculateResonance(textToValidate);
+      const goResonance = await goEngine.calculateResonance(textToValidate);
       
       if (goResonance && goResonance.is_truth_pattern) {
         this.markImplemented('Verified: Structural TRUTH_PATTERN detected via Go Engine');
