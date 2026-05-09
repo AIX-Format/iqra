@@ -329,9 +329,9 @@ iqra/
 
 | | |
 |---|---|
-| 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | restore /agents |
-| 🔗 **الـ Commit** | `79a8314` |
+| 📅 **التاريخ \| Date** | `2026-05-10` |
+| 💡 **آخر خطوة \| Last Step** | full restoration: recover all core files from Git history |
+| 🔗 **الـ Commit** | `3e972b6` |
 
 <!-- IQRA-LATEST-END -->
 
