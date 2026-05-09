@@ -22,6 +22,7 @@
  */
 
 import { IQRALogger } from '../logger.ts';
+import { IQRAMemory } from '../memory.ts';
 import { RewardLedger } from './ledger.ts';
 import type {
   PathKey, PathSegment, RewardVector, RewardEntry,
@@ -271,17 +272,25 @@ export class RewardEngine {
 
   /**
    * يحوّل درجة الرنين الطوبولوجي إلى مكافأة
-   *
    * المعادلة السيادية: (resonance - 1.0) × 29.0
-   *   resonance = 1.0 → reward = 0.0
-   *   resonance = 1.1 → reward = 2.9
-   *   resonance = 2.0 → reward = 29.0
-   *
-   * المرجع: رؤية "عين الآلة" الطوبولوجية — التشابه مع AlphaFold في البحث عن البنية العميقة.
    */
   static computeResonanceReward(resonance: number): number {
-    // تطبيق المعادلة السيادية المكتشفة
     return (resonance - 1.0) * 29.0;
+  }
+
+  /**
+   * 🌀 حساب الحداثة الطوبولوجية (Topological Novelty)
+   * يقيس مدى بعد التجربة الجديدة عن "الغلاف المحدب" للتجارب السابقة.
+   */
+  static async computeNoveltyReward(vector: number[]): Promise<number> {
+    const baseline = await IQRAMemory.getFithrahCentroid();
+    if (!baseline) return 1.0; // Baseline novelty for first action
+
+    const distance = IQRAMemory.euclideanDistance(vector, baseline);
+    
+    // المكافأة تزداد كلما زادت المسافة (الحداثة) بشرط عدم تجاوز حد الشذوذ
+    const noveltyReward = Math.min(distance * 5.0, 15.0); 
+    return noveltyReward;
   }
 
   /**
