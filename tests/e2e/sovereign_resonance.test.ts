@@ -16,6 +16,7 @@ async function testSovereignResonance() {
   // 1. إنشاء ملف مهمة مطابق للمواصفات الحقيقية
   const missionScope = `
 mission_id: e2e_mission_real_001
+objective: "Verify the topological resonance and numerical protection signatures in Surah Al-Hijr 15:9"
 verse: "15:9"
 field_of_inquiry: "Numerical Protection Patterns"
 provider: "google"

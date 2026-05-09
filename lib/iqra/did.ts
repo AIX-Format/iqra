@@ -83,6 +83,7 @@ export class SovereignDID {
           controller: did,
           blockchainAccountId: `github:${username}`
         }
+      ]
     };
   }
 

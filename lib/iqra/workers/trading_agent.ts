@@ -88,7 +88,6 @@ export class TradingAgent extends SovereignWorker {
           }
         }
       };
-      };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       IQRALogger.error(`❌ [TRADING_AGENT] Execution failed: ${message}`);

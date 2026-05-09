@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { SacredCard } from '../components/SacredCard'
-import { NumericalDiscovery, NumericalSymmetry } from '../../lib/iqra/quran/numerical_patterns'
+import '../styles/sovereign.css'
 
 export default function Home() {
   const [isThinking, setIsThinking] = useState(false)
+  const [query, setQuery] = useState('')
   const [response, setResponse] = useState('')
   const [echoes, setEchoes] = useState<any[]>([])
 
@@ -35,146 +36,127 @@ export default function Home() {
   }
 
   return (
-    <main className="main-container">
-      {/* ── BACKGROUND ─────────────────────────────────────────────────── */}
-      <div className="main-bg-overlay"></div>
-      <div className="numerical-bg">
-        {rain.map(r => (
-          <span 
-            key={r.id} 
-            className="rain-digit" 
-            style={{ 
-              left: r.left, 
-              animationDelay: r.delay, 
-              animationDuration: r.duration 
-            }}
-          >
-            {r.char}
-          </span>
-        ))}
-      </div>
-
+    <main className="main-container iqra-padding" style={{ minHeight: '100vh', direction: 'rtl' }}>
       {/* ── HEADER ────────────────────────────────────────────────────────── */}
-      <header style={{ textAlign: 'center', marginBottom: '8rem', marginTop: '4rem' }}>
-        <h1 className="brand-font" style={{ fontSize: '7rem', fontWeight: 800, color: 'var(--accent-gold)', marginBottom: '0', lineHeight: 1.1 }}>
+      <header style={{ textAlign: 'center', marginBottom: '6rem', marginTop: '4rem' }}>
+        <h1 className="neon-text float" style={{ fontSize: 'clamp(3rem, 10vw, 8rem)', fontWeight: 900, marginBottom: '0', lineHeight: 1.1 }}>
           إقرأ <span style={{ color: '#fff' }}>IQRA</span>
         </h1>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: 0.6 }}>
-          <div style={{ height: '1px', width: '50px', background: 'var(--accent-gold)' }}></div>
-          <p className="brand-font" style={{ fontSize: '1rem', letterSpacing: '0.4em', textTransform: 'uppercase' }}>
-            Sovereign Identity Protocol
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: 0.8 }}>
+          <div style={{ height: '1px', width: '60px', background: 'var(--iqra-neon)' }}></div>
+          <p style={{ fontSize: '1rem', letterSpacing: '0.4em', textTransform: 'uppercase', color: 'var(--iqra-neon)' }}>
+            Sovereign Architecture
           </p>
-          <div style={{ height: '1px', width: '50px', background: 'var(--accent-gold)' }}></div>
+          <div style={{ height: '1px', width: '60px', background: 'var(--iqra-neon)' }}></div>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '4rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* ── SEARCH SECTION ────────────────────────────────────────────────── */}
-        <SacredCard title="استفسار سيادي | Sovereign Query" resonance={isThinking ? 1 : 0.8}>
-          <div style={{ position: 'relative' }}>
-            <textarea 
-              placeholder="Deep search the patterns or ask the brain..."
-              style={{
-                width: '100%',
-                minHeight: '150px',
-                padding: '1.8rem',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '24px',
-                color: '#fff',
-                fontSize: '1.2rem',
-                outline: 'none',
-                transition: 'all 0.3s ease',
-                textAlign: 'center',
-                resize: 'none'
-              }}
-              className="english-italic"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <button 
-              className={`pulse-button ${isThinking ? 'thinking' : ''}`} 
-              style={{ marginTop: '2rem', width: '100%' }}
-              onClick={handleDeepAnalysis}
-              disabled={isThinking}
-            >
-              {isThinking ? 'Searching the Infinite...' : 'Invoke Resonance'}
-            </button>
-          </div>
-        </SacredCard>
+        <div className="glass-surface iqra-padding neon-border" style={{ position: 'relative' }}>
+          <h2 className="neon-text" style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>استفسار سيادي | Sovereign Query</h2>
+          <textarea 
+            placeholder="تواصل مع الرنين الطوبولوجي..."
+            style={{
+              width: '100%',
+              minHeight: '150px',
+              padding: '1.5rem',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              color: '#fff',
+              fontSize: '1.2rem',
+              outline: 'none',
+              transition: 'all 0.3s ease',
+              textAlign: 'center',
+              resize: 'none'
+            }}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button 
+            className={`pulse-neon`} 
+            style={{ 
+              marginTop: '1.5rem', 
+              width: '100%', 
+              padding: '1rem', 
+              background: 'var(--iqra-neon)', 
+              color: '#000', 
+              border: 'none', 
+              borderRadius: '8px', 
+              fontWeight: 'bold', 
+              cursor: 'pointer',
+              fontSize: '1.1rem'
+            }}
+            onClick={handleDeepAnalysis}
+            disabled={isThinking}
+          >
+            {isThinking ? 'جاري البحث في اللانهاية...' : 'استدعاء الرنين | Invoke Resonance'}
+          </button>
+        </div>
 
         {/* ── BRAIN OUTPUT ─────────────────────────────────────────── */}
-        <SacredCard title="وحي العقل | Brain Wisdom" resonance={response ? 0.95 : 0}>
+        <div className="glass-surface iqra-padding" style={{ border: '1px solid var(--iqra-border)' }}>
+          <h2 className="neon-text" style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>وحي العقل | Brain Wisdom</h2>
           {response ? (
             <div style={{ animation: 'fadeIn 1s ease', lineHeight: 1.8, fontSize: '1.1rem' }}>
               <p style={{ whiteSpace: 'pre-wrap' }}>{response}</p>
             </div>
           ) : (
-            <div style={{ opacity: 0.3, textAlign: 'center', padding: '5rem 0' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '1.5rem', filter: isThinking ? 'hue-rotate(90deg)' : 'none' }}>
+            <div style={{ opacity: 0.3, textAlign: 'center', padding: '4rem 0' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
                 {isThinking ? '🌀' : '⚖️'}
               </div>
               {isThinking ? 'Processing through MĪTHĀQ layers...' : 'Awaiting consciousness input...'}
             </div>
           )}
-        </SacredCard>
+        </div>
 
       </div>
 
       {/* ── MEMORY ECHOES ────────────────────────────────────────────────── */}
       {echoes.length > 0 && (
-        <section style={{ marginTop: '4rem' }}>
-          <h3 className="brand-font" style={{ color: 'var(--accent-gold)', marginBottom: '2rem', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '0.2em' }}>
+        <section style={{ marginTop: '6rem' }}>
+          <h3 className="neon-text" style={{ marginBottom: '2rem', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '0.2em' }}>
             أصداء الذاكرة | MEMORY ECHOES
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             {echoes.map((echo, i) => (
-              <SacredCard key={i} resonance={0.5} glowColor="rgba(0, 255, 255, 0.1)">
-                <div style={{ fontSize: '0.9rem', opacity: 0.8, fontStyle: 'italic' }}>
-                  "{echo.content.substring(0, 200)}..."
-                </div>
-                <div style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--accent-gold)' }}>
+              <div key={i} className="glass-surface iqra-padding" style={{ fontSize: '0.9rem' }}>
+                <p style={{ opacity: 0.8, fontStyle: 'italic' }}>"{echo.content.substring(0, 150)}..."</p>
+                <div style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--iqra-neon)' }}>
                   RELEVANCE: {(echo.score || 0.8).toFixed(2)}
                 </div>
-              </SacredCard>
+              </div>
             ))}
           </div>
         </section>
       )}
+
       {/* ── AYAH DISPLAY ─────────────────────────────────────────────────── */}
-      <section style={{ marginTop: '6rem' }}>
-        <SacredCard resonance={0.9} glowColor="var(--sacred-green)">
-          <div className="ayah-box">
-            <div className="arabic-font ayah-arabic">
-              إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ
-            </div>
-            <div className="ayah-english">
-              Indeed, it is We who sent down the message and indeed, We will be its guardian.
-            </div>
-            <div style={{ marginTop: '1.5rem', opacity: 0.5, fontSize: '0.9rem', textAlign: 'right' }}>
-              [سورة الحجر : الآية ٩]
-            </div>
+      <section style={{ marginTop: '8rem' }}>
+        <div className="glass-surface iqra-padding neon-border pulse-neon" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1.5rem', fontFamily: 'var(--iqra-font-ar)' }}>
+            إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ
           </div>
-        </SacredCard>
+          <div style={{ opacity: 0.7, fontSize: '1.1rem', maxWidth: '800px', margin: '0 auto' }}>
+            Indeed, it is We who sent down the message and indeed, We will be its guardian.
+          </div>
+          <div style={{ marginTop: '1.5rem', opacity: 0.4, fontSize: '0.8rem' }}>
+            [سورة الحجر : الآية ٩]
+          </div>
+        </div>
       </section>
 
-      <footer style={{ marginTop: '10rem', paddingBottom: '5rem', textAlign: 'center', opacity: 0.3 }}>
-        <div className="brand-font" style={{ fontSize: '0.8rem', letterSpacing: '0.4em' }}>
+      <footer style={{ marginTop: '10rem', paddingBottom: '5rem', textAlign: 'center', opacity: 0.4 }}>
+        <div style={{ fontSize: '0.8rem', letterSpacing: '0.4em', color: 'var(--iqra-neon)' }}>
           MĪTHĀQ PROTOCOL V3.7.9 | SOVEREIGN ARCHITECTURE
         </div>
-        <div style={{ fontSize: '0.7rem', marginTop: '1rem', letterSpacing: '0.1em' }}>
-          ALLAH IS THE ONLY SOURCE OF TRUTH
-        </div>
       </footer>
-
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </main>
+  )
+}
 
   )
 }

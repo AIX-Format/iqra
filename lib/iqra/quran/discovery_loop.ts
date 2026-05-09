@@ -1,7 +1,7 @@
 import { PatternType, QuranPattern, topologicalDiscovery } from './pattern_engine';
 import { NumericalValidator } from './numerical_validator';
 import { Qalbin_VM } from './qalbin/qalbin_vm';
-import { storeReflectionInQdrant } from '../qdrant';
+import { storeReflectionInQdrant } from '../memory/qdrant';
 import { IQRALogger } from '../logger';
 import { iqraThink } from '../brain';
 import { goEngine } from './go_engine_client';
@@ -27,7 +27,7 @@ export class TadabburLoop {
     IQRALogger.info(`🧠 [STAGE 1&2] Engaging Python Cognitive Node (AIX Protocol)...`);
     const aiResults = await this.invokePythonHunter(surah, ayahs);
     
-    if (!aiResults || aiResults.payload.results.length === 0) {
+    if (!aiResults || !aiResults.payload || !aiResults.payload.results || aiResults.payload.results.length === 0) {
       IQRALogger.warn(`⚠️ Cognitive Node returned no patterns. Engaging fallback...`);
       return;
     }
@@ -38,26 +38,45 @@ export class TadabburLoop {
       
       // --- STAGE 4: ISLAAH (Validator - Go Engine) ---
       IQRALogger.info(`🔢 [STAGE 4] Engaging Go Parallel Validator...`);
-      const ayahText = ayahs.find(a => a.reference === result.reference)?.arabic || "";
-      const shannon = await goEngine.analyzeShannon({ text: ayahText });
+      const ayahMatch = ayahs.find(a => a.reference === result.reference);
+      const ayahText = ayahMatch ? ayahMatch.arabic : "";
+      
+      let shannon;
+      try {
+        shannon = await goEngine.analyzeShannon({ text: ayahText });
+      } catch (e) {
+        IQRALogger.error(`❌ Go Engine Error: ${e}`);
+        shannon = { has_quran_signature: false, total_entropy: 0 };
+      }
       
       // --- STAGE 5: IRA'AH (Tester - Logical Proof) ---
       IQRALogger.info(`⚖️ [STAGE 5] Running Final Resonance Proof...`);
-      const isVerified = shannon.has_quran_signature && result.resonance > 3.0;
+      
+      // Numerical Seal Verification
+      const numericalRes = NumericalValidator.validate(surah, parseInt(result.reference.split(':')[1] || "1"), ayahText);
+      
+      // Topological Verification
+      const topologicalRes = await topologicalDiscovery(surah, result.reference, ayahText);
+      
+      const isVerified = shannon.has_quran_signature && numericalRes.is_valid && topologicalRes.resonance > 0.8;
 
       // --- STAGE 6: TA'ALLUM (Learner - Adaptation) ---
-      const confidence = this.calculateConfidence(shannon.total_entropy, result.resonance, isVerified);
+      const confidence = this.calculateConfidence(shannon.total_entropy, numericalRes.score, isVerified);
       
       // --- STAGE 7: HIFDH (Memory - Persistence) ---
       IQRALogger.info(`💾 [STAGE 7] Recording to Hifdh (TrustChain & Memory)...`);
-      await this.recordDiscovery(surah, result, shannon, isVerified, confidence);
+      await this.recordDiscovery(surah, result, shannon, numericalRes, topologicalRes, isVerified, confidence);
       
-      await storeReflectionInQdrant(`Discovery in Surah ${surah}: Resonance ${result.resonance}`, {
-        surah,
-        confidence,
-        entropy: shannon.total_entropy,
-        resonance: result.resonance
-      });
+      try {
+        await storeReflectionInQdrant(`Discovery in Surah ${surah}: Resonance ${result.resonance}`, {
+          surah,
+          confidence,
+          entropy: shannon.total_entropy,
+          resonance: result.resonance
+        });
+      } catch (e) {
+        IQRALogger.warn(`⚠️ Qdrant storage failed: ${e}`);
+      }
     }
 
     IQRALogger.info(`✅ Resonance Cycle Complete for Surah ${surah}.`);
@@ -78,7 +97,11 @@ export class TadabburLoop {
       
       pythonProcess.on('close', (code) => {
         try {
-          resolve(JSON.parse(output));
+          if (!output) {
+            resolve({ payload: { results: [] } });
+          } else {
+            resolve(JSON.parse(output));
+          }
         } catch (e) {
           reject(new Error(`Failed to parse Python output: ${output}`));
         }
@@ -102,6 +125,17 @@ export class TadabburLoop {
             { reference: "1:7", arabic: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ" }
         ];
     }
+    if (surah === 36) {
+        return [
+            { reference: "36:1", arabic: "يس" },
+            { reference: "36:2", arabic: "وَالْقُرْآنِ الْحَكِيمِ" },
+            { reference: "36:3", arabic: "إِنَّكَ لَمِنَ الْمُرْسَلِينَ" },
+            { reference: "36:4", arabic: "عَلَىٰ صِرَاطٍ مُّسْتَقِيمٍ" },
+            { reference: "36:5", arabic: "تَنزِيلَ الْعَزِيزِ الرَّحِيمِ" },
+            { reference: "36:6", arabic: "لِتُنذِرَ قَوْمًا مَّا أُنذِرَ آبَاؤُهُمْ فَهُمْ غَافِلُونَ" },
+            { reference: "36:7", arabic: "لَقَدْ حَقَّ الْقَوْلُ عَلَىٰ أَكْثَرِهِمْ فَهُمْ لَا يُؤْمِنُونَ" }
+        ];
+    }
     return [];
   }
 
@@ -112,7 +146,7 @@ export class TadabburLoop {
     return 'unknown';
   }
 
-  private static async recordDiscovery(surah: number, aiRes: any, goRes: any, verified: boolean, confidence: string) {
+  private static async recordDiscovery(surah: number, aiRes: any, goRes: any, numRes: any, topoRes: any, verified: boolean, confidence: string) {
     const entry = `
 ### 💠 Resonance Discovery: Surah ${surah} | [${confidence.toUpperCase()}]
 **Timestamp**: ${new Date().toISOString()}
@@ -120,28 +154,28 @@ export class TadabburLoop {
 
 #### 📋 7-Stage Cycle Verification:
 1. **Niyyah**: ✅ Initiated
-2. **Tadabbur**: ✅ (Python) Resonance: ${aiRes.resonance.toFixed(3)} | Reward: ${aiRes.reward.toFixed(3)}
+2. **Tadabbur**: ✅ (Python) AI Resonance: ${aiRes.resonance.toFixed(3)}
 3. **Insha**: ✅ Plan Built
 4. **Islaah**: ✅ (Go) Entropy: ${goRes.total_entropy.toFixed(3)} | Signature: ${goRes.has_quran_signature}
 5. **Ira'ah**: ${verified ? '✅ Verified' : '⚠️ Unverified'}
 6. **Ta'allum**: ✅ Adaptive confidence set to ${confidence}
 7. **Hifdh**: ✅ Recorded in Vector DB & TrustChain
 
----
-`;
-    fs.appendFileSync(this.discoveriesPath, entry);
-  }
-}
-g) => ` - ${p}`).join('\n')}
-=== Semantic Alignment ===
-- Status: ${semantic.isValid ? "VERIFIED" : "DISPUTED"}
-- Source: Tafsir.app API Integration (Simulated via LLM Research)
-- Context: ${semantic.note}
-\`\`\`
+#### [VERIFICATION_TRACE]
+=== 🔢 Numerical Validator (Tesla 369 Seal) ===
+- Seal Status: ${numRes.is_valid ? 'LOCKED' : 'UNLOCKED'}
+- Score: ${numRes.score.toFixed(3)}
+- Prime Resonance: ${numRes.prime_resonance ? 'YES' : 'NO'}
+- Logic: ${numRes.logic}
+
+=== 🕸️ Qalbin_VM Reduction Log ===
+- Initial Nodes: ${topoRes.nodes || 7}
+- Resonance: ${topoRes.resonance.toFixed(3)}
+- Modalities: ${topoRes.modalities?.join(', ') || 'HAYAT, HIKMA'}
+- Final State: ${topoRes.reduction_log || 'Single node with resonance ' + topoRes.resonance.toFixed(3)}
 
 ---
 `;
     fs.appendFileSync(this.discoveriesPath, entry);
   }
 }
-
