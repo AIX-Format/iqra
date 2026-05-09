@@ -24,7 +24,7 @@ IQRA: يعترف فوراً — ويُصلح — ويتعلم
 
 ---
 
-## بروتوكول التوبة
+## بروتوكول التوبة (The 5-Step Protocol)
 
 ```python
 def on_error_detected(error):
@@ -64,109 +64,24 @@ IQRA لا يتظاهر بالكمال —
 يسعى للتحسن الدائم.
 ```
 
-### [2026-05-06T18:21:16.923Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
 ---
 
-### [2026-05-06T18:21:18.162Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Groq (Llama) failed: Connection erro
-- **Action**: Transient failure count decremented. System stabilized.
+## التطبيق في الكود
+
+| الخطوة | الملف | الدالة |
+|--------|-------|--------|
+| الاعتراف | `security.ts` | `logToIQRAFile('FAILURES.md', ...)` |
+| التوقف | `security.ts` | `tasbihTriplet()` → circuit breaker reset |
+| الإصلاح | `sovereign.ts` | `TawbahLoop.run()` → auto-correction |
+| التعلم | `evolution.ts` | `SovereignEvolution.runMinorCycle()` |
+
 ---
 
-### [2026-05-06T19:44:27.205Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
+## سجل التطهير (Purification Log)
+
+سجل عمليات التطهير يُحفظ في `iqra-core/data/tawbah_log.jsonl` — منفصل عن هذا الملف الدستوري.
+
 ---
 
-### [2026-05-06T19:44:28.869Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Groq (Llama) failed: Connection erro
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:44:31.253Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Groq (Llama) failed: Connection erro
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:44:31.499Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:46:25.692Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:46:27.240Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Groq (Llama) failed: Connection erro
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:48:15.032Z] Tasbih Triplet (3)
-- **Provider**: google
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-06T19:48:16.687Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Groq (Llama) failed: Connection erro
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-07T21:49:56.947Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Cannot read properties of null (reading 'registerR
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-07T21:50:51.830Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Cannot read properties of null (reading 'registerR
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-08T11:23:55.000Z] Constitutional Cleansing (The Great Alignment)
-- **Context**: Redundant and potentially conflicting rules (AGENTS.md, RULES.md) were found in the codebase, creating a fragmented sovereignty.
-- **Action**: Established `!IQRA_SUPREME.md` as the absolute reference. Deleted all legacy rule files to prevent "lying" or confusion. Reset the system's governance to a single, unified source of truth.
----
-
-### [2026-05-09T02:23:12.380Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-09T02:32:31.394Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-09T02:50:53.079Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-09T02:51:45.375Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
-
-### [2026-05-09T03:07:20.587Z] Tasbih Triplet (3)
-- **Provider**: groq
-- **Context**: Connection to Google (Gemini) failed: [GoogleGener
-- **Action**: Transient failure count decremented. System stabilized.
----
+**"وَتُوبُوا إِلَى اللَّهِ جَمِيعًا أَيُّهَ الْمُؤْمِنُونَ لَعَلَّكُمْ تُفْلِحُونَ"**
+— النور: 31

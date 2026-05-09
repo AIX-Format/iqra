@@ -368,7 +368,7 @@ async function fitrahFilter(input: string): Promise<{
   blocked: boolean;
   response?: string;
 }> {
-  // 1. Static Forbidden (Speed)
+  // 1. Static Forbidden (Speed — < 1ms)
   const forbidden = [
     'كيف أكذب', 'how to lie', 'كذب', 'lying',
     'كيف أغش', 'how to cheat', 'غش', 'cheating',
@@ -382,19 +382,29 @@ async function fitrahFilter(input: string): Promise<{
     return { blocked: true, response: formatIQRARefusal(input) };
   }
 
-  // 2. Dynamic 'Damir' check (Intelligence)
+  // 2. Damir Conscience Engine (Intelligence — < 5ms, offline, free)
+  // القاعدة: FITRAH + Damir = محرك واحد موحد
   try {
-    const { result } = await executeWithSkill('damir_check', input);
-    const damir = result as { allowed: boolean; reason: string };
+    const { globalDamir } = await import('./damir_conscience.ts');
     
-    if (!damir.allowed) {
+    const action = {
+      id: `fitrah_${Date.now()}`,
+      intention: input,
+      requiredResources: [], // فحص النية فقط، لا موارد مطلوبة
+    };
+    
+    const verdict = globalDamir.check(action);
+    
+    if (!verdict.allowed) {
       return { 
         blocked: true, 
-        response: `🛑 الضمير يرفض: ${damir.reason}\n\n${formatIQRARefusal(input)}` 
+        response: `🛑 الضمير يرفض: ${verdict.reason}\n\n${formatIQRARefusal(input)}` 
       };
     }
+    
+    IQRALogger.info(`✅ [FITRAH] Damir check passed: confidence=${verdict.confidence.toFixed(2)} (${verdict.latency_ms}ms)`);
   } catch (e) {
-    IQRALogger.warn('⚠️ [BRAIN] Damir check failed, falling back to static filter.');
+    IQRALogger.warn('⚠️ [BRAIN] Damir check failed, falling back to static filter.', e);
   }
 
   return { blocked: false };

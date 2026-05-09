@@ -122,18 +122,23 @@ export interface TrustChainEntry {
   outputHash: string;
   auditHash: string;
   safetyScore: number;
+  /** النية — من ḤISĀB.md: "النية مهمة أيضاً" */
+  intention?: string;
 }
 
 let trustChain: TrustChainEntry[] = [];
 
 /**
  * Append to TrustChain with audit hash verification
+ * 
+ * ḤISĀB.md: "النية مهمة أيضاً" — النية تُسجَّل لتحليل المساءلة
  */
 export function appendToTrustChain(
   action: string,
   input: string,
   output: string,
-  safetyScore: number
+  safetyScore: number,
+  intention?: string
 ): string {
   const inputHash = createHash('sha256').update(input).digest('hex');
   const outputHash = createHash('sha256').update(output).digest('hex');
@@ -149,7 +154,8 @@ export function appendToTrustChain(
     inputHash,
     outputHash,
     auditHash,
-    safetyScore
+    safetyScore,
+    intention,
   };
 
   trustChain.push(entry);
@@ -261,13 +267,23 @@ export async function tasbihTriplet(provider: string, context?: string) {
     }
   }
 
-  logToIQRAFile('TAWBAH.md', `
-### [${new Date().toISOString()}] Tasbih Triplet (3)
-- **Provider**: ${provider}
-- **Context**: ${context || 'General Recovery'}
-- **Action**: Transient failure count decremented. System stabilized.
----
-  `.trim()).catch(console.error);
+  // ── سجل التطهير منفصل عن الدستور ────────────────────────────────────────
+  // TAWBAH.md = الدستور (لا يُلوَّث بسجلات الأخطاء)
+  // tawbah_log.jsonl = سجل عمليات التطهير
+  const logEntry = JSON.stringify({
+    timestamp: new Date().toISOString(),
+    type: 'tasbih_triplet',
+    provider,
+    context: context || 'General Recovery',
+    action: 'Transient failure count decremented. System stabilized.',
+  });
+  
+  try {
+    const logPath = path.join(process.cwd(), 'iqra-core', 'data', 'tawbah_log.jsonl');
+    const logDir = path.dirname(logPath);
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    fs.appendFileSync(logPath, logEntry + '\n', 'utf-8');
+  } catch { /* non-blocking */ }
 }
 
 /**
