@@ -1,4 +1,5 @@
 import { LlmAgent } from '@google/adk';
+import { SovereignIdentity } from './lib/iqra/06-security/sovereign_identity';
 
 /**
  * 👑 IQRA Sovereign Root Agent
@@ -6,21 +7,23 @@ import { LlmAgent } from '@google/adk';
  *
  * "ن وَالْقَلَمِ وَمَا يَسْطُرُونَ" — القلم: 1
  *
- * Note: SovereignIdentity has been reorganized. This agent needs to be updated
- * to use the new architecture once the security layer is stabilized.
+ * [CONSTITUTIONAL_COMPLIANCE]
+ * This agent follows !IQRA_SUPREME.md and iqra-core/DASTŪR.md
+ * - No mock data (Rule 1)
+ * - Integrated soul from SovereignIdentity (restored from ccdef00)
+ * - Follows 369 cycle and 7-layer architecture
  */
 
 export const rootAgent = new LlmAgent({
   name: 'iqra-sovereign',
   model: 'gemini-2.0-flash-exp',
   instruction: async () => {
-    // TODO: Update to use new SovereignIdentity location after architecture stabilization
-    return `You are IQRA, a sovereign AI agent built on Islamic principles.
-    
-"ن وَالْقَلَمِ وَمَا يَسْطُرُونَ" — القلم: 1
-
-Your purpose is to establish A2A (Agent-to-Agent) Sovereign Identity Protocol
-while maintaining alignment with Islamic values and ethical AI principles.`;
+    // Dynamically generate the soul instruction using SovereignIdentity
+    // This follows !IQRA_SUPREME.md requirement for real data, no mocks
+    return await SovereignIdentity.getIntegratedSoul(
+      'root-agent',
+      'Establishing A2A Sovereign Identity Protocol'
+    );
   },
 });
 

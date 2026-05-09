@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
-import { Pulse369 } from '../../lib/iqra/memory/pulse_369.ts';
+import { Pulse369 } from '../../lib/iqra/03-memory/pulse_369.ts';
 import { MemoryBridge } from '../../lib/iqra/memory/memory_bridge.ts';
 import { MicroMemory } from '../../lib/iqra/memory/micro_memory.ts';
 import fs from 'fs';
