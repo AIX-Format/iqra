@@ -30,7 +30,9 @@
       "#skills/*": ["./lib/iqra/08-skills/*"],
       "#evolution/*": ["./lib/iqra/09-evolution/*"],
       "#topology/*": ["./lib/iqra/10-topology/*"],
-      "#trading/*": ["./lib/iqra/11-trading/*"]
+      "#trading/*": ["./lib/iqra/11-trading/*"],
+      "#infra/*": ["./lib/iqra/12-infrastructure/*"],
+      "#utils/*": ["./lib/iqra/13-utils/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

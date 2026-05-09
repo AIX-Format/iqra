@@ -3,11 +3,11 @@ import { ResearchWorker } from './workers/research.ts';
 import { ValidationWorker } from './workers/validator.ts';
 import { ExecutionWorker } from './workers/execution.ts';
 import type { WorkerReport, WorkerResult, MissionState, SovereignWorker } from './workers/protocol.ts';
-import { IQRALogger } from './logger.ts';
+import { IQRALogger } from '#infra/logger.ts';
 import type { Provider } from '../../src/connectors/index.ts';
 import fs from 'fs';
 import path from 'path';
-import { logToIQRAFile, appendToTrustChain } from './security.ts';
+import { logToIQRAFile, appendToTrustChain } from '#security/security.ts';
 import { ResourceFactory } from './conscience/resource_factory.ts';
 import { RewardEngine } from './rewards/engine.ts';
 import { SovereignIdentity } from './sovereign_identity.ts';
@@ -15,7 +15,7 @@ import { TopologicalAnalyzer } from './skills/topological_analyzer.ts';
 import { Search369 } from './evolution/search_369.ts';
 import { LeagueManager } from './evolution/league_manager.ts';
 import { FithrahBaseline } from './audit/fithrah_baseline.ts';
-import { IQRAMemory } from './memory.ts';
+import { IQRAMemory } from '#memory/memory.ts';
 
 // ── Damir يُحمَّل lazily لتجنب circular imports ──────────────────────────────
 let _missionDamir: import('./damir_conscience.ts').DamirConscience | null = null;

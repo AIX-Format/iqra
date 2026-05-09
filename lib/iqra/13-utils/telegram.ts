@@ -15,7 +15,7 @@
 
 import { iqraThink } from './brain';
 import { IQRALogger } from '../12-infrastructure/logger';
-import { appendToTrustChain } from './security';
+import { appendToTrustChain } from '#security/security';
 import { HeartbeatSystem } from '../12-infrastructure/heartbeat';
 import { ToolsRegistry } from '../12-infrastructure/tools_registry';
 

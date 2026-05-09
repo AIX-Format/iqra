@@ -9,7 +9,7 @@
  * يُستخدم في ollama.ts و brain.ts.
  */
 
-import type { IQRAFunction } from './ollama.ts';
+import type { IQRAFunction } from '#llm/ollama.ts';
 
 // ── IQRA_TOOLS — الأدوات الكاملة ─────────────────────────────────────────────
 

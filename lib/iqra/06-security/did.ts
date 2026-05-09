@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'crypto';
-import { SovereignIdentityGuard } from './security';
+import { SovereignIdentityGuard } from '#security/security';
 
 export interface DIDDocument {
   "@context": string[];

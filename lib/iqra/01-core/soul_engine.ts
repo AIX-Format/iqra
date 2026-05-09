@@ -6,7 +6,7 @@ import { IQRAMemory } from '../03-memory/memory.js';
 import { SovereignEvolution } from '../09-evolution/evolution.js';
 import { SkillBank } from '../08-skills/skill_bank.js';
 import { IQRALogger } from '../12-infrastructure/logger.js';
-import { appendToTrustChain } from './security.ts';
+import { appendToTrustChain } from '#security/security.ts';
 import { Pulse369 } from '../memory/pulse_369.js';
 import fs from 'fs';
 import path from 'path';

@@ -5,8 +5,8 @@
  * Manages the flow between the Brain, Memory, and Tools.
  */
 
-import { IQRAMemory } from "../03-memory/memory.js";
-import { IQRALogger } from "../12-infrastructure/logger.js";
+import { IQRAMemory } from "#memory/memory.js";
+import { IQRALogger } from "#infra/logger.js";
 
 let _graph: any = null;
 

@@ -15,7 +15,7 @@
 import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { AL_FATIHAH_HEADER, reportFailure } from './security';
+import { AL_FATIHAH_HEADER, reportFailure } from '#security/security';
 
 const TMP_COMMIT_MSG = join(process.cwd(), '.git_commit_msg.tmp');
 

@@ -8,23 +8,23 @@
  * Every thought passes through FITRAH filter first.
  */
 
-import { ConnectorFactory, Provider } from '../../src/connectors/index';
-import { SovereignError, SovereignErrorCode } from '../../src/errors/sovereign_error';
-import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess, verifyCovenant } from './security';
-import { SovereignEngine } from './sovereign';
-import { IQRAMemory, QuantumTopologyStore, SpiritualCoordinate } from './memory';
-import { IQRALogger } from './logger';
-import { iqraExecute } from './orchestrator';
-import { withTimeout, IQRA_TIMEOUTS } from './utils/timeout';
-import { IQRA_PERSONALITY } from './personality';
+import { ConnectorFactory, Provider } from '@/connectors/index';
+import { SovereignError, SovereignErrorCode } from '@/errors/sovereign_error';
+import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess, verifyCovenant } from '#security/security';
+import { SovereignEngine } from '#core/sovereign';
+import { IQRAMemory, QuantumTopologyStore, SpiritualCoordinate } from '#memory/memory';
+import { IQRALogger } from '#infra/logger';
+import { iqraExecute } from '#core/orchestrator';
+import { withTimeout, IQRA_TIMEOUTS } from '#utils/timeout';
+import { IQRA_PERSONALITY } from '#utils/personality';
 import * as fs from 'fs';
 import * as path from 'path';
-import { MissionControl } from './sovereign_orchestrator';
-import { gemma4Local, isLocalMode, IQRA_LOCAL_TOOLS } from './llm/ollama';
-import { SkillBank } from './skill_bank';
+import { MissionControl } from '#core/sovereign_orchestrator';
+import { gemma4Local, isLocalMode, IQRA_LOCAL_TOOLS } from '#llm/ollama';
+import { SkillBank } from '#core/skill_bank';
 
-import { FULL_SYSTEM_PROMPT, IQRA_SOUL } from './prompts.ts';
-import { HeartbeatSystem } from './heartbeat';
+import { FULL_SYSTEM_PROMPT, IQRA_SOUL } from '#utils/prompts.ts';
+import { HeartbeatSystem } from '#infra/heartbeat';
 export { FULL_SYSTEM_PROMPT, IQRA_SOUL };
 
 // ── Skill Router ──────────────────────────────────────────────────────────────

@@ -47,7 +47,7 @@
  */
 
 import { IQRALogger } from '../12-infrastructure/logger.js';
-import { appendToTrustChain } from './security.ts';
+import { appendToTrustChain } from '#security/security.ts';
 import { IQRAMemory } from '../03-memory/memory.js';
 import { HeartbeatSystem } from '../12-infrastructure/heartbeat.js';
 import { ToolsRegistry } from '../12-infrastructure/tools_registry.js';

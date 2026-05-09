@@ -24,8 +24,8 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-import { IQRALogger } from './logger.js';
-import { appendToTrustChain } from './security.ts';
+import { IQRALogger } from '#infra/logger.js';
+import { appendToTrustChain } from '#security/security.ts';
 import { IQRAMemory } from '../03-memory/memory.js';
 import { Pulse369 } from '../memory/pulse_369.js';
 import { MemoryBridge } from '../memory/memory_bridge.js';

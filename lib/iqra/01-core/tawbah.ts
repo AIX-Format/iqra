@@ -3,7 +3,7 @@
 // ============================================
 import { writeFileSync, appendFileSync, existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
-import { IQRALogger } from "../12-infrastructure/logger.js";
+import { IQRALogger } from "#infra/logger.js";
 
 const TAWBAH_PATH = join(process.cwd(), "iqra-core", "TAWBAH.md");
 const TRAINING_PATH = join(process.cwd(), ".iqra", "training_data.json");

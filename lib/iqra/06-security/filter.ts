@@ -8,7 +8,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { IQRALogger } from './logger';
+import { IQRALogger } from '#infra/logger';
 
 export interface FilterResult {
   isAllowed: boolean;

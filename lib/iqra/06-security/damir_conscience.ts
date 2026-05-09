@@ -28,8 +28,8 @@
  */
 
 import crypto from 'crypto';
-import { appendToTrustChain } from './security';
-import { IQRALogger } from './logger';
+import { appendToTrustChain } from '#security/security';
+import { IQRALogger } from '#infra/logger';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

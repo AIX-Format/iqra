@@ -17,7 +17,7 @@
 import fs from 'fs';
 import path from 'path';
 import { IQRAMemory } from '../03-memory/memory';
-import { logToIQRAFile, appendToTrustChain } from './security';
+import { logToIQRAFile, appendToTrustChain } from '#security/security';
 import { IQRALogger } from '../12-infrastructure/logger';
 
 const WISDOM_PATH  = path.join(process.cwd(), 'WISDOM_7.md');

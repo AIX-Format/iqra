@@ -17,8 +17,8 @@
  * Rule 7: CuriosityEngine.
  */
 
-import { IQRAMemory } from './memory';
-import { appendToTrustChain, secureRandomId, logToIQRAFile } from './security';
+import { IQRAMemory } from '#memory/memory';
+import { appendToTrustChain, secureRandomId, logToIQRAFile } from '#security/security';
 import { sovereignSync, tazkiyah } from './git-ops';
 import { SovereignEvolution } from './evolution';
 import { ConnectorFactory } from '../../src/connectors/index.ts';
@@ -28,7 +28,7 @@ import { ResourceFactory } from './conscience/resource_factory.ts';
 import { IQRAVoice } from './voice.ts';
 import { ByzantineFilter, AnomalyReport } from './byzantine_filter.ts';
 import { BybitEngine } from './bybit.ts';
-import { IQRALogger } from './logger.ts';
+import { IQRALogger } from '#infra/logger.ts';
 import { PulseEngine } from '../../orchestrator/pulse-engine.ts';
 import { TopologicalAnalyzer } from './skills/topological_analyzer.ts';
 import { TawbahLoop } from './evolution/tawbah_loop.ts';

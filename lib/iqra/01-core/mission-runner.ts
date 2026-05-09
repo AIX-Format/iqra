@@ -35,7 +35,7 @@ import { executeBuilder }          from '../workers/builder.js';
 import { executeMissionValidator } from '../workers/mission_validator.js';
 import { executeResonanceWorker }  from '../workers/resonance.js';
 import { executeReporter }         from '../workers/reporter.js';
-import { appendToTrustChain }      from './security.ts';
+import { appendToTrustChain }      from '#security/security.ts';
 import { IQRALogger }              from '../12-infrastructure/logger.js';
 import { SoulEngine }              from './soul_engine.js';
 import { SkillBank }               from '../08-skills/skill_bank.js';

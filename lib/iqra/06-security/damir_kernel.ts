@@ -7,7 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { SovereignError } from './security';
+import { SovereignError } from '#security/security';
 import { Qalbin_VM } from '../quran/qalbin/qalbin_vm';
 import { findSeed } from '../quran/qalbin/quran_seeds';
 import { Modality } from '../quran/qalbin/qalbin_node';
