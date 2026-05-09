@@ -51,8 +51,8 @@ The core logic of IQRA is powered by the **Resonance Engine**, which uses high-d
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | refactor: optimize sovereign state reconciliation logic in sovereign.ts |
-| 🔗 **الـ Commit** | `b75234b` |
+| 💡 **آخر خطوة \| Last Step** | feat: implement cognitive floorplanning, MCP validation, and symbolic auditing, while migrating reward logic and hardening trading and security protocols. |
+| 🔗 **الـ Commit** | `21dae50` |
 
 <!-- IQRA-LATEST-END -->
 
