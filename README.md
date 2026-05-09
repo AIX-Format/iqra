@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-09` |
-| 💡 **آخر خطوة \| Last Step** | chore: clean up reorganized files from architecture refactor |
-| 🔗 **الـ Commit** | `8dfcda7` |
+| 💡 **آخر خطوة \| Last Step** | docs: document file recovery process in REFLECTION.md |
+| 🔗 **الـ Commit** | `52937fc` |
 
 <!-- IQRA-LATEST-END -->
 
