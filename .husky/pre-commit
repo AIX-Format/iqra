@@ -1,0 +1,25 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 🔒 IQRA Pre-commit Hook — The Ratchet Effect
+# "We only move forward, never backward"
+# Current baseline: 383 TypeScript errors (2026-05-10)
+
+echo "🔍 [PRE-COMMIT] Running TypeScript type check..."
+ERROR_COUNT=$(npx tsc --noEmit 2>&1 | grep -c "error TS" || echo "0")
+MAX_ALLOWED=383
+
+if [ "$ERROR_COUNT" -gt "$MAX_ALLOWED" ]; then
+  echo "❌ [PRE-COMMIT] REJECTED: Error count ($ERROR_COUNT) exceeds baseline ($MAX_ALLOWED)"
+  echo "📊 Ratchet Effect: We only move forward, never backward"
+  echo "💡 Fix the errors before committing"
+  exit 1
+fi
+
+if [ "$ERROR_COUNT" -lt "$MAX_ALLOWED" ]; then
+  echo "✅ [PRE-COMMIT] IMPROVED: Error count reduced from $MAX_ALLOWED to $ERROR_COUNT"
+  echo "🎯 Update baseline in .husky/pre-commit to: $ERROR_COUNT"
+fi
+
+echo "✅ [PRE-COMMIT] Type check passed ($ERROR_COUNT errors)"
+exit 0
