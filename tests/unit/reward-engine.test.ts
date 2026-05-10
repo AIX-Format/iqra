@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RewardEngine } from '../../lib/iqra/rewards/engine';
+import { RewardEngine } from '#rewards/engine';
 
 describe('RewardEngine', () => {
   it('should compute valid rewards for standard inputs', () => {

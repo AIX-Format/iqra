@@ -14,8 +14,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { DamirConscience } from '../../lib/iqra/damir_conscience.ts';
-import { ResourceFactory } from '../../lib/iqra/conscience/resource_factory.ts';
+import { DamirConscience } from '#damir_conscience.ts';
+import { ResourceFactory } from '#conscience/resource_factory.ts';
 
 // ── Test Suite ────────────────────────────────────────────────────────────────
 

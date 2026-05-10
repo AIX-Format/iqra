@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IQRAMemory } from '../../lib/iqra/03-memory/memory.js';
+import { IQRAMemory } from '#03-memory/memory.js';
 
 describe('IQRAMemory.cosineSimilarity', () => {
   it('returns 1.0 for identical vectors', () => {

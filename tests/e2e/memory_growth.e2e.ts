@@ -8,10 +8,10 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
-import { runMission } from '../../lib/iqra/01-core/mission-runner.js';
+import { runMission } from '#01-core/mission-runner.js';
 import { RewardLedger } from '../../ledger/reward-ledger.ts';
-import { IQRAMemory } from '../../lib/iqra/03-memory/memory.js';
-import { PatternMemory } from '../../lib/iqra/memory/pattern_memory.ts';
+import { IQRAMemory } from '#03-memory/memory.js';
+import { PatternMemory } from '#memory/pattern_memory.ts';
 
 function writeMission(id: string, verse: string, field: string): string {
   const p = path.join(os.tmpdir(), `iqra-mem-test-${id}.yml`);

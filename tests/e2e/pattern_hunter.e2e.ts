@@ -18,11 +18,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import 'dotenv/config';
 
-import { PatternHunter } from '../../lib/iqra/quran/pattern_hunter.ts';
-import { NumericalValidator } from '../../lib/iqra/quran/numerical_validator.ts';
-import { AbjadCalculator, ShannonEntropy, FractalAnalyzer, TopologicalAnalyzer } from '../../lib/iqra/quran/pattern_hunter_tools.ts';
-import { MicroMemory } from '../../lib/iqra/memory/micro_memory.ts';
-import { ToolsRegistry } from '../../lib/iqra/12-infrastructure/tools_registry.js';
+import { PatternHunter } from '#quran/pattern_hunter.ts';
+import { NumericalValidator } from '#quran/numerical_validator.ts';
+import { AbjadCalculator, ShannonEntropy, FractalAnalyzer, TopologicalAnalyzer } from '#quran/pattern_hunter_tools.ts';
+import { MicroMemory } from '#memory/micro_memory.ts';
+import { ToolsRegistry } from '#12-infrastructure/tools_registry.js';
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 

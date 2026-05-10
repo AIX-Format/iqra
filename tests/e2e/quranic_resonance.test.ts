@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TopologicalCuriosityEngine } from '../../lib/iqra/quran/topological_curiosity';
-import { IQRAMemory } from '../../lib/iqra/03-memory/memory';
+import { TopologicalCuriosityEngine } from '#quran/topological_curiosity';
+import { IQRAMemory } from '#03-memory/memory';
 
 describe('Quranic Resonance E2E', () => {
   it('should find resonance between Quranic ayah and modern data', async () => {

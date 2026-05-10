@@ -19,7 +19,7 @@ import os from 'os';
 import yaml from 'js-yaml';
 
 // ── Imports from modified files [read] ───────────────────────────────────────
-import { parseMissionScope } from '../../lib/iqra/01-core/mission-context.js';
+import { parseMissionScope } from '#01-core/mission-context.js';
 import { makeWorkerReport } from '../../agents/contracts.ts';
 
 // ── Helper: write a temp mission YAML ────────────────────────────────────────

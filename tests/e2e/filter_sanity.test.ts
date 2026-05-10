@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { IQRAFilter } from '../../lib/iqra/filter';
+import { IQRAFilter } from '#filter';
 import fs from 'fs';
 import path from 'path';
 

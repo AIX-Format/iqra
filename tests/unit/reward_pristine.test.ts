@@ -7,12 +7,12 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { RewardEngine } from '../../lib/iqra/rewards/engine.ts';
-import { RewardLedger } from '../../lib/iqra/rewards/ledger.ts';
+import { RewardEngine } from '#rewards/engine.ts';
+import { RewardLedger } from '#rewards/ledger.ts';
 import {
   PRISTINE_MULTIPLIER, REPEATED_MULTIPLIER, STALE_MULTIPLIER, STALE_THRESHOLD,
-} from '../../lib/iqra/rewards/types.ts';
-import type { WorkerReport } from '../../lib/iqra/workers/protocol.ts';
+} from '#rewards/types.ts';
+import type { WorkerReport } from '#workers/protocol.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

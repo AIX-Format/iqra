@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { Gemma4Local, IQRA_LOCAL_TOOLS } from '../../lib/iqra/llm/ollama.ts';
-import { IQRA_TOOLS, IQRA_TOOLS_LITE } from '../../lib/iqra/llm/tools.ts';
+import { Gemma4Local, IQRA_LOCAL_TOOLS } from '#llm/ollama.ts';
+import { IQRA_TOOLS, IQRA_TOOLS_LITE } from '#llm/tools.ts';
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 

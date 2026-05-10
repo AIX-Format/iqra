@@ -6,13 +6,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NumericalValidator } from '../../lib/iqra/quran/numerical_validator.ts';
-import { PatternMemory } from '../../lib/iqra/memory/pattern_memory.ts';
-import { IQRAMemory } from '../../lib/iqra/03-memory/memory.js';
+import { NumericalValidator } from '#quran/numerical_validator.ts';
+import { PatternMemory } from '#memory/pattern_memory.ts';
+import { IQRAMemory } from '#03-memory/memory.js';
 import {
   TopologicalCuriosityEngine,
   type TopologicalResonance,
-} from '../../lib/iqra/quran/topological_curiosity.ts';
+} from '#quran/topological_curiosity.ts';
 
 // ══════════════════════════════════════════════════════════════
 // NumericalValidator — لا يحتاج LLM

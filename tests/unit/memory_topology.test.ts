@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { MemoryTopology, type TopologicalPattern } from '../../lib/iqra/memory/memory_topology.ts';
-import { MicroMemory } from '../../lib/iqra/memory/micro_memory.ts';
+import { MemoryTopology, type TopologicalPattern } from '#memory/memory_topology.ts';
+import { MicroMemory } from '#memory/micro_memory.ts';
 import fs from 'fs';
 import path from 'path';
 

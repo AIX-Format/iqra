@@ -1,6 +1,6 @@
 
 import { describe, it, expect } from 'vitest';
-import { runMission } from '../../lib/iqra/01-core/mission-runner.js';
+import { runMission } from '#01-core/mission-runner.js';
 import fs from 'fs';
 import path from 'path';
 

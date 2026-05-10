@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { TurboCompressor } from '../../lib/iqra/memory/turbo_compressor.ts';
+import { TurboCompressor } from '#memory/turbo_compressor.ts';
 
 // ── Helper: Generate Random Embedding ────────────────────────────────────────
 
