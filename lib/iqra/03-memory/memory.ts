@@ -88,6 +88,41 @@ export class IQRAMemory {
   }
 
   /**
+   * 🧠 Generate Embedding - Missing method for LanceDB integration
+   * [TC] reason: Add missing generateEmbedding method | id: TC-FIX-001
+   */
+  static async generateEmbedding(text: string): Promise<number[]> {
+    if (!this._googleAI) {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      this._googleAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
+    }
+    
+    const model = this._googleAI.getGenerativeModel({ model: 'text-embedding-004' });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  }
+
+  /**
+   * 📦 Get Memory Entry - Missing method for LanceDB integration
+   * [TC] reason: Add missing get method | id: TC-FIX-002
+   */
+  static async get<T>(key: string): Promise<T | null> {
+    try {
+      const redis = await this.getRedis();
+      if (redis) {
+        const val = await withTimeout(redis.get<T>(`iqra:${key}`), IQRA_TIMEOUTS.REDIS, `Redis GET ${key}`);
+        return val;
+      }
+    } catch (error) {
+      IQRALogger.warn(`⚠️ [MEMORY] Get error for key ${key}:`, error);
+    }
+    
+    // Fallback to local storage
+    const data = await this.getLocalData();
+    return data[key] || null;
+  }
+
+  /**
    * 🧠 Search Semantic Memory
    * Finds wisdom points preserved in Qdrant.
    */
@@ -97,20 +132,85 @@ export class IQRAMemory {
 
   private static async getRedis() {
     if (this._redis) return this._redis;
+    
+    // [TC] reason: Check Redis connection patterns | id: TC-4c-001
+    const connectionPattern = await this.get('redis_connection_pattern');
+    const connectionStartTime = Date.now();
+    
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       try {
+        // [TC] reason: Enhanced Redis initialization with pattern learning | id: TC-4c-002
         const { Redis } = await import('@upstash/redis');
-        const client = new Redis({
+        
+        // Apply connection optimizations from patterns
+        const connectionOptions = {
           url: process.env.UPSTASH_REDIS_REST_URL,
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
-        });
-        // Test connection with a very short timeout
+          // Add optimized settings based on patterns
+          retry: {
+            attempts: connectionPattern?.data?.retry_attempts || 3,
+            onRetry: (error: any) => {
+              IQRALogger.warn(`🔄 [MEMORY] Redis retry attempt:`, error.message);
+            }
+          },
+          timeout: connectionPattern?.data?.optimal_timeout || 5000
+        };
+        
+        const client = new Redis(connectionOptions);
+        
+        // Enhanced connection test with pattern tracking
+        const pingStartTime = Date.now();
         await withTimeout(client.ping(), 1000, 'Redis Ping');
+        const pingDuration = Date.now() - pingStartTime;
+        
         this._redis = client;
+        
+        // [TC] reason: Store successful connection pattern | id: TC-4c-003
+        await this.set('redis_connection_pattern', {
+          success: true,
+          ping_duration: pingDuration,
+          connection_duration: Date.now() - connectionStartTime,
+          timestamp: new Date().toISOString(),
+          confidence: pingDuration < 100 ? 0.9 : 0.7
+        }, { ttl: 3600000 });
+        
+        // [TC] reason: Update Redis analytics | id: TC-4c-004
+        const redisAnalytics = await this.get('redis_analytics') || { data: { connections: 0, avg_ping: 0, success_rate: 1.0 } };
+        const updatedAnalytics = {
+          connections: redisAnalytics.data.connections + 1,
+          avg_ping: ((redisAnalytics.data.avg_ping * redisAnalytics.data.connections) + pingDuration) / (redisAnalytics.data.connections + 1),
+          success_rate: ((redisAnalytics.data.success_rate * redisAnalytics.data.connections) + 1.0) / (redisAnalytics.data.connections + 1),
+          last_connected: new Date().toISOString()
+        };
+        
+        await this.set('redis_analytics', updatedAnalytics, { ttl: 86400000 });
+        
+        IQRALogger.info(`🧠 [MEMORY] Redis connected successfully in ${Date.now() - connectionStartTime}ms (ping: ${pingDuration}ms)`);
+        
       } catch (e) {
+        // [TC] reason: Store connection failure pattern | id: TC-4c-005
+        await this.set('redis_connection_failure_pattern', {
+          error: e.message,
+          timestamp: new Date().toISOString(),
+          connection_attempt_duration: Date.now() - connectionStartTime,
+          environment_vars: {
+            url_present: !!process.env.UPSTASH_REDIS_REST_URL,
+            token_present: !!process.env.UPSTASH_REDIS_REST_TOKEN
+          }
+        }, { ttl: 1800000 });
+        
         IQRALogger.warn('⚠️ [MEMORY] Redis unreachable or module missing. Falling back to Sovereign mode.');
         this._redis = null;
       }
+    } else {
+      // [TC] reason: Store missing configuration pattern | id: TC-4c-006
+      await this.set('redis_config_missing_pattern', {
+        timestamp: new Date().toISOString(),
+        url_present: !!process.env.UPSTASH_REDIS_REST_URL,
+        token_present: !!process.env.UPSTASH_REDIS_REST_TOKEN
+      }, { ttl: 3600000 });
+      
+      IQRALogger.warn('⚠️ [MEMORY] Redis environment variables not configured. Using Sovereign mode.');
     }
     return this._redis;
   }
@@ -181,31 +281,112 @@ export class IQRAMemory {
     }
   }
 
-  static async set(key: string, value: any) {
-    // ── الجسر: كتابة في الطبقة الساخنة أولاً ────────────────────────────────
+  static async set(key: string, value: any, options: { ttl?: number; tags?: string[]; layer?: 'hot' | 'warm' | 'cold' } = {}) {
+    const writeStartTime = Date.now();
+    const { ttl = REDIS_TTL_SECONDS, tags = [], layer = 'hot' } = options;
+
+    // [TC] reason: Check write patterns in memory | id: TC-4a-001
+    const writePattern = await this.get(`write_pattern:${key.substring(0, 30)}`);
+    if (writePattern && writePattern.success) {
+      IQRALogger.info(`🧠 [MEMORY] Using optimized write pattern for ${key}`);
+      // Apply pre-optimized write parameters
+      value.optimized_write = true;
+      value.pattern_confidence = writePattern.data.confidence || 0.8;
+    }
+
+    // Enhanced value with metadata
+    const enhancedValue = {
+      data: value,
+      metadata: {
+        write_timestamp: new Date().toISOString(),
+        write_duration_ms: 0, // Will be updated after write
+        layer,
+        tags,
+        ttl,
+        pattern_applied: !!writePattern,
+        write_id: crypto.randomUUID()
+      }
+    };
+
+    // ── Enhanced الجسر: كتابة في الطبقة الساخنة أولاً ─────────────────────
     try {
       const bridge = await getBridge();
-      await bridge.write(key, value, { layer: 'hot' });
-    } catch { /* الجسر اختياري — لا يوقف التنفيذ */ }
+      await bridge.write(key, enhancedValue, { layer, ttl, tags });
+      
+      // [TC] reason: Store bridge write pattern | id: TC-4a-002
+      await this.set(`bridge_write_pattern:${key}`, {
+        success: true,
+        layer,
+        timestamp: new Date().toISOString(),
+        write_duration: Date.now() - writeStartTime
+      }, { ttl: 3600000 });
+      
+    } catch (error) {
+      IQRALogger.warn(`⚠️ [MEMORY] Bridge write failed for ${key}:`, error);
+      
+      // [TC] reason: Store bridge failure pattern | id: TC-4a-003
+      await this.set(`bridge_failure_pattern:${key}`, {
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        fallback_used: true
+      }, { ttl: 1800000 });
+    }
 
+    // ── Enhanced Redis writing with pattern tracking ─────────────────────────
     try {
       const redis = await this.getRedis();
       if (redis) {
-        // TTL=7 أيام — القاعدة ٣: كتابة فورية مع انتهاء صلاحية تلقائي
+        // [TC] reason: Check Redis write patterns | id: TC-4a-004
+        const redisPattern = await this.get(`redis_write_pattern:${key.substring(0, 30)}`);
+        
         const result = await withTimeout(
-          redis.set(`iqra:${key}`, value, { ex: REDIS_TTL_SECONDS }),
+          redis.set(`iqra:${key}`, enhancedValue, { ex: ttl }),
           IQRA_TIMEOUTS.REDIS,
           `Redis SET ${key}`
         );
-        this._errorCount = 0;
+        
+        const writeDuration = Date.now() - writeStartTime;
+        enhancedValue.metadata.write_duration_ms = writeDuration;
+        
+        // [TC] reason: Store successful write pattern | id: TC-4a-005
+        await this.set(`redis_write_pattern:${key.substring(0, 30)}`, {
+          success: true,
+          write_duration: writeDuration,
+          ttl_used: ttl,
+          tags,
+          timestamp: new Date().toISOString(),
+          confidence: writeDuration < 100 ? 0.9 : 0.7
+        }, { ttl: 7200000 });
+        
+        // [TC] reason: Update write analytics | id: TC-4a-006
+        const writeAnalytics = await this.get(`write_analytics`) || { data: { total_writes: 0, avg_duration: 0, success_rate: 1.0 } };
+        const updatedAnalytics = {
+          total_writes: writeAnalytics.data.total_writes + 1,
+          avg_duration: ((writeAnalytics.data.avg_duration * writeAnalytics.data.total_writes) + writeDuration) / (writeAnalytics.data.total_writes + 1),
+          success_rate: ((writeAnalytics.data.success_rate * writeAnalytics.data.total_writes) + 1.0) / (writeAnalytics.data.total_writes + 1),
+          layer_distribution: {
+            ...writeAnalytics.data.layer_distribution,
+            [layer]: (writeAnalytics.data.layer_distribution?.[layer] || 0) + 1
+          },
+          last_updated: new Date().toISOString()
+        };
+        
+        await this.set(`write_analytics`, updatedAnalytics, { ttl: 86400000 });
+        
+        IQRALogger.info(`🧠 [MEMORY] Enhanced write completed for ${key} in ${writeDuration}ms`);
         return result;
       }
     } catch (error) {
-      this._errorCount++;
-      IQRALogger.warn(`⚠️ [MEMORY] Set error (${this._errorCount}/${this.ERROR_THRESHOLD}):`, error);
-      if (this._errorCount >= this.ERROR_THRESHOLD) {
-        await this.softReset();
-      }
+      IQRALogger.error('❌ [MEMORY] Enhanced Redis write error:', error);
+      
+      // [TC] reason: Store Redis failure pattern | id: TC-4a-007
+      await this.set(`redis_failure_pattern:${key}`, {
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        value_size: JSON.stringify(value).length
+      }, { ttl: 3600000 });
+      
+      throw error;
     }
 
     const data = await this.getLocalData();
@@ -646,6 +827,63 @@ export class IQRAMemory {
     }
     const magnitude = Math.sqrt(mag1) * Math.sqrt(mag2);
     return magnitude === 0 ? 0 : dotProduct / magnitude;
+  }
+
+  // ── euclideanDistance (exported — used by Audit & Rewards) ─────────────
+  /**
+   * حساب المسافة الإقليدية بين متجهين.
+   * مُصدَّرة للاستخدام في نظام التدقيق والمكافآت.
+   */
+  static euclideanDistance(v1: number[], v2: number[]): number {
+    if (!v1 || !v2 || v1.length !== v2.length || v1.length === 0) return 0;
+    let sum = 0;
+    for (let i = 0; i < v1.length; i++) {
+      const diff = v1[i] - v2[i];
+      sum += diff * diff;
+    }
+    return Math.sqrt(sum);
+  }
+
+  // ── getFithrahCentroid (exported — used by Audit & Rewards) ───────────────
+  /**
+   * الحصول على مركز الفطرة - المتجه المركزي لجميع الذكريات الأخلاقية.
+   * مُصدَّرة للاستخدام في نظام التدقيق والمكافآت.
+   */
+  static async getFithrahCentroid(): Promise<number[]> {
+    try {
+      // الحصول على جميع الذكريات ذات الصلة بالفطرة
+      const fitrahMemories = await this.get('fitrah_memories');
+      if (!fitrahMemories || !Array.isArray(fitrahMemories.embeddings)) {
+        // إذا لم توجد ذكريات، إرجاع متجه صفر
+        return new Array(1536).fill(0); // حجم التضمين القياسي
+      }
+
+      const embeddings = fitrahMemories.embeddings as number[][];
+      if (embeddings.length === 0) {
+        return new Array(1536).fill(0);
+      }
+
+      // حساب المتجه المركزي
+      const dimension = embeddings[0].length;
+      const centroid = new Array(dimension).fill(0);
+
+      for (const embedding of embeddings) {
+        for (let i = 0; i < dimension; i++) {
+          centroid[i] += embedding[i];
+        }
+      }
+
+      // تقسيم على عدد الذكريات للحصول على المتوسط
+      for (let i = 0; i < dimension; i++) {
+        centroid[i] /= embeddings.length;
+      }
+
+      IQRALogger.info(`🧠 [MEMORY] Fithrah centroid calculated from ${embeddings.length} memories`);
+      return centroid;
+    } catch (error) {
+      IQRALogger.error('❌ [MEMORY] Failed to calculate Fithrah centroid:', error);
+      return new Array(1536).fill(0);
+    }
   }
 }
 

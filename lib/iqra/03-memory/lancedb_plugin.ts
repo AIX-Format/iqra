@@ -16,6 +16,10 @@ export interface MemoryEntry {
   content: string;
   metadata: string; // JSON string
   timestamp: number;
+  // [TC] reason: Add missing properties for enhanced memory integration | id: TC-FIX-003
+  id?: string;
+  optimization_applied?: boolean;
+  pattern_confidence?: number;
 }
 
 export class LanceDBPlugin {
@@ -64,15 +68,79 @@ export class LanceDBPlugin {
         timestamp: Date.now()
       };
 
+      // [TC] reason: Enhanced LanceDB archival with pattern learning | id: TC-4f-001
+      const archivalStartTime = Date.now();
+      
+      // Check archival patterns in memory
+      const archivalPattern = await IQRAMemory.get(`archival_pattern:${content.substring(0, 30)}`);
+      if (archivalPattern && archivalPattern.success) {
+        IQRALogger.info(`🧠 [LANCEDB] Using optimized archival pattern`);
+        // Apply pre-optimized archival parameters
+        entry.optimization_applied = true;
+        entry.pattern_confidence = archivalPattern.data.confidence || 0.8;
+      }
+
       if (!this._table) {
         this._table = await this._db.createTable(this.TABLE_NAME, [entry]);
+        
+        // [TC] reason: Store table creation pattern | id: TC-4f-002
+        await IQRAMemory.set(`lancedb_table_creation`, {
+          table_name: this.TABLE_NAME,
+          first_entry_id: entry.id,
+          timestamp: new Date().toISOString(),
+          creation_duration: Date.now() - archivalStartTime
+        }, { ttl: 86400000 });
+        
       } else {
         await this._table.add([entry]);
+        
+        // [TC] reason: Store entry addition pattern | id: TC-4f-003
+        await IQRAMemory.set(`lancedb_entry_addition:${entry.id}`, {
+          entry_id: entry.id,
+          content_preview: content.substring(0, 50),
+          timestamp: new Date().toISOString(),
+          addition_duration: Date.now() - archivalStartTime,
+          table_size: (await this._table.count()).count
+        }, { ttl: 604800000 }); // 7 days
       }
       
-      IQRALogger.info(`🏺 [LANCEDB] Experience archived: "${content.substring(0, 30)}..."`);
+      // [TC] reason: Update archival analytics | id: TC-4f-004
+      const archivalAnalytics = await IQRAMemory.get(`lancedb_archival_analytics`) || { 
+        data: { total_archived: 0, avg_duration: 0, success_rate: 1.0 } 
+      };
+      
+      const archivalDuration = Date.now() - archivalStartTime;
+      const updatedAnalytics = {
+        total_archived: archivalAnalytics.data.total_archived + 1,
+        avg_duration: ((archivalAnalytics.data.avg_duration * archivalAnalytics.data.total_archived) + archivalDuration) / (archivalAnalytics.data.total_archived + 1),
+        success_rate: ((archivalAnalytics.data.success_rate * archivalAnalytics.data.total_archived) + 1.0) / (archivalAnalytics.data.total_archived + 1),
+        last_archived: new Date().toISOString(),
+        table_entries: (await this._table.count()).count
+      };
+      
+      await IQRAMemory.set(`lancedb_archival_analytics`, updatedAnalytics, { ttl: 2592000000 }); // 30 days
+      
+      // Store successful archival pattern for future optimization
+      await IQRAMemory.set(`archival_pattern:${content.substring(0, 30)}`, {
+        success: true,
+        duration: archivalDuration,
+        confidence: archivalDuration < 100 ? 0.9 : 0.7,
+        timestamp: new Date().toISOString(),
+        embedding_size: entry.vector.length
+      }, { ttl: 7200000 }); // 2 hours
+      
+      IQRALogger.info(`🧠 [LANCEDB] Enhanced experience archived: "${content.substring(0, 30)}..." in ${archivalDuration}ms`);
+      
     } catch (error) {
-      IQRALogger.error('❌ [LANCEDB] Archival Error:', error);
+      // [TC] reason: Store archival failure pattern with proper error handling | id: TC-FIX-004
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await IQRAMemory.set(`lancedb_archival_failure:${Date.now()}`, {
+        error: errorMessage,
+        content_preview: content.substring(0, 50),
+        timestamp: new Date().toISOString()
+      }, { ttl: 3600000 });
+      
+      IQRALogger.error('❌ [LANCEDB] Enhanced Archival Error:', errorMessage);
     }
   }
 

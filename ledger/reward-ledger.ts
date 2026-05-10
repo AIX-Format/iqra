@@ -15,7 +15,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createHash } from 'crypto';
-import { RewardEntry, RewardVector } from '../lib/iqra/05-rewards/types';
+import { RewardEntry, RewardVector } from '#rewards/types';
 
 export class RewardLedger {
   /**

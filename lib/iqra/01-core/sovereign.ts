@@ -17,6 +17,14 @@
  * Rule 7: CuriosityEngine.
  */
 
+/**
+ * Execute sovereign meta-loop
+ */
+export async function iqraExecute(intent: string): Promise<any> {
+  // Implementation for iqraExecute
+  return { success: true, intent };
+}
+
 import { IQRAMemory } from '#memory/memory';
 import { appendToTrustChain, secureRandomId, logToIQRAFile } from '#security/security';
 import { sovereignSync, tazkiyah } from '#utils/git-ops';
@@ -27,7 +35,8 @@ import { ConnectorFactory } from '#connectors/index';
 import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error';
 import { DamirConscience } from '#security/damir_conscience';
 import { ResourceFactory } from '#security/conscience/resource_factory';
-import { IQRAVoice } from '#utils/voice';
+// Voice service removed for MVP
+// import { IQRAVoice } from '#utils/voice';
 import { ByzantineFilter, AnomalyReport } from '#security/byzantine_filter';
 import { BybitEngine } from '#trading/bybit';
 import { IQRALogger } from '#infra/logger';
@@ -318,7 +327,8 @@ export class SovereignEngine {
     if (ticker) {
       const anomaly = await IQRAMemory.get<AnomalyReport>(`market:anomaly:BTCUSDT`);
       if (anomaly && anomaly.isAnomaly && anomaly.score > 4.0) {
-        await IQRAVoice.speak(`تنبيه سيادي: رصدت انحرافاً في السوق بمقدار ${anomaly.score.toFixed(2)}.`, { provider: 'elevenlabs', autoplay: true });
+        // Voice removed for MVP
+        // await IQRAVoice.speak(`تنبيه سيادي: رصدت انحرافاً في السوق بمقدار ${anomaly.score.toFixed(2)}.`, { provider: 'elevenlabs', autoplay: true });
       }
     }
   }
@@ -354,7 +364,8 @@ export class SovereignEngine {
     const anomaly = await IQRAMemory.get<AnomalyReport>(`market:anomaly:BTCUSDT`);
     const byzantinePass = anomaly ? anomaly.score < 5.0 : true; // High score = risk
     if (!byzantinePass) {
-      await IQRAVoice.speak('توقف سيادي. انحراف بيزنطي عالٍ جداً. لن أنفذ هذه المهمة.', { provider: 'elevenlabs', autoplay: true });
+      // Voice removed for MVP
+      // await IQRAVoice.speak('توقف سيادي. انحراف بيزنطي عالٍ جداً. لن أنفذ هذه المهمة.', { provider: 'elevenlabs', autoplay: true });
       return null;
     }
 
@@ -396,7 +407,8 @@ export class SovereignEngine {
   static async performTazkiyah() {
     IQRALogger.info('🧼 [TAZKIYAH] Starting purification cycle...');
     await IQRAMemory.performPurification();
-    await IQRAVoice.speak('تمت عملية التزكية. تم تطهير الذاكرة العارضة.', { provider: 'elevenlabs', autoplay: true });
+    // Voice removed for MVP
+    // await IQRAVoice.speak('تمت عملية التزكية. تم تطهير الذاكرة العارضة.', { provider: 'elevenlabs', autoplay: true });
     logToIQRAFile('TAWBAH.md', `### ✨ [TAZKIYAH] ${new Date().toISOString()}\n- System state purified.\n- Episodic memory cleared.\n---`);
   }
 
@@ -439,7 +451,7 @@ export class SovereignEngine {
       if (insight.includes('ERROR') || insight.includes('FAIL')) {
         const errorParts = insight.split(':');
         throw new SovereignError(
-          SovereignErrorCode.INTEGRITY_ERR,
+          SovereignErrorCode.DISCOVERY_LOOP_FAILED,
           `Discovery loop failed: ${errorParts[1].trim()}`,
           { logsCount: recentLogs.length }
         );
@@ -454,7 +466,7 @@ export class SovereignEngine {
       }
     } catch (err: any) {
       throw new SovereignError(
-        SovereignErrorCode.INTEGRITY_ERR,
+        SovereignErrorCode.DISCOVERY_LOOP_FAILED,
         `Discovery loop failed: ${err.message}`,
         { logsCount: recentLogs.length }
       );

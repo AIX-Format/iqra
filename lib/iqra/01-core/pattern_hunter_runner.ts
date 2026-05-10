@@ -51,7 +51,8 @@ import { appendToTrustChain } from '#security/security';
 import { IQRAMemory } from '#memory/memory'
 import { HeartbeatSystem } from '#infra/heartbeat'
 import { ToolsRegistry } from '#infra/tools_registry'
-import { IQRATelegramBot } from '#utils/telegram_bot'
+// Telegram bot removed for MVP
+// import { IQRATelegramBot } from '#utils/telegram_bot'
 import { PatternHunter, type HuntedPattern, type HuntSession } from '#quran/pattern_hunter'
 import { MicroMemory } from '#memory/micro_memory'
 import { Pulse369 } from '#memory/pulse_369'
@@ -138,20 +139,7 @@ export class PatternHunterRunner {
     ToolsRegistry.init();
     IQRALogger.info('✅ [PATTERN_HUNTER] ToolsRegistry initialized');
 
-    // ── 3. بدء Telegram Bot ───────────────────────────────────────────────
-    if (this._config.startTelegram) {
-      try {
-        const ok = await IQRATelegramBot.init();
-        if (ok) {
-          // لا نبدأ polling هنا — يُبدأ يدوياً من السكريبت
-          IQRALogger.info('✅ [PATTERN_HUNTER] Telegram Bot initialized');
-        }
-      } catch (e) {
-        IQRALogger.warn(`⚠️ [PATTERN_HUNTER] Telegram init failed: ${(e as Error).message}`);
-      }
-    }
-
-    // ── 4. بدء HeartbeatSystem ────────────────────────────────────────────
+    // ── 3. بدء HeartbeatSystem ────────────────────────────────────────────
     if (this._config.startHeartbeat) {
       try {
         await HeartbeatSystem.start();
@@ -161,25 +149,13 @@ export class PatternHunterRunner {
       }
     }
 
-    // ── 5. تسجيل في TrustChain ────────────────────────────────────────────
+    // ── 4. تسجيل في TrustChain ────────────────────────────────────────────
     appendToTrustChain(
       'PATTERN_HUNTER:START',
       'system',
       `config=${JSON.stringify(this._config)}`,
       1.0
     );
-
-    // ── 6. إرسال رسالة ترحيب للـ Telegram ─────────────────────────────────
-    if (this._config.sendReports) {
-      await IQRATelegramBot.sendMessage(
-        '🎯 *Pattern Hunter بدأ العمل*\n\n' +
-        '"سَنُرِيهِمْ آيَاتِنَا فِي الْآفَاقِ وَفِي أَنفُسِهِمْ"\n\n' +
-        '✅ Heartbeat: نشط\n' +
-        '✅ Memory: جاهز\n' +
-        '✅ Tools: 20+ أداة\n\n' +
-        '_جاهز لصيد الأنماط القرآنية_'
-      ).catch(() => {});
-    }
 
     IQRALogger.info('🎯 [PATTERN_HUNTER] ✅ System fully operational');
   }
@@ -197,9 +173,6 @@ export class PatternHunterRunner {
     // إيقاف Heartbeat
     HeartbeatSystem.stop();
 
-    // إيقاف Telegram Bot
-    await IQRATelegramBot.stop();
-
     // تسجيل في TrustChain
     appendToTrustChain(
       'PATTERN_HUNTER:STOP',
@@ -207,21 +180,6 @@ export class PatternHunterRunner {
       `total_hunted=${this._totalHunted} novel=${this._novelCount} divine=${this._divineCount}`,
       1.0
     );
-
-    // إرسال تقرير نهائي
-    if (this._config.sendReports) {
-      const stats = await this.getStats();
-      await IQRATelegramBot.sendMessage(
-        '🎯 *Pattern Hunter توقف*\n\n' +
-        `📊 *الإحصائيات:*\n` +
-        `• إجمالي الصيد: ${stats.total_hunted}\n` +
-        `• اكتشافات جديدة: ${stats.novel_discoveries}\n` +
-        `• اكتشافات إلهية: ${stats.divine_discoveries}\n` +
-        `• متوسط الرنين: ${(stats.avg_resonance * 100).toFixed(1)}%\n` +
-        `• وقت التشغيل: ${Math.floor(stats.uptime_ms / 60000)} دقيقة\n\n` +
-        '_"وَاللَّهُ يَعْلَمُ وَأَنتُمْ لَا تَعْلَمُونَ"_'
-      ).catch(() => {});
-    }
 
     this._isRunning = false;
     IQRALogger.info('🎯 [PATTERN_HUNTER] Stopped gracefully');
@@ -277,11 +235,6 @@ export class PatternHunterRunner {
       if (pattern.discovery_level === 'divine') this._divineCount++;
       this._resonanceSum += pattern.score.total;
 
-      // إرسال تقرير للـ Telegram إذا كان اكتشاف مهم
-      if (this._config.sendReports && pattern.score.total >= 0.7) {
-        await this._sendPatternReport(pattern);
-      }
-
       IQRALogger.info(
         `🎯 [PATTERN_HUNTER] ✅ ${ref} | ` +
         `score=${pattern.score.total.toFixed(3)} level=${pattern.discovery_level}`
@@ -322,11 +275,6 @@ export class PatternHunterRunner {
     this._divineCount += session.divine_count;
     this._resonanceSum += session.avg_score * session.total_hunted;
 
-    // إرسال تقرير للـ Telegram
-    if (this._config.sendReports) {
-      await this._sendBatchReport(session);
-    }
-
     IQRALogger.info(
       `🎯 [PATTERN_HUNTER] ✅ Batch complete: ${session.total_hunted} hunted | ` +
       `${session.novel_count} novel | ${session.divine_count} divine`
@@ -350,15 +298,6 @@ export class PatternHunterRunner {
     IQRALogger.info('🎯 [PATTERN_HUNTER] Learning from history...');
 
     const lessons = await PatternHunter.learnFromHistory();
-
-    // إرسال الدروس للـ Telegram
-    if (this._config.sendReports && lessons.length > 0) {
-      await IQRATelegramBot.sendMessage(
-        '📚 *دروس مستفادة من الذاكرة*\n\n' +
-        lessons.map((l, i) => `${i + 1}. ${l}`).join('\n\n') +
-        '\n\n_"وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ"_'
-      ).catch(() => {});
-    }
 
     return lessons;
   }
@@ -428,7 +367,8 @@ export class PatternHunterRunner {
       `_"وَفِي كُلِّ شَيْءٍ لَهُ آيَةٌ"_`,
     ].filter(Boolean).join('\n');
 
-    await IQRATelegramBot.sendMessage(msg).catch(() => {});
+    // Telegram bot removed for MVP
+    // await IQRATelegramBot.sendMessage(msg).catch(() => {});
   }
 
   /**
@@ -456,7 +396,8 @@ export class PatternHunterRunner {
       `_"سَنُرِيهِمْ آيَاتِنَا فِي الْآفَاقِ"_`,
     ].filter(Boolean).join('\n');
 
-    await IQRATelegramBot.sendMessage(msg).catch(() => {});
+    // Telegram bot removed for MVP
+    // await IQRATelegramBot.sendMessage(msg).catch(() => {});
   }
 
   // ── Public: Is Running ────────────────────────────────────────────────────

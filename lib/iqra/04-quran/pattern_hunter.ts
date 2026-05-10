@@ -50,11 +50,49 @@ import { NumericalValidator } from './numerical_validator';
 
 // ── Zod Schemas (RULE 1) ──────────────────────────────────────────────────────
 
+/**
+ * Enhanced Hunt Input Schema with memory integration and pattern learning
+ * [TC] reason: Enhanced with validation patterns and context awareness | id: TC-6a-001
+ */
 const HuntInputSchema = z.object({
   verse_ref: z.string().regex(/^\d+:\d+$/, 'Format: surah:ayah'),
   arabic_text: z.string().min(1).max(2000),
   field: z.enum(['numerical', 'semantic', 'topological', 'fractal', 'linguistic', 'all']).default('all'),
   mission_id: z.string().default(() => `hunt-${Date.now()}`),
+  // [TC] reason: Enhanced context options | id: TC-6a-002
+  context: z.object({
+    previous_patterns: z.array(z.string()).optional(),
+    search_depth: z.number().min(1).max(10).default(3),
+    memory_enabled: z.boolean().default(true),
+    confidence_threshold: z.number().min(0.1).max(1.0).default(0.7),
+    tags: z.array(z.string()).optional()
+  }).optional(),
+  // [TC] reason: Enhanced optimization options | id: TC-6a-003
+  optimization: z.object({
+    use_cached_results: z.boolean().default(true),
+    parallel_processing: z.boolean().default(false),
+    timeout_ms: z.number().min(1000).max(30000).default(10000)
+  }).optional()
+}).transform(async (data) => {
+  // [TC] reason: Apply memory-based validation enhancements | id: TC-6a-004
+  if (data.context?.memory_enabled) {
+    const validationPattern = await IQRAMemory.get(`validation_pattern:${data.verse_ref}`);
+    if (validationPattern && validationPattern.success) {
+      IQRALogger.info(`🧠 [PATTERN_HUNTER] Using cached validation pattern for ${data.verse_ref}`);
+      data.context.confidence_threshold = validationPattern.data.optimal_threshold || data.context.confidence_threshold;
+    }
+  }
+  
+  // Store hunt pattern for future optimization
+  await IQRAMemory.set(`hunt_pattern:${data.mission_id}`, {
+    verse_ref: data.verse_ref,
+    field: data.field,
+    timestamp: new Date().toISOString(),
+    context_enabled: !!data.context,
+    optimization_enabled: !!data.optimization
+  }, { ttl: 3600000 });
+  
+  return data;
 });
 
 const BatchHuntSchema = z.object({

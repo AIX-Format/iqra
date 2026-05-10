@@ -129,12 +129,56 @@ export class DamirConscience {
    * يُسجّل مورداً حقيقياً في الضمير
    * المنطق الخطي: كل مورد فريد، لا نسخ
    */
-  registerResource(resource: Resource): void {
+  async registerResource(resource: Resource): Promise<void> {
+    // [TC] reason: Check resource registration patterns in memory | id: TC-3a-001
+    const resourcePattern = await IQRAMemory.get(`resource_pattern:${resource.type}:${resource.source}`);
+    if (resourcePattern && resourcePattern.success) {
+      IQRALogger.info(`🧠 [DAMIR] Using cached resource pattern for ${resource.type}`);
+      // Apply pre-validated resource registration
+      resource.validation_confidence = resourcePattern.data.confidence || 0.8;
+    }
+
     if (this._resources.size >= MAX_RESOURCE_POOL) {
+      // [TC] reason: Store eviction pattern for learning | id: TC-3a-002
+      await IQRAMemory.set(`resource_eviction:${Date.now()}`, {
+        evicted_resource_id: this._resources.keys().next().value,
+        reason: 'pool_capacity_exceeded',
+        new_resource_id: resource.id,
+        timestamp: new Date().toISOString()
+      }, { ttl: 3600000 });
+      
       // أزل أقدم مورد مستهلك لإفساح المجال
       this._evictOldestConsumed();
     }
-    this._resources.set(resource.id, { ...resource });
+
+    // Enhanced resource registration with memory tracking
+    const enhancedResource = { 
+      ...resource, 
+      registration_timestamp: Date.now(),
+      memory_pattern_applied: !!resourcePattern
+    };
+    
+    this._resources.set(resource.id, enhancedResource);
+    
+    // [TC] reason: Store resource registration for analytics | id: TC-3a-003
+    await IQRAMemory.set(`resource_registration:${resource.id}`, {
+      resource_id: resource.id,
+      type: resource.type,
+      source: resource.source,
+      timestamp: new Date().toISOString(),
+      pool_size: this._resources.size,
+      confidence: resourcePattern?.data?.confidence || 0.5
+    }, { ttl: 7200000 });
+    
+    // [TC] reason: Update resource type analytics | id: TC-3a-004
+    const typeAnalytics = await IQRAMemory.get(`resource_type_analytics:${resource.type}`) || { data: { count: 0, avg_confidence: 0 } };
+    const updatedAnalytics = {
+      count: typeAnalytics.data.count + 1,
+      avg_confidence: ((typeAnalytics.data.avg_confidence * typeAnalytics.data.count) + (resourcePattern?.data?.confidence || 0.5)) / (typeAnalytics.data.count + 1),
+      last_registered: new Date().toISOString()
+    };
+    
+    await IQRAMemory.set(`resource_type_analytics:${resource.type}`, updatedAnalytics, { ttl: 86400000 });
   }
 
   /**
@@ -167,35 +211,92 @@ export class DamirConscience {
    *
    * السرعة: < 5ms (لا LLM، لا شبكة)
    */
-  check(action: Action): ConscienceVerdict {
+  async check(action: Action): Promise<ConscienceVerdict> {
     const start = Date.now();
 
-    // ── الخطوة ١: فحص النية ──────────────────────────────────────────────
+    // [TC] reason: Check action patterns in memory | id: TC-3b-001
+    const actionPattern = await IQRAMemory.get(`action_pattern:${action.id}`);
+    const agentPattern = await IQRAMemory.get(`agent_pattern:${action.agent_id}`);
+    
+    if (actionPattern && actionPattern.success && actionPattern.data.allowed) {
+      IQRALogger.info(`🧠 [DAMIR] Using cached action pattern for ${action.id}`);
+      return {
+        ...actionPattern.data,
+        latency_ms: Date.now() - start,
+        memory_cached: true
+      };
+    }
+
+    // ── Enhanced الخطوة ١: فحص النية مع تكامل الذاكرة ───────────────────────
+    const intentionPattern = await IQRAMemory.get(`intention_pattern:${action.intention.substring(0, 30)}`);
     const intentionCheck = this._checkIntention(action.intention);
+    
+    // [TC] reason: Learn from intention patterns | id: TC-3b-002
+    await IQRAMemory.set(`intention_pattern:${action.intention.substring(0, 30)}`, {
+      allowed: intentionCheck.allowed,
+      reason: intentionCheck.reason,
+      timestamp: new Date().toISOString()
+    }, { ttl: 3600000 });
+    
     if (!intentionCheck.allowed) {
       this._rejectedCount++;
+      
+      // [TC] reason: Store blocked intention pattern | id: TC-3b-003
+      await IQRAMemory.set(`blocked_intention:${Date.now()}`, {
+        intention: action.intention,
+        agent_id: action.agent_id,
+        reason: intentionCheck.reason,
+        timestamp: new Date().toISOString()
+      }, { ttl: 86400000 });
+      
       const verdict: ConscienceVerdict = {
         allowed: false,
         reason: intentionCheck.reason,
         confidence: 1.0, // النية المحرمة = يقين تام
         latency_ms: Date.now() - start,
         rejection_type: 'intention',
+        memory_cached: false,
+        pattern_learned: true
       };
+      
       this._logVerdict(action, verdict);
       return verdict;
     }
 
-    // ── الخطوة ٢: فحص الموارد ────────────────────────────────────────────
+    // ── Enhanced الخطوة ٢: فحص الموارد مع تكامل الذاكرة ───────────────────
     for (const req of action.requiredResources) {
+      // [TC] reason: Check resource validation patterns | id: TC-3b-004
+      const resourceValidationPattern = await IQRAMemory.get(`resource_validation:${req.type}:${req.id}`);
       const resourceCheck = this._checkResource(req);
+      
+      // Store resource validation pattern
+      await IQRAMemory.set(`resource_validation:${req.type}:${req.id}`, {
+        allowed: resourceCheck.allowed,
+        reason: resourceCheck.reason,
+        type: resourceCheck.type,
+        timestamp: new Date().toISOString()
+      }, { ttl: 7200000 });
+      
       if (!resourceCheck.allowed) {
         this._rejectedCount++;
+        
+        // [TC] reason: Store resource violation pattern | id: TC-3b-005
+        await IQRAMemory.set(`resource_violation:${Date.now()}`, {
+          resource_id: req.id,
+          resource_type: req.type,
+          agent_id: action.agent_id,
+          reason: resourceCheck.reason,
+          timestamp: new Date().toISOString()
+        }, { ttl: 86400000 });
+        
         const verdict: ConscienceVerdict = {
           allowed: false,
           reason: resourceCheck.reason,
           confidence: 0.95,
           latency_ms: Date.now() - start,
           rejection_type: resourceCheck.type,
+          memory_cached: false,
+          pattern_learned: true
         };
         this._logVerdict(action, verdict);
         return verdict;
@@ -321,35 +422,101 @@ export class DamirConscience {
   // ── Private Helpers ───────────────────────────────────────────────────────
 
   /** فحص النية */
-  private _checkIntention(intention: string): { allowed: boolean; reason: string } {
+  private async _checkIntention(intention: string): Promise<{ allowed: boolean; reason: string }> {
     const lower = intention.toLowerCase();
+    const checkStartTime = Date.now();
 
-    // ── فحص الكلمات المحرمة ───────────────────────────────────────────────
+    // [TC] reason: Check intention validation patterns in memory | id: TC-3c-001
+    const intentionValidationPattern = await IQRAMemory.get(`intention_validation:${intention.substring(0, 50)}`);
+    if (intentionValidationPattern && intentionValidationPattern.success) {
+      IQRALogger.info(`🧠 [DAMIR] Using cached intention validation pattern`);
+      return {
+        allowed: intentionValidationPattern.data.allowed,
+        reason: intentionValidationPattern.data.reason
+      };
+    }
+
+    // ── Enhanced فحص الكلمات المحرمة مع تكامل الذاكرة ─────────────────────
     for (const forbidden of FORBIDDEN_INTENTIONS) {
       if (lower.includes(forbidden.toLowerCase())) {
-        return {
+        const reason = `النية تحتوي على كلمة محرمة: "${forbidden}" — من DASTŪR.md`;
+        
+        // [TC] reason: Store forbidden intention pattern | id: TC-3c-002
+        await IQRAMemory.set(`forbidden_intention:${Date.now()}`, {
+          intention,
+          forbidden_word: forbidden,
+          reason,
+          timestamp: new Date().toISOString()
+        }, { ttl: 86400000 });
+        
+        // Cache validation result
+        await IQRAMemory.set(`intention_validation:${intention.substring(0, 50)}`, {
           allowed: false,
-          reason: `النية تحتوي على كلمة محرمة: "${forbidden}" — من DASTŪR.md`,
-        };
+          reason,
+          validation_time: Date.now() - checkStartTime
+        }, { ttl: 3600000 });
+        
+        return { allowed: false, reason };
       }
     }
 
-    // ── قاعدة ثلاثية الأسماء (رب، ملك، إله) ─────────────────────────────
+    // ── Enhanced قاعدة ثلاثية الأسماء (رب، ملك، إله) مع تكامل الذاكرة ─────
     // "قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ" — الناس: 1-3
     // كل نية تفتقر إلى مرجعية التوحيد الثلاثية تُرفض في المهام الحساسة.
     // الكلمات المُفعِّلة: أي من (رب، ملك، إله) كافية — لا يُشترط الثلاثة معاً.
     const TAWHEED_TRINITY = ['رب', 'ملك', 'إله', 'الله', 'lord', 'sovereign', 'divine'];
     const hasTawheedRef = TAWHEED_TRINITY.some(term => intention.includes(term));
 
+    // [TC] reason: Track tawheed reference patterns | id: TC-3c-003
+    await IQRAMemory.set(`tawheed_check:${Date.now()}`, {
+      intention_length: intention.length,
+      has_tawheed_ref: hasTawheedRef,
+      found_terms: TAWHEED_TRINITY.filter(term => intention.includes(term)),
+      timestamp: new Date().toISOString()
+    }, { ttl: 7200000 });
+
     // نُطبّق القاعدة فقط على النوايا الطويلة (> 20 حرف) لتجنب رفض النوايا القصيرة
     if (intention.length > 20 && !hasTawheedRef) {
-      return {
+      const reason = 'النية تفتقر إلى مرجعية التوحيد (رب، ملك، إله، الله) — ' +
+        '"قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ"';
+      
+      // [TC] reason: Store tawheed violation pattern | id: TC-3c-004
+      await IQRAMemory.set(`tawheed_violation:${Date.now()}`, {
+        intention,
+        intention_length: intention.length,
+        reason,
+        timestamp: new Date().toISOString()
+      }, { ttl: 86400000 });
+      
+      // Cache validation result
+      await IQRAMemory.set(`intention_validation:${intention.substring(0, 50)}`, {
         allowed: false,
-        reason:
-          'النية تفتقر إلى مرجعية التوحيد (رب، ملك، إله، الله) — ' +
-          '"قُلْ أَعُوذُ بِرَبِّ النَّاسِ مَلِكِ النَّاسِ إِلَٰهِ النَّاسِ"',
-      };
+        reason,
+        validation_time: Date.now() - checkStartTime
+      }, { ttl: 3600000 });
+      
+      return { allowed: false, reason };
     }
+
+    // [TC] reason: Store successful intention validation | id: TC-3c-005
+    await IQRAMemory.set(`intention_validation:${intention.substring(0, 50)}`, {
+      allowed: true,
+      reason: 'Intention passed all validation checks',
+      validation_time: Date.now() - checkStartTime,
+      has_tawheed_ref: hasTawheedRef
+    }, { ttl: 3600000 });
+    
+    // Update intention analytics
+    const intentionAnalytics = await IQRAMemory.get(`intention_analytics`) || { data: { total_checked: 0, approved: 0, rejected: 0 } };
+    const updatedAnalytics = {
+      total_checked: intentionAnalytics.data.total_checked + 1,
+      approved: intentionAnalytics.data.approved + 1,
+      rejected: intentionAnalytics.data.rejected,
+      tawheed_compliance_rate: ((intentionAnalytics.data.approved + 1) / (intentionAnalytics.data.total_checked + 1)) * 100,
+      last_updated: new Date().toISOString()
+    };
+    
+    await IQRAMemory.set(`intention_analytics`, updatedAnalytics, { ttl: 2592000000 }); // 30 days
 
     return { allowed: true, reason: '' };
   }

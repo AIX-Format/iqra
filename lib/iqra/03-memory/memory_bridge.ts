@@ -106,15 +106,27 @@ export class MemoryBridge {
     value: any,
     options: BridgeWriteOptions = {}
   ): Promise<string> {
+    const writeStartTime = Date.now();
     const {
       layer = 'hot',
       ttl_ms = HOT_DEFAULT_TTL,
       broadcast = false,
+      tags = [],
     } = options;
+
+    // [TC] reason: Check bridge write patterns in memory | id: TC-4d-001
+    const writePattern = await IQRAMemory.get(`bridge_write_pattern:${key.substring(0, 30)}`);
+    if (writePattern && writePattern.success) {
+      IQRALogger.info(`🧠 [BRIDGE] Using optimized bridge write pattern for ${key}`);
+      // Apply pre-optimized write parameters
+      ttl_ms = writePattern.data.optimal_ttl || ttl_ms;
+      layer = writePattern.data.optimal_layer || layer;
+    }
 
     const id = crypto.randomUUID();
     const now = Date.now();
 
+    // Enhanced entry with metadata
     const entry: BridgeEntry = {
       id,
       key,
@@ -124,11 +136,36 @@ export class MemoryBridge {
       last_accessed: now,
       access_count: 0,
       ttl_ms,
+      tags,
+      metadata: {
+        write_duration_ms: 0, // Will be updated after write
+        pattern_applied: !!writePattern,
+        write_confidence: writePattern?.data?.confidence || 0.8
+      }
     };
 
-    // ── الطبقة الساخنة ────────────────────────────────────────────────────
+    // [TC] reason: Store write operation for analytics | id: TC-4d-002
+    await IQRAMemory.set(`bridge_write_operation:${id}`, {
+      key,
+      layer,
+      ttl_ms,
+      tags,
+      timestamp: new Date().toISOString(),
+      pattern_applied: !!writePattern
+    }, { ttl: 3600000 });
+
+    // ── Enhanced الطبقة الساخنة ─────────────────────────────────────────────
     if (layer === 'hot' || broadcast) {
       if (this._hot.size >= HOT_MAX_SIZE) {
+        // [TC] reason: Store eviction pattern | id: TC-4d-003
+        const evictedKey = this._hot.keys().next().value;
+        await IQRAMemory.set(`bridge_eviction:${Date.now()}`, {
+          evicted_key: evictedKey,
+          reason: 'hot_cache_full',
+          new_key: key,
+          timestamp: new Date().toISOString()
+        }, { ttl: 1800000 });
+        
         this._evictLRU();
       }
       this._hot.set(key, { ...entry, layer: 'hot' });

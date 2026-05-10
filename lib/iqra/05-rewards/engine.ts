@@ -23,10 +23,57 @@ import type { WorkerReport } from '#workers/protocol';
 
 export class RewardEngine {
 
-  static buildPathKey(reports: WorkerReport[]): PathKey {
-    return reports
+  /**
+   * Enhanced PathKey building with memory integration and pattern learning
+   * [TC] reason: Enhanced with memory context and optimization | id: TC-5c-001
+   */
+  static async buildPathKey(reports: WorkerReport[]): Promise<PathKey> {
+    const buildStartTime = Date.now();
+    
+    // [TC] reason: Check path key patterns in memory | id: TC-5c-002
+    const reportsSignature = reports.map(r => `${r.worker_id}:${r.status}:${r.exit_code}`).join('|');
+    const pathKeyPattern = await IQRAMemory.get(`path_key_pattern:${reportsSignature}`);
+    
+    if (pathKeyPattern && pathKeyPattern.success) {
+      IQRALogger.info(`🧠 [REWARD_ENGINE] Using cached path key pattern`);
+      return pathKeyPattern.data.path_key;
+    }
+    
+    // Enhanced path key generation with context
+    const baseKey = reports
       .map(r => `${r.worker_id}:${r.status}:${r.exit_code}`)
       .join('→');
+    
+    // Add memory context enhancements
+    const enhancedKey = `${baseKey}:${Date.now()}:${reports.length}`;
+    
+    // [TC] reason: Store path key pattern for future optimization | id: TC-5c-003
+    await IQRAMemory.set(`path_key_pattern:${reportsSignature}`, {
+      path_key: enhancedKey,
+      reports_count: reports.length,
+      build_duration: Date.now() - buildStartTime,
+      confidence: 0.8,
+      timestamp: new Date().toISOString()
+    }, { ttl: 7200000 }); // 2 hours
+    
+    // [TC] reason: Update path key analytics | id: TC-5c-004
+    const pathKeyAnalytics = await IQRAMemory.get(`path_key_analytics`) || { 
+      data: { total_built: 0, avg_duration: 0, unique_patterns: 0 } 
+    };
+    
+    const buildDuration = Date.now() - buildStartTime;
+    const updatedAnalytics = {
+      total_built: pathKeyAnalytics.data.total_built + 1,
+      avg_duration: ((pathKeyAnalytics.data.avg_duration * pathKeyAnalytics.data.total_built) + buildDuration) / (pathKeyAnalytics.data.total_built + 1),
+      unique_patterns: pathKeyAnalytics.data.unique_patterns + 1,
+      last_built: new Date().toISOString()
+    };
+    
+    await IQRAMemory.set(`path_key_analytics`, updatedAnalytics, { ttl: 86400000 });
+    
+    IQRALogger.info(`🧠 [REWARD_ENGINE] Enhanced path key built in ${buildDuration}ms`);
+    
+    return enhancedKey;
   }
 
   static isPristinePath(pathKey: PathKey): PristinePathResult {
@@ -150,23 +197,52 @@ export class RewardEngine {
   }
 
   /**
-   * Grant reward from worker reports
-   * [TC] reason: add missing grantFromReports method | id: TC-grant-from-reports
+   * Enhanced Grant reward from worker reports with memory integration
+   * [TC] reason: Enhanced with pattern learning and memory context | id: TC-5a-001
    */
   static async grantFromReports(
     missionId: string,
     reports: WorkerReport[],
-    overallScore: number = 0.85
+    overallScore: number = 0.85,
+    memoryContext?: any
   ): Promise<RewardEntry> {
+    const grantStartTime = Date.now();
+    
+    // [TC] reason: Check reward patterns in memory | id: TC-5a-002
+    const rewardPattern = await IQRAMemory.get(`reward_pattern:${missionId}`);
+    const pathPattern = await IQRAMemory.get(`path_pattern:${reports.length}_${overallScore}`);
+    
     const pathKey = RewardEngine.buildPathKey(reports);
     const pristineResult = RewardEngine.isPristinePath(pathKey);
     
-    const vector: RewardVector = {
+    // [TC] reason: Enhanced vector calculation with memory context | id: TC-5a-003
+    const baseVector: RewardVector = {
       novelty: overallScore * 0.35,
       resonance: overallScore * 0.30,
       topology: overallScore * 0.25,
       penalty: 0,
     };
+    
+    // Apply memory context optimizations
+    let enhancedVector = { ...baseVector };
+    if (memoryContext) {
+      const memoryBoost = memoryContext.mission_success_rate || 0;
+      const avgRewardBoost = memoryContext.average_reward || 0;
+      
+      enhancedVector.novelty *= (1 + memoryBoost * 0.1);
+      enhancedVector.resonance *= (1 + avgRewardBoost * 0.05);
+      enhancedVector.topology *= (1 + (memoryContext.pristine_paths || 0) * 0.02);
+    }
+    
+    // Apply pattern optimizations
+    if (rewardPattern && rewardPattern.success) {
+      enhancedVector.novelty *= (1 + rewardPattern.data.novelty_boost * 0.1);
+      enhancedVector.resonance *= (1 + rewardPattern.data.resonance_boost * 0.1);
+    }
+    
+    if (pathPattern && pathPattern.success) {
+      enhancedVector.topology *= (1 + pathPattern.data.topology_boost * 0.1);
+    }
     
     const entry: Omit<RewardEntry, 'ledger_id' | 'recorded_at'> = {
       mission_id: missionId,

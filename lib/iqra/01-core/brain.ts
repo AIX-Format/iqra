@@ -46,12 +46,12 @@ function detectSkill(input: string): string | null {
     lower.includes('شراء') || lower.includes('بيع') || lower.includes('رنين')
   ) return 'trading_skill';
 
-  // job_hunter_skill
-  if (
-    lower.includes('فرصة') || lower.includes('عمل') || lower.includes('ارباح') ||
-    lower.includes('job') || lower.includes('opportunity') || lower.includes('airdrop') ||
-    lower.includes('affiliate') || lower.includes('money') || lower.includes('profit')
-  ) return 'job_hunter_skill';
+  // job_hunter_skill - Removed for MVP
+  // if (
+  //   lower.includes('فرصة') || lower.includes('عمل') || lower.includes('ارباح') ||
+  //   lower.includes('job') || lower.includes('opportunity') || lower.includes('airdrop') ||
+  //   lower.includes('affiliate') || lower.includes('money') || lower.includes('profit')
+  // ) return 'job_hunter_skill';
 
   return null;
 }
@@ -84,6 +84,18 @@ export async function executeWithSkill(
 
   IQRALogger.info(`🎯 [SKILL] Executing skill: ${skillName}`);
 
+  // [TC] reason: Enhance skill execution with memory and heartbeat integration | id: TC-1e-001
+  const startTime = Date.now();
+  const pulseCount = HeartbeatSystem.getPulseCount();
+  
+  // [TC] reason: Check for similar skill executions in memory | id: TC-1e-002
+  const memoryKey = `skill_execution:${skillName}:${userInput.substring(0, 50)}`;
+  const cachedResult = await IQRAMemory.get(memoryKey);
+  if (cachedResult && cachedResult.success) {
+    IQRALogger.info(`🧠 [SKILL] Using cached result for ${skillName}`);
+    return cachedResult.data;
+  }
+
   // استدعاء Groq بـ max_tokens صغير (توفير)
   let rawResponse = '';
 
@@ -91,10 +103,13 @@ export async function executeWithSkill(
     const { Groq } = await import('groq-sdk');
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+    // [TC] reason: Add pulse and memory context to skill execution | id: TC-1e-003
+    const enhancedSkillContent = `${skillContent}\n\n[SYSTEM_CONTEXT]\nPulse: ${pulseCount}\nTimestamp: ${new Date().toISOString()}\nMode: Enhanced Skill Execution`;
+
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: skillContent },
+        { role: 'system', content: enhancedSkillContent },
         { role: 'user', content: userInput },
       ],
       max_tokens: 200,      // صغير — المهارة تُرجع JSON مختصر
@@ -138,14 +153,36 @@ export async function executeWithSkill(
   // تنفيذ الأداة المحلية
   const result = await _executeSkillAction(skillName, parsed);
 
+  // [TC] reason: Cache successful skill executions for future optimization | id: TC-1e-004
+  const executionTime = Date.now() - startTime;
+  const skillResult = {
+    result,
+    raw_json: parsed,
+    skill: skillName
+  };
+  
+  // Cache for 1 hour if successful
+  if (!parsed.error) {
+    await IQRAMemory.set(memoryKey, skillResult, { ttl: 3600000 });
+    
+    // [TC] reason: Store skill performance metrics | id: TC-1e-005
+    await IQRAMemory.set(`skill_metrics:${skillName}`, {
+      executionTime,
+      pulseCount,
+      success: true,
+      timestamp: new Date().toISOString(),
+      confidence: parsed.confidence || 0.8
+    });
+  }
+
   appendToTrustChain(
     `SKILL:${skillName.toUpperCase()}`,
     userInput.slice(0, 50),
-    `action=${parsed.action ?? 'check'} confidence=${parsed.confidence ?? 0}`,
+    `action=${parsed.action ?? 'check'} confidence=${parsed.confidence ?? 0} time=${executionTime}ms`,
     parsed.confidence ?? 0.8
   );
 
-  IQRALogger.info(`✅ [SKILL] ${skillName} completed: ${JSON.stringify(parsed).slice(0, 80)}`);
+  IQRALogger.info(`✅ [SKILL] ${skillName} completed in ${executionTime}ms: ${JSON.stringify(parsed).slice(0, 80)}`);
 
   return { result, raw_json: parsed, skill: skillName };
 }
@@ -241,17 +278,18 @@ async function _executeSkillAction(skillName: string, parsed: Record<string, any
       return result.success ? result.updated_state?.context?.trading : { error: result.error };
     }
 
-    case 'job_hunter_skill': {
-      const { JobHunter } = await import('#workers/job_hunter');
-      const hunter = new JobHunter();
-      const state = { 
-        metadata: { mission_id: `job_${Date.now()}` },
-        context: {},
-        logs: []
-      };
-      const result = await hunter.execute(parsed as any, state as any);
-      return result;
-    }
+    // job_hunter_skill - Removed for MVP
+    // case 'job_hunter_skill': {
+    //   const { JobHunter } = await import('#workers/job_hunter');
+    //   const hunter = new JobHunter();
+    //   const state = { 
+    //     metadata: { mission_id: `job_${Date.now()}` },
+    //     context: {},
+    //     logs: []
+    //   };
+    //   const result = await hunter.execute(parsed as any, state as any);
+    //   return result;
+    // }
 
     default:
       return parsed;
@@ -297,16 +335,66 @@ export async function iqraThink({
   let finalProvider = (mode === IQRABrainMode.FAST_RESPONSE ? 'groq' : 'google');
 
   try {
-    // Rule 1: Validate input
+    // Rule 1: Enhanced Input Validation with Memory Integration
     const validation = validateInput({ prompt: input, context });
     if (!validation.success) {
+      // [TC] reason: Store validation failures for learning | id: TC-1b-001
+      await IQRAMemory.set(`validation_error:${Date.now()}`, {
+        input: input.substring(0, 100),
+        error: validation.error.message,
+        timestamp: new Date().toISOString()
+      });
       throw new Error(`Sovereign Validation Failed: ${validation.error.message}`);
     }
 
-    // FITRAH FILTER — Upgraded to LLM-based 'Damir' check
+    // [TC] reason: Add memory pattern recognition before processing | id: TC-1a-001
+    const patternMemory = await IQRAMemory.get(`pattern:${input.substring(0, 50)}`);
+    if (patternMemory && patternMemory.success) {
+      IQRALogger.info('🧠 [BRAIN] Pattern found in memory, applying learned response');
+      // [TC] reason: Update pattern usage count for adaptive learning | id: TC-1b-002
+      await IQRAMemory.set(`pattern:${input.substring(0, 50)}`, {
+        ...patternMemory.data,
+        usageCount: (patternMemory.data.usageCount || 0) + 1,
+        lastUsed: new Date().toISOString()
+      });
+      return { 
+        response: patternMemory.data.response, 
+        provider: 'memory_pattern' 
+      };
+    }
+
+    // [TC] reason: Integrate heartbeat system for timing | id: TC-1a-002
+    const pulseCount = HeartbeatSystem.getPulseCount();
+    IQRALogger.info(`💓 [BRAIN] Processing at pulse ${pulseCount}`);
+
+    // FITRAH FILTER — Enhanced with memory learning and pattern detection
     const filtered = await fitrahFilter(input);
     if (filtered.blocked) {
       const refusal = filtered.response || '';
+      
+      // [TC] reason: Store FITRAH blocks for pattern learning | id: TC-1c-001
+      await IQRAMemory.set(`fitrah_block:${Date.now()}`, {
+        input: input.substring(0, 100),
+        reason: filtered.reason,
+        timestamp: new Date().toISOString(),
+        pulseCount: HeartbeatSystem.getPulseCount()
+      });
+      
+      // [TC] reason: Update global Damir conscience with blocked pattern | id: TC-1c-002
+      const globalDamir = await IQRAMemory.get('global_damir_conscience');
+      if (globalDamir && globalDamir.success) {
+        const updatedConscience = {
+          ...globalDamir.data,
+          blockedCount: (globalDamir.data.blockedCount || 0) + 1,
+          lastBlock: {
+            input: input.substring(0, 50),
+            reason: filtered.reason,
+            timestamp: new Date().toISOString()
+          }
+        };
+        await IQRAMemory.set('global_damir_conscience', updatedConscience);
+      }
+      
       appendToTrustChain('FITRAH_BLOCK', input, refusal, 0.0);
       return { response: refusal, provider: 'fitrah' };
     }
@@ -336,26 +424,93 @@ export async function iqraThink({
       IQRALogger.warn('⚠️ [BRAIN] Local mode requested but Ollama unavailable — falling back to API');
     }
 
-    // 🎯 Skill Router — مهارة محكمة بدلاً من محادثة مفتوحة (توفير 90% tokens)
+    // 🎯 Enhanced Skill Router — with memory learning and adaptive detection
     const detectedSkill = detectSkill(input);
     if (detectedSkill) {
       IQRALogger.info(`🎯 [BRAIN] Skill detected: ${detectedSkill}`);
+      
+      // [TC] reason: Track skill usage patterns for adaptive learning | id: TC-1d-001
+      const skillMemory = await IQRAMemory.get(`skill_usage:${detectedSkill}`);
+      const usageCount = skillMemory?.success ? skillMemory.data.count || 0 : 0;
+      
       try {
         const { result, raw_json, skill } = await executeWithSkill(detectedSkill, input);
         const response = _formatSkillResponse(skill, result, raw_json);
+        
+        // [TC] reason: Store successful skill execution for future optimization | id: TC-1d-002
+        await IQRAMemory.set(`skill_usage:${detectedSkill}`, {
+          count: usageCount + 1,
+          lastUsed: new Date().toISOString(),
+          avgResponseTime: skillMemory?.success ? 
+            ((skillMemory.data.avgResponseTime || 0) + Date.now()) / 2 : Date.now(),
+          successRate: skillMemory?.success ? 
+            ((skillMemory.data.successRate || 0) * usageCount + 1) / (usageCount + 1) : 1.0
+        });
+        
+        // [TC] reason: Store skill pattern for future recognition | id: TC-1d-003
+        await IQRAMemory.set(`skill_pattern:${input.substring(0, 50)}`, {
+          skill: detectedSkill,
+          response: response.substring(0, 200),
+          timestamp: new Date().toISOString(),
+          pulseCount: HeartbeatSystem.getPulseCount()
+        });
+        
         return { response, provider: `skill:${skill}` };
       } catch (skillErr: unknown) {
         const message = skillErr instanceof Error ? skillErr.message : String(skillErr);
+        
+        // [TC] reason: Store skill failures for learning and improvement | id: TC-1d-004
+        await IQRAMemory.set(`skill_failure:${detectedSkill}:${Date.now()}`, {
+          input: input.substring(0, 100),
+          error: message,
+          timestamp: new Date().toISOString(),
+          usageCount: usageCount
+        });
+        
         IQRALogger.warn(`⚠️ [BRAIN] Skill failed, falling back to MissionControl: ${message}`);
       }
     }
 
-    // 🌀 Mission Control Orchestration — مركز القيادة والتحكم
+    // 🌀 Enhanced Mission Control Orchestration — مع تكامل الذاكرة والنبض
+    const missionStartTime = Date.now();
+    const pulseCount = HeartbeatSystem.getPulseCount();
+    
+    // [TC] reason: Add memory context to mission execution | id: TC-1f-001
+    const missionMemory = await IQRAMemory.get(`mission_pattern:${input.substring(0, 50)}`);
+    if (missionMemory && missionMemory.success) {
+      IQRALogger.info('🧠 [BRAIN] Mission pattern found in memory');
+      return { 
+        response: missionMemory.data.response, 
+        provider: 'mission_memory' 
+      };
+    }
+    
     const missionControl = new MissionControl();
     const mission = await missionControl.run(input);
 
     const reportFormatted = MissionControl.formatWorkerReports(mission.reports);
     const finalResponse = `${mission.response}\n\n${reportFormatted}`;
+    
+    // [TC] reason: Store mission execution for learning and optimization | id: TC-1f-002
+    const missionExecutionTime = Date.now() - missionStartTime;
+    await IQRAMemory.set(`mission_execution:${Date.now()}`, {
+      input: input.substring(0, 100),
+      response: mission.response.substring(0, 200),
+      executionTime: missionExecutionTime,
+      pulseCount,
+      workerCount: mission.reports?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+    
+    // [TC] reason: Store successful mission patterns for future recognition | id: TC-1f-003
+    if (missionExecutionTime < 10000) { // Only cache fast missions
+      await IQRAMemory.set(`mission_pattern:${input.substring(0, 50)}`, {
+        response: finalResponse.substring(0, 300),
+        executionTime: missionExecutionTime,
+        pulseCount,
+        timestamp: new Date().toISOString()
+      }, { ttl: 7200000 }); // 2 hours cache
+    }
 
     return { response: finalResponse, provider: 'MissionControl' };
   } catch (error: unknown) {

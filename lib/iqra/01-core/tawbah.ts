@@ -116,3 +116,10 @@ export function clearTawbah(): void {
   }
   errorLog.clear();
 }
+
+// Export as TAWBAH for backward compatibility
+export const TAWBAH = {
+  logError,
+  checkHumility,
+  clearTawbah
+};

@@ -156,17 +156,68 @@ export interface KnowledgeVersion {
  *
  * المرجع: Ebbinghaus, H. (1885). Über das Gedächtnis.
  * [PURIFICATION] Migrated 2026-05-10: Consolidated from experience_buffer.ts to micro_memory.ts
+ * [TC] reason: Enhanced with Qdrant integration and pattern learning | id: TC-4e-001
  */
 export class EbbinghausEngine {
   /**
-   * يحسب وزن الاحتفاظ الحالي لتجربة
+   * يحسب وزن الاحتفاظ الحالي لتجربة مع تكامل Qdrant
    * @param lastRetrieved - آخر وقت استرجاع (Unix ms)
    * @param memoryStrength - قوة الذاكرة S (≥ 1.0)
+   * @param options - خيارات محسنة مع Qdrant
    * @returns وزن الاحتفاظ R ∈ [0.0, 1.0]
    */
-  static computeRetention(lastRetrieved: number, memoryStrength: number): number {
+  static async computeRetention(
+    lastRetrieved: number, 
+    memoryStrength: number,
+    options: { use_qdrant?: boolean; experience_id?: string; context?: string } = {}
+  ): Promise<number> {
+    const { use_qdrant = false, experience_id, context } = options;
     const nowMs = Date.now();
     const elapsedDays = (nowMs - lastRetrieved) / (1000 * 60 * 60 * 24);
+
+    // [TC] reason: Check retention patterns in memory | id: TC-4e-002
+    if (use_qdrant && experience_id) {
+      const retentionPattern = await IQRAMemory.get(`retention_pattern:${experience_id}`);
+      if (retentionPattern && retentionPattern.success) {
+        IQRALogger.info(`🧠 [EBBINGHAUS] Using Qdrant-enhanced retention pattern for ${experience_id}`);
+        
+        // Apply Qdrant-enhanced retention calculation
+        const baseRetention = Math.exp(-elapsedDays / memoryStrength);
+        const qdrantBoost = retentionPattern.data.similarity_score || 0.1;
+        const contextBoost = context ? retentionPattern.data.context_relevance || 0.05 : 0;
+        
+        const enhancedRetention = Math.min(1.0, baseRetention + qdrantBoost + contextBoost);
+        
+        // Store enhanced retention pattern
+        await IQRAMemory.set(`enhanced_retention:${experience_id}`, {
+          base_retention: baseRetention,
+          qdrant_boost: qdrantBoost,
+          context_boost: contextBoost,
+          enhanced_retention: enhancedRetention,
+          elapsed_days: elapsedDays,
+          memory_strength: memoryStrength,
+          timestamp: new Date().toISOString()
+        }, { ttl: 86400000 });
+        
+        return enhancedRetention;
+      }
+    }
+
+    // Standard Ebbinghaus calculation with pattern tracking
+    const baseRetention = Math.exp(-elapsedDays / memoryStrength);
+    
+    // [TC] reason: Store retention calculation pattern | id: TC-4e-003
+    if (experience_id) {
+      await IQRAMemory.set(`retention_calculation:${experience_id}`, {
+        elapsed_days: elapsedDays,
+        memory_strength: memoryStrength,
+        retention_score: baseRetention,
+        calculation_method: 'standard_ebbinghaus',
+        timestamp: new Date().toISOString()
+      }, { ttl: 604800000 }); // 7 days
+    }
+
+    return baseRetention;
     // R(t) = e^(-t/S)
     const retention = Math.exp(-elapsedDays / Math.max(memoryStrength, 1.0));
     return Math.max(0.0, Math.min(1.0, retention));

@@ -25,12 +25,42 @@ export interface ChiasmResult {
   score: number;          // درجة التناظر [0,1]
 }
 
+/**
+ * Enhanced Numerical Validator with memory integration and pattern learning
+ * [TC] reason: Enhanced with validation patterns and context awareness | id: TC-6c-001
+ */
 export class NumericalValidator {
   /**
-   * يتحقق من الأنماط العددية القرآنية ويحسب درجة الرنين.
+   * Enhanced numerical validation with memory integration and pattern learning
    * يشمل: تحليل تردد الحروف (Sab'iyyah/19) وختم Tesla 369.
    */
-  static validate(input: string, context?: { surah: number; ayah: number }): ResonanceResult {
+  static async validate(
+    input: string, 
+    context?: { surah: number; ayah: number },
+    options?: { 
+      memory_enabled?: boolean; 
+      confidence_threshold?: number;
+      use_cached_patterns?: boolean 
+    }
+  ): Promise<ResonanceResult> {
+    const validateStartTime = Date.now();
+    const { memory_enabled = true, confidence_threshold = 0.5, use_cached_patterns = true } = options || {};
+    
+    // [TC] reason: Check validation patterns in memory | id: TC-6c-002
+    if (memory_enabled && use_cached_patterns) {
+      const inputSignature = `${input.substring(0, 50)}_${context?.surah}_${context?.ayah}`;
+      const validationPattern = await IQRAMemory.get(`numerical_validation:${inputSignature}`);
+      
+      if (validationPattern && validationPattern.success) {
+        IQRALogger.info(`🧠 [NUMERICAL_VALIDATOR] Using cached validation pattern`);
+        return {
+          ...validationPattern.data.result,
+          validation_cached: true,
+          pattern_confidence: validationPattern.data.confidence
+        };
+      }
+    }
+    
     const patterns: string[] = [];
     let score = 0;
 
@@ -38,10 +68,21 @@ export class NumericalValidator {
     const charCount = cleanInput.replace(/\s/g, '').length;
     const wordCount = cleanInput.split(' ').filter(Boolean).length;
 
-    // ── 1. Sab'iyyah (السبعية) ────────────────────────────────────────────────
+    // ── Enhanced 1. Sab'iyyah (السبعية) with pattern tracking ─────────────────
     if (charCount > 0 && charCount % 7 === 0) {
       patterns.push(`Sab'iyyah_Char_Multiple_7 (${charCount})`);
       score += 0.2;
+      
+      // [TC] reason: Store Sab'iyyah pattern | id: TC-6c-003
+      if (memory_enabled) {
+        await IQRAMemory.set(`sabiiyyah_pattern:${Date.now()}`, {
+          char_count: charCount,
+          pattern_type: 'char_multiple_7',
+          context,
+          timestamp: new Date().toISOString()
+        }, { ttl: 86400000 });
+      }
+    }
     }
     if (charCount > 0 && charCount % 19 === 0) {
       patterns.push(`Symmetry_19_Chars (${charCount})`);

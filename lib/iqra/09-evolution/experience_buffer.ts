@@ -104,20 +104,9 @@ export interface Experience {
 }
 
 /**
- * نتيجة HandoffResult المُبسَّطة لاستخراج التجربة
- * تُبنى من WorkerReport
+ * استيراد HandoffResult من التعريف الأساسي في mission-context.ts
  */
-export interface HandoffResult {
-  mission_id: string;
-  worker_id: string;
-  status: 'PASS' | 'FAIL';
-  skills_used: string[];
-  implemented: string[];
-  issues: string[];
-  quality_score?: number;
-  context_tags?: string[];
-  quran_ref?: string;
-}
+import type { HandoffResult } from '#core/mission-context';
 
 // ── ExperienceBuffer ──────────────────────────────────────────────────────────
 

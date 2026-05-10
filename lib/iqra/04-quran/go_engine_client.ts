@@ -39,10 +39,28 @@ export interface ShannonAnalysisResult {
   fractal_dimension: number;
 }
 
+/**
+ * Enhanced Compression Request with memory integration and pattern learning
+ * [TC] reason: Enhanced with optimization patterns and context awareness | id: TC-6b-001
+ */
 export interface CompressionRequest {
   embedding: number[];
   method?: 'turbo' | 'polar' | 'qjl';
   bits?: number;
+  // [TC] reason: Enhanced context options | id: TC-6b-002
+  context?: {
+    previous_compressions?: string[];
+    optimization_level?: number;
+    memory_enabled?: boolean;
+    confidence_threshold?: number;
+  };
+  // [TC] reason: Enhanced optimization options | id: TC-6b-003
+  optimization?: {
+    use_cached_results?: boolean;
+    parallel_processing?: boolean;
+    timeout_ms?: number;
+    target_ratio?: number;
+  };
 }
 
 export interface CompressionResult {
