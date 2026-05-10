@@ -2,7 +2,7 @@ import { IQRALogger } from '#infra/logger';
 import { IQRAMemory } from '#memory/memory';
 import { MemoryBridge } from '#memory/memory_bridge';
 import { appendToTrustChain } from '#security/security';
-import { iqraThink, IQRABrainMode } from '../brain';
+import { iqraThink, IQRABrainMode } from '#core/brain';
 import { IQRATopology } from '#topology/topology';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

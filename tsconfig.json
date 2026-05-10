@@ -18,7 +18,7 @@
     "jsx": "preserve",
     "incremental": true,
     "allowImportingTsExtensions": true,
-    "baseUrl": ".",
+        "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -78,6 +78,15 @@
       ],
       "#iqra-core/*": [
         "./iqra-core/*"
+      ],
+      "#agents/*": [
+        "./agents/*"
+      ],
+      "#schema/*": [
+        "./schema/*"
+      ],
+      "#orchestrator/*": [
+        "./orchestrator/*"
       ]
     },
     "forceConsistentCasingInFileNames": true

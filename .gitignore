@@ -58,3 +58,5 @@ node-compile-cache/
 tsx-*/
 .vscode/
 .tsx/
+deploy.sh
+wrangler.toml
