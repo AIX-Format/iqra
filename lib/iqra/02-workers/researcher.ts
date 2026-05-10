@@ -24,7 +24,7 @@ import { MissionContext, HandoffResult } from '#core/mission-context.js';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
 import { IQRA_SOUL } from '#utils/prompts.ts';
-import type { SourceAttestation } from '@/agents/contracts.ts';
+import type { MissionHandoff } from '#core/mission-context';
 
 // ── Embedded Dastūr Prompt Fragment ──────────────────────────────────────────
 // القواعد الدستورية تُحقن مباشرة في كل Prompt — لا تعتمد على ملف خارجي وحده.
@@ -303,6 +303,7 @@ export async function executeResearcher(context: MissionContext): Promise<Handof
       issues,
       procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {
@@ -319,6 +320,7 @@ export async function executeResearcher(context: MissionContext): Promise<Handof
       issues,
       procedures_followed: false,
       timestamp: Date.now(),
+      commands_run: [],
     };
   }
 }

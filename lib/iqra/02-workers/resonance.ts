@@ -17,7 +17,7 @@
 import fs from 'fs';
 import path from 'path';
 import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
-import type { MissionHandoff } from '@/agents/contracts.ts';
+import type { MissionHandoff } from '#core/mission-context';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
 import { goEngine } from '#quran/go_engine_client';
@@ -196,7 +196,7 @@ export async function executeResonanceWorker(
       next: 'Builder',
       data: {
         ...data,
-        outputPath: previousOutput?.outputPath,  // نُمرّر مسار البحث للأمام
+        outputPath: previousOutput?.outputPath,
       },
       artifacts: [],
       implemented,
@@ -204,6 +204,7 @@ export async function executeResonanceWorker(
       issues,
       procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {

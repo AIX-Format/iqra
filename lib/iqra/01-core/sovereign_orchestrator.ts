@@ -4,7 +4,7 @@ import { ValidationWorker } from '#workers/validator.ts';
 import { ExecutionWorker } from '#workers/execution.ts';
 import type { WorkerReport, WorkerResult, MissionState, SovereignWorker } from '#workers/protocol.ts';
 import { IQRALogger } from '#infra/logger.ts';
-import type { Provider } from '@/connectors/index.ts';
+import type { Provider } from '#connectors/index.ts';
 import fs from 'fs';
 import path from 'path';
 import { logToIQRAFile, appendToTrustChain } from '#security/security.ts';

@@ -93,6 +93,17 @@ export class HeartbeatSystem {
   static onDiscovery: ((pattern: any) => Promise<void>) | null = null;
   static onHealthReport: ((health: SystemHealth) => Promise<void>) | null = null;
 
+  // ── Public Pulse ─────────────────────────────────────────────────────────
+
+  /**
+   * نبضة خارجية — يُستدعى من الوكلاء للإشارة إلى النشاط
+   */
+  static pulse(context: string): void {
+    this._pulseCount++;
+    IQRALogger.info(`💓 [HEARTBEAT:PULSE] ${context}`);
+    appendToTrustChain('HEARTBEAT:EXTERNAL', context, `pulse:${this._pulseCount}`, 1.0);
+  }
+
   // ── Start ─────────────────────────────────────────────────────────────────
 
   /**

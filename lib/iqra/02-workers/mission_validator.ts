@@ -182,15 +182,21 @@ export async function executeMissionValidator(context: MissionContext): Promise<
 
     return {
       status: verdict === 'PASS' ? 'success' : 'failure',
-      worker: 'Validator',
-      next: verdict === 'PASS' ? 'Reporter' : null,
-      data: { report, reportPath, resonance_score: research.resonance_score, hallucination_penalty },
-      artifacts: [reportPath],
+      worker: 'MissionValidator',
+      next: verdict === 'PASS' ? 'Planner' : null,
+      data: {
+        report: report,
+        reportPath: reportPath,
+        resonance_score: research.resonance_score,
+        hallucination_penalty: hallucination_penalty,
+      },
+      artifacts: [],
       implemented,
-      undone: verdict === 'FAIL' ? ['reward recording — blocked by validation failure'] : [],
-      issues: [...issues, ...violations],
-      procedures_followed: true,   // Validator always follows procedures
+      undone,
+      issues,
+      procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {
@@ -202,11 +208,12 @@ export async function executeMissionValidator(context: MissionContext): Promise<
       next: null,
       data: { report: { verdict: 'FAIL', violations: [err.message] } },
       artifacts: [],
-      implemented,
-      undone: ['validation_report.json'],
-      issues,
+      implemented: [],
+      undone: ['validation'],
+      issues: [err.message],
       procedures_followed: false,
       timestamp: Date.now(),
+      commands_run: [],
     };
   }
 }

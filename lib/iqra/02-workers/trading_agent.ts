@@ -2,7 +2,7 @@ import { SovereignWorker, type MissionState, type WorkerResult } from './protoco
 import { SelfPlayLoop } from '#trading/self_play_loop.ts';
 import { BybitClient } from '#trading/bybit_client.ts';
 import { MarketData } from '#trading/market_data.ts';
-import { TopologicalResonanceHunter } from '@/scripts/topological_resonance_hunter.ts';
+import { TopologicalResonanceHunter } from '#scripts/topological_resonance_hunter.ts';
 import { IQRALogger } from '#infra/logger';
 import { HeartbeatSystem } from '#infra/heartbeat.js';
 

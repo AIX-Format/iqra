@@ -149,14 +149,13 @@ export async function executeBuilder(context: MissionContext): Promise<HandoffRe
     return {
       status: 'success',
       worker: 'Builder',
-      next: 'Validator',
+      next: 'Reporter',
       data: {
         nodePath: nodeWritten ? nodePath : null,
         nodeId,
         resonance_score: resonanceScore,
         estimated_reward: estimatedReward,
         node_written: nodeWritten,
-        // Pass research path forward so Validator + Reporter can find it
         outputPath: researchPath,
       },
       artifacts: nodeWritten ? [nodePath] : [],
@@ -165,6 +164,7 @@ export async function executeBuilder(context: MissionContext): Promise<HandoffRe
       issues,
       procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {
@@ -181,6 +181,7 @@ export async function executeBuilder(context: MissionContext): Promise<HandoffRe
       issues,
       procedures_followed: false,
       timestamp: Date.now(),
+      commands_run: [],
     };
   }
 }

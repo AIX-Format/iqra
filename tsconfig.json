@@ -66,6 +66,18 @@
       ],
       "#utils/*": [
         "./lib/iqra/13-utils/*"
+      ],
+      "#scripts/*": [
+        "./scripts/*"
+      ],
+      "#connectors/*": [
+        "./src/connectors/*"
+      ],
+      "#errors/*": [
+        "./src/errors/*"
+      ],
+      "#iqra-core/*": [
+        "./iqra-core/*"
       ]
     },
     "forceConsistentCasingInFileNames": true

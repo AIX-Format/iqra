@@ -14,7 +14,7 @@
 
 import { DamirConscience } from '#security/damir_conscience';
 import { ResourceFactory } from '#core/conscience/resource_factory.ts';
-import { SovereignError, SovereignErrorCode } from '@/errors/sovereign_error.ts';
+import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error.ts';
 import { logToIQRAFile, appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
 

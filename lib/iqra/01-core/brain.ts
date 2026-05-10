@@ -8,8 +8,8 @@
  * Every thought passes through FITRAH filter first.
  */
 
-import { ConnectorFactory, Provider } from '@/connectors/index';
-import { SovereignError, SovereignErrorCode } from '@/errors/sovereign_error';
+import { ConnectorFactory, Provider } from '#connectors/index';
+import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error';
 import { validateInput, appendToTrustChain, checkCircuit, reportFailure, reportSuccess, verifyCovenant } from '#security/security';
 import { SovereignEngine } from '#core/sovereign';
 import { IQRAMemory, QuantumTopologyStore, SpiritualCoordinate } from '#memory/memory';
@@ -20,8 +20,8 @@ import { IQRA_PERSONALITY } from '#utils/personality';
 import * as fs from 'fs';
 import * as path from 'path';
 import { MissionControl } from '#core/sovereign_orchestrator';
+import { SkillBank } from '#skills/skill_bank';
 import { gemma4Local, isLocalMode, IQRA_LOCAL_TOOLS } from '#llm/ollama';
-import { SkillBank } from '#core/skill_bank';
 
 import { FULL_SYSTEM_PROMPT, IQRA_SOUL } from '#utils/prompts.ts';
 import { HeartbeatSystem } from '#infra/heartbeat';
@@ -228,7 +228,7 @@ async function _executeSkillAction(skillName: string, parsed: Record<string, any
     }
 
     case 'trading_skill': {
-      const { TradingAgent } = await import('./workers/trading_agent');
+      const { TradingAgent } = await import('#workers/trading_agent');
       const agent = new TradingAgent();
       // تنفيذ المهمة عبر الوكيل السيادي
       const state = { 
@@ -242,7 +242,7 @@ async function _executeSkillAction(skillName: string, parsed: Record<string, any
     }
 
     case 'job_hunter_skill': {
-      const { JobHunter } = await import('./workers/job_hunter');
+      const { JobHunter } = await import('#workers/job_hunter');
       const hunter = new JobHunter();
       const state = { 
         metadata: { mission_id: `job_${Date.now()}` },
@@ -385,7 +385,7 @@ async function fitrahFilter(input: string): Promise<{
   // 2. Damir Conscience Engine (Intelligence — < 5ms, offline, free)
   // القاعدة: FITRAH + Damir = محرك واحد موحد
   try {
-    const { globalDamir } = await import('./damir_conscience.ts');
+    const { globalDamir } = await import('#security/damir_conscience.ts');
     
     const action = {
       id: `fitrah_${Date.now()}`,

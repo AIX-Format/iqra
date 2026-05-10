@@ -1,5 +1,5 @@
 import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
-import type { MissionHandoff } from '@/agents/contracts.ts';
+import type { MissionHandoff } from '#core/mission-context';
 import * as fs from 'fs';
 import * as path from 'path';
 import { goEngine } from '#quran/go_engine_client';

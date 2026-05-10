@@ -22,11 +22,11 @@ import path from 'path';
 import { MissionContext, HandoffResult } from '#core/mission-context.js';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
-import { RewardEngine } from '#rewards/engine.ts';
-import { RewardLedger } from '@/ledger/reward-ledger.ts';
+import { RewardEngine } from '#rewards/engine';
+import { RewardLedger } from '#rewards/ledger';
 import { IQRAMemory } from '#memory/memory.js';
 import { PatternMemory } from '#memory/pattern_memory.ts';
-import type { RewardInput, RewardEntry } from '@/rewards/types.ts';
+import type { RewardEntry, RewardVector } from '#rewards/types';
 import type { ValidationReport } from './mission_validator.ts';
 import type { ResearchOutput } from './researcher.ts';
 
@@ -121,37 +121,34 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
     }
 
     // ── 7. Compute reward ─────────────────────────────────────────────────────
-    const rewardInput: RewardInput = {
-      mission_id: scope.mission_id,
-      worker_id: 'Reporter',
-      novelty_score,
-      resonance_score: validation.resonance_score,
-      topology_score,
-      hallucination_penalty: validation.hallucination_penalty,
-      timestamp: Date.now(),
+    const rewardVector: RewardVector = {
+      novelty: novelty_score,
+      resonance: validation.resonance_score,
+      topology: topology_score,
+      fractal: 0.5,
+      lid: 0.5,
+      penalty: validation.hallucination_penalty,
     };
 
-    const rewardOutput = RewardEngine.computeTotalReward(rewardInput);
-    rewardOutput.total_reward *= multiplier;
+    const { base, total, multiplier: pathMultiplier } = RewardEngine.computeReward(rewardVector);
+    const finalTotal = total * multiplier;
 
+    const discoveryLevel = RewardEngine.classifyDiscovery(finalTotal);
     implemented.push(
-      `Reward computed: ${rewardOutput.total_reward.toFixed(4)} (${rewardOutput.discovery_level})`
+      `Reward computed: ${finalTotal.toFixed(4)} (${discoveryLevel})`
     );
 
     // ── 8. Write to unified ledger [write] ────────────────────────────────────
-    // المسار الوحيد: iqra-core/data/reward_ledger.jsonl
-    const entry: RewardEntry = {
-      ...rewardOutput,
-      mission_id: scope.mission_id,
-      worker_id: 'Reporter',
-      timestamp: Date.now(),
-      validation_status: 'verified',
-      notes: `verse:${scope.verse} | field:${scope.field_of_inquiry} | provider:${scope.provider}`,
-    };
-
-    await RewardLedger.append(entry);
+    // استخدام RewardEngine.grant بدلاً من manual entry
+    const entry = await RewardEngine.grant(
+      scope.mission_id,
+      'Reporter',
+      rewardVector,
+      [],
+      `verse:${scope.verse} | field:${scope.field_of_inquiry} | provider:${scope.provider}`
+    );
     implemented.push(
-      `[write] Reward → ${RewardLedger.LEDGER_PATH}: ${rewardOutput.total_reward.toFixed(4)}`
+      `[write] Reward recorded: ${entry.ledger_id} = ${entry.total_reward.toFixed(4)}`
     );
 
     // ── 9. Store pattern in PatternMemory ─────────────────────────────────────
@@ -164,7 +161,7 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
           validation.resonance_score,
           realEmbedding,
           scope.mission_id,
-          research.fractal_depth || 0.5
+          0.5
         );
         implemented.push(`[fetched] PatternMemory stored: ${patternId}`);
       } catch (err: any) {
@@ -174,7 +171,7 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
 
     // ── 10. Grant curiosity reward to memory ──────────────────────────────────
     try {
-      await IQRAMemory.grantReward(rewardOutput.total_reward * 0.01);
+      await IQRAMemory.grantReward(entry.total_reward * 0.01);
       implemented.push('Curiosity score updated in memory');
     } catch {
       issues.push('Memory unavailable for curiosity update — ledger still written');
@@ -184,7 +181,7 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
     appendToTrustChain(
       'REPORTER:REWARD_RECORDED',
       scope.mission_id,
-      `reward:${rewardOutput.total_reward.toFixed(4)}:level:${rewardOutput.discovery_level}:novelty:${novelty_score.toFixed(3)}`,
+      `reward:${entry.total_reward.toFixed(4)}:level:${entry.discovery_level}:novelty:${novelty_score.toFixed(3)}`,
       rewardOutput.confidence
     );
 
@@ -206,12 +203,13 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
         embedding_dims: realEmbedding.length,
       },
       // المسار الموحد فقط
-      artifacts: [RewardLedger.LEDGER_PATH],
+      artifacts: [],
       implemented,
       undone,
       issues,
       procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {
@@ -228,6 +226,7 @@ export async function executeReporter(context: MissionContext): Promise<HandoffR
       issues,
       procedures_followed: err.message.includes('INTEGRITY_ERR'),
       timestamp: Date.now(),
+      commands_run: [],
     };
   }
 }

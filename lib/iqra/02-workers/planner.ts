@@ -166,14 +166,18 @@ export async function executePlanner(context: MissionContext): Promise<HandoffRe
     return {
       status: 'success',
       worker: 'Planner',
-      next: 'Researcher',
-      data: { plan, planPath },
+      next: 'Builder',
+      data: {
+        plan,
+        planPath,
+      },
       artifacts: [planPath],
       implemented,
       undone: [],
       issues,
       procedures_followed: true,
       timestamp: Date.now(),
+      commands_run: [],
     };
 
   } catch (err: any) {
@@ -186,10 +190,11 @@ export async function executePlanner(context: MissionContext): Promise<HandoffRe
       data: {},
       artifacts: [],
       implemented,
-      undone: ['plan_output.yaml'],
+      undone: ['planning'],
       issues,
       procedures_followed: false,
       timestamp: Date.now(),
+      commands_run: [],
     };
   }
 }
