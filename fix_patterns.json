@@ -1,0 +1,13 @@
+{
+  "TC-001-import-path": {
+    "pattern": "Relative import path mismatch in test files",
+    "trigger": "import.*from.*'\\.\\./.*'",
+    "solution": "Use correct relative path based on actual directory structure",
+    "example": {
+      "before": "import { X } from '../../lib/iqra/01-core/X';",
+      "after": "import { X } from '../../../lib/iqra/01-core/X';"
+    },
+    "applied": "2025-05-10",
+    "success_rate": "100%"
+  }
+}

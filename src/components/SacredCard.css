@@ -1,0 +1,110 @@
+/* SacredCard Component Styles */
+
+.sacred-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 40, 0.9));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.sacred-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, transparent, var(--glow-color, var(--accent-gold)), transparent);
+  border-radius: 12px;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.sacred-card.resonating::before {
+  opacity: 1;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Glow color variants */
+.sacred-card.glow-accent-gold {
+  --glow-color: var(--accent-gold);
+}
+
+.sacred-card.glow-accent-emerald {
+  --glow-color: var(--accent-emerald);
+}
+
+.sacred-card.glow-accent-sapphire {
+  --glow-color: var(--accent-sapphire);
+}
+
+.sacred-card.glow-accent-rose {
+  --glow-color: var(--accent-rose);
+}
+
+.sacred-card.glow-accent-amethyst {
+  --glow-color: var(--accent-amethyst);
+}
+
+.card-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-gold);
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Resonance effects */
+.sacred-card.resonating {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+}
+
+.sacred-card.resonating .card-title {
+  animation: title-glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Animations */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes title-glow {
+  from {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px var(--glow-color, var(--accent-gold));
+  }
+  to {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-color, var(--accent-gold)), 0 0 30px var(--glow-color, var(--accent-gold));
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sacred-card {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+}

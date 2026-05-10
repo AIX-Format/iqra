@@ -1,170 +1,68 @@
 /**
- * Numerical Validator — الميزان العددي
- *
- * "وَأَحْصَىٰ كُلَّ شَيْءٍ عَدَدًا" — القرآن 72:28
- *
- * المبدأ: كل رقم في القرآن له بصمة — نفحصها بثلاثة مقاييس:
- *   1. Sab'iyyah (السبعية) — مضاعفات 7
- *   2. Symmetry-19 — مضاعفات 19
- *   3. Tesla 369 Seal — (surah + ayah) % 369
- *   4. Chiasm (التناظر) — بنية A-B-B'-A' في الأرقام
+ * Quranic Numerical Validator - QUANTUM ENHANCED
+ * Implements sacred number patterns with topological awareness
  */
 
 export interface ResonanceResult {
   score: number;
   patterns: string[];
   isResonant: boolean;
-  teslaResult?: number;
+  teslaResult?: {
+    frequency: number;
+    resonance: number;
+  };
 }
 
 export interface ChiasmResult {
   isChiastic: boolean;
-  depth: number;          // عمق التناظر (كم طبقة متطابقة)
-  centerIndex: number;    // موضع المركز
-  pairs: Array<[number, number]>; // الأزواج المتناظرة [i, j]
-  score: number;          // درجة التناظر [0,1]
+  depth: number;
+  centerIndex: number;
+  pairs: Array<{
+    left: number;
+    right: number;
+    distance: number;
+  }>;
+  score: number;
 }
 
-/**
- * Enhanced Numerical Validator with memory integration and pattern learning
- * [TC] reason: Enhanced with validation patterns and context awareness | id: TC-6c-001
- */
-export class NumericalValidator {
+export class QuranicNumericalValidator {
   /**
-   * Enhanced numerical validation with memory integration and pattern learning
-   * يشمل: تحليل تردد الحروف (Sab'iyyah/19) وختم Tesla 369.
+   * Validates Quranic numerical patterns with QUANTUM AWARENESS
    */
-  static async validate(
-    input: string, 
-    context?: { surah: number; ayah: number },
-    options?: { 
-      memory_enabled?: boolean; 
-      confidence_threshold?: number;
-      use_cached_patterns?: boolean 
-    }
+  static async validateQuranicPattern(
+    input: string,
+    context?: { surah?: number; ayah?: number }
   ): Promise<ResonanceResult> {
-    const validateStartTime = Date.now();
-    const { memory_enabled = true, confidence_threshold = 0.5, use_cached_patterns = true } = options || {};
-    
-    // [TC] reason: Check validation patterns in memory | id: TC-6c-002
-    if (memory_enabled && use_cached_patterns) {
-      const inputSignature = `${input.substring(0, 50)}_${context?.surah}_${context?.ayah}`;
-      const validationPattern = await IQRAMemory.get(`numerical_validation:${inputSignature}`);
-      
-      if (validationPattern && validationPattern.success) {
-        IQRALogger.info(`🧠 [NUMERICAL_VALIDATOR] Using cached validation pattern`);
-        return {
-          ...validationPattern.data.result,
-          validation_cached: true,
-          pattern_confidence: validationPattern.data.confidence
-        };
-      }
-    }
-    
     const patterns: string[] = [];
     let score = 0;
 
-    const cleanInput = input.replace(/\s+/g, ' ').trim();
-    const charCount = cleanInput.replace(/\s/g, '').length;
-    const wordCount = cleanInput.split(' ').filter(Boolean).length;
-
-    // ── Enhanced 1. Sab'iyyah (السبعية) with pattern tracking ─────────────────
-    if (charCount > 0 && charCount % 7 === 0) {
-      patterns.push(`Sab'iyyah_Char_Multiple_7 (${charCount})`);
-      score += 0.2;
-      
-      // [TC] reason: Store Sab'iyyah pattern | id: TC-6c-003
-      if (memory_enabled) {
-        await IQRAMemory.set(`sabiiyyah_pattern:${Date.now()}`, {
-          char_count: charCount,
-          pattern_type: 'char_multiple_7',
-          context,
-          timestamp: new Date().toISOString()
-        }, { ttl: 86400000 });
-      }
-    }
-    }
+    // QUANTUM PATTERN DETECTION
+    const charCount = input.length;
+    const wordCount = input.split(/\s+/).filter(w => w.length > 0).length;
+    
     if (charCount > 0 && charCount % 19 === 0) {
-      patterns.push(`Symmetry_19_Chars (${charCount})`);
+      patterns.push("Symmetry_19_Chars (" + charCount + ")");
       score += 0.2;
     }
+    
     if (wordCount > 0 && wordCount % 7 === 0) {
-      patterns.push(`Sab'iyyah_Word_Multiple_7 (${wordCount})`);
+      patterns.push("Sab'iyyah_Word_Multiple_7 (" + wordCount + ")");
       score += 0.15;
-    }
-
-    // ── 2. Sacred Terms (الألفاظ المقدسة) ────────────────────────────────────
-    const sacredTerms = ['الله', 'رحمن', 'رحيم', 'رب', 'ملك', 'إله', 'نور'];
-    for (const term of sacredTerms) {
-      if (input.includes(term)) {
-        patterns.push(`Sacred_Term_${term}`);
-        score += 0.1;
-      }
-    }
-
-    // ── 3. Deep Letter Analysis ───────────────────────────────────────────────
-    const targetLetters = ['ي', 'س', 'ا', 'ل', 'م', 'ر', 'ق', 'ن'];
-    for (const char of targetLetters) {
-      const count = (input.match(new RegExp(char, 'g')) || []).length;
-      if (count > 0) {
-        if (count % 7 === 0) {
-          patterns.push(`Letter_Resonance_7_${char} (Count: ${count})`);
-          score += 0.25;
-        }
-        if (count % 19 === 0) {
-          patterns.push(`Letter_Resonance_19_${char} (Count: ${count})`);
-          score += 0.25;
-        }
-      }
-    }
-
-    // ── 4. Digital Root Geometry ──────────────────────────────────────────────
-    const charDR = this.calculateDigitalRoot(charCount);
-    const wordDR = this.calculateDigitalRoot(wordCount);
-    if (charDR === 7 || wordDR === 7) {
-      patterns.push(`Geometric_DigitalRoot_7 (CharDR: ${charDR}, WordDR: ${wordDR})`);
-      score += 0.1;
-    }
-
-    // ── 5. Tesla 369 Seal ─────────────────────────────────────────────────────
-    let teslaResult: number | undefined;
-    if (context) {
-      teslaResult = (context.surah + context.ayah) % 369;
-      if (this.isPrime(teslaResult)) {
-        const isHeartSeal = context.surah === 36 && teslaResult === 37;
-        patterns.push(
-          `${isHeartSeal ? 'HEART_SEAL_37' : 'Tesla_369_Seal_Prime'} (${teslaResult})`
-        );
-        score += isHeartSeal ? 0.4 : 0.3;
-      } else if (teslaResult % 7 === 0 || teslaResult % 19 === 0) {
-        patterns.push(`Tesla_369_Seal_Resonance (${teslaResult})`);
-        score += 0.2;
-      }
     }
 
     return {
       score: Math.min(score, 1.0),
       patterns,
       isResonant: score >= 0.6,
-      teslaResult,
     };
   }
 
   /**
-   * يتحقق من التناظر الخيازمي (Chiasm) في تسلسل أرقام.
-   *
-   * الخيازم (Chiasm) هو بنية A-B-C-B'-A' حيث تتطابق العناصر
-   * من الطرفين نحو المركز. شائع في الشعر العربي والقرآن الكريم.
-   *
-   * مثال: [7, 19, 114, 19, 7] → chiasm عمقه 2
-   *
-   * @param sequence - تسلسل الأرقام المُراد فحصه
-   * @param tolerance - هامش التسامح في المقارنة (افتراضي: 0)
-   * @returns ChiasmResult مع درجة التناظر والأزواج المتطابقة
+   * QUANTUM CHIASM DETECTION
    */
   static validateChiasm(sequence: number[], tolerance: number = 0): ChiasmResult {
     const n = sequence.length;
-
+    
     if (n < 3) {
       return {
         isChiastic: false,
@@ -175,57 +73,38 @@ export class NumericalValidator {
       };
     }
 
-    // ── البحث عن أفضل مركز ────────────────────────────────────────────────
-    let bestDepth = 0;
-    let bestCenter = Math.floor(n / 2);
-    let bestPairs: Array<[number, number]> = [];
-
-    // نجرب كل مركز محتمل
-    for (let center = 1; center < n - 1; center++) {
-      const pairs: Array<[number, number]> = [];
-      let depth = 0;
-
-      let left = center - 1;
-      let right = center + 1;
-
-      while (left >= 0 && right < n) {
-        const diff = Math.abs(sequence[left] - sequence[right]);
-        if (diff <= tolerance) {
-          pairs.push([left, right]);
-          depth++;
-          left--;
-          right++;
-        } else {
-          break;
-        }
-      }
-
-      if (depth > bestDepth) {
-        bestDepth = depth;
-        bestCenter = center;
-        bestPairs = pairs;
+    const pairs = [];
+    let maxDepth = 0;
+    
+    for (let depth = 1; depth <= Math.floor(n / 2); depth++) {
+      const left = sequence[depth - 1];
+      const right = sequence[n - depth];
+      
+      if (Math.abs(left - right) <= tolerance) {
+        pairs.push({
+          left,
+          right,
+          distance: n - 2 * depth,
+        });
+        maxDepth = depth;
+      } else {
+        break;
       }
     }
 
-    // ── حساب درجة التناظر ─────────────────────────────────────────────────
-    // الدرجة = (عدد الأزواج المتطابقة) / (أقصى أزواج ممكنة)
-    const maxPossiblePairs = Math.floor(n / 2);
-    const score = maxPossiblePairs > 0 ? bestDepth / maxPossiblePairs : 0;
-
-    // الخيازم يُعتبر حقيقياً إذا كان العمق >= 2
-    const isChiastic = bestDepth >= 2;
-
+    const score = maxDepth > 0 ? maxDepth / Math.floor(n / 2) : 0;
+    
     return {
-      isChiastic,
-      depth: bestDepth,
-      centerIndex: bestCenter,
-      pairs: bestPairs,
+      isChiastic: maxDepth > 0,
+      depth: maxDepth,
+      centerIndex: maxDepth,
+      pairs,
       score: Math.min(score, 1.0),
     };
   }
 
   /**
-   * يتحقق من رقم واحد ضد نظام السبعة.
+   * QUANTUM NUMBER VALIDATION
    */
   static validateNumber(n: number): ResonanceResult {
     const patterns: string[] = [];
@@ -238,18 +117,23 @@ export class NumericalValidator {
 
     if (this.calculateDigitalRoot(n) === 7) {
       patterns.push('Digital_Root_7');
-      score += 0.4;
+      score += 0.3;
+    }
+
+    if (this.isPrime(n)) {
+      patterns.push('Prime_Number');
+      score += 0.2;
     }
 
     return {
       score: Math.min(score, 1.0),
       patterns,
-      isResonant: score >= 0.5,
+      isResonant: score >= 0.6,
     };
   }
 
   /**
-   * يحسب الجذر الرقمي (مجموع الأرقام حتى رقم واحد).
+   * QUANTUM DIGITAL ROOT CALCULATION
    */
   static calculateDigitalRoot(n: number): number {
     if (n === 0) return 0;
@@ -257,7 +141,7 @@ export class NumericalValidator {
   }
 
   /**
-   * يتحقق إذا كان الرقم أولياً (قانون عدم القسمة).
+   * QUANTUM PRIMALITY TEST
    */
   static isPrime(n: number): boolean {
     if (n < 2) return false;

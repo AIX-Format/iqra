@@ -5,6 +5,7 @@
  */
 
 import { ShannonHELEntropy, ShannonEntropyResult } from './ShannonHELEntropy';
+import { ConformableConvolution, ConformableConvolutionResult } from './ConformableConvolution';
 
 export interface QalbinNode {
   id: string;
@@ -29,6 +30,12 @@ export interface PulseResult {
   sacredPatterns: SacredPattern[];
   resonance: number;
   quranicConfidence: number;
+  conformableConvolution?: ConformableConvolutionResult;
+  topologicalEnhancements?: {
+    eulerCharacteristicDifference: number;
+    adaptiveKernelOffsets: number[][];
+    persistentHomologyFeatures: number[];
+  };
 }
 
 export interface SacredPattern {
@@ -48,12 +55,16 @@ export class QalbinVM {
 
   private readonly QURANIC_ENTROPY_THRESHOLD = 0.9685;
   private readonly RESONANCE_THRESHOLD = 0.7;
+  private readonly CONFORMABLE_CONVOLUTION_ENABLED = true;
+  private readonly TOPOLOGICAL_ENHANCEMENTS_ENABLED = true;
   
   private shannonAnalyzer: ShannonHELEntropy;
+  private conformableConvolution: ConformableConvolution;
   private nodeRegistry: Map<string, QalbinNode> = new Map();
 
   constructor() {
     this.shannonAnalyzer = new ShannonHELEntropy();
+    this.conformableConvolution = new ConformableConvolution();
   }
 
   /**
@@ -76,12 +87,26 @@ export class QalbinVM {
     // Calculate Quranic confidence
     const quranicConfidence = this.calculateQuranicConfidence(entropy, resonance, sacredPatterns);
 
+    // Apply topological enhancements if enabled
+    let conformableConvolution: ConformableConvolutionResult | undefined;
+    let topologicalEnhancements: PulseResult['topologicalEnhancements'] | undefined;
+
+    if (this.CONFORMABLE_CONVOLUTION_ENABLED) {
+      conformableConvolution = await this.conformableConvolution.applyConformableConvolution(signature, entropy);
+    }
+
+    if (this.TOPOLOGICAL_ENHANCEMENTS_ENABLED) {
+      topologicalEnhancements = this.calculateTopologicalEnhancements(signature, entropy);
+    }
+
     return {
       signature,
       entropy,
       sacredPatterns,
       resonance,
-      quranicConfidence
+      quranicConfidence,
+      conformableConvolution,
+      topologicalEnhancements
     };
   }
 
@@ -507,6 +532,215 @@ export class QalbinVM {
    */
   async batchPulse(texts: Array<{text: string; metadata: {surah: number; ayah: number}}>): Promise<PulseResult[]> {
     return Promise.all(texts.map(item => this.pulse(item.text, item.metadata)));
+  }
+
+  /**
+   * Calculate topological enhancements
+   * Implements Euler Characteristic Difference and other TDA features
+   */
+  private calculateTopologicalEnhancements(
+    signature: TopologicalSignature,
+    entropy: ShannonEntropyResult
+  ): PulseResult['topologicalEnhancements'] {
+    // 1. Calculate Euler Characteristic Difference
+    const eulerCharacteristicDifference = this.calculateEulerCharacteristicDifference(signature);
+    
+    // 2. Calculate adaptive kernel offsets (simplified version)
+    const adaptiveKernelOffsets = this.calculateAdaptiveKernelOffsets(signature);
+    
+    // 3. Extract persistent homology features
+    const persistentHomologyFeatures = this.extractPersistentHomologyFeatures(signature);
+
+    return {
+      eulerCharacteristicDifference,
+      adaptiveKernelOffsets,
+      persistentHomologyFeatures
+    };
+  }
+
+  /**
+   * Calculate Euler Characteristic Difference (ED) metric
+   * Based on FeTA 2024 research for topological evaluation
+   */
+  private calculateEulerCharacteristicDifference(signature: TopologicalSignature): number {
+    // Calculate Euler characteristic: χ = V - E + F
+    const V = signature.nodes.length; // Vertices
+    const E = signature.edges.length; // Edges
+    const F = this.calculateFaces(signature); // Faces (estimated)
+    
+    const eulerCharacteristic = V - E + F;
+    
+    // Calculate expected Euler characteristic for Quranic patterns
+    const expectedEuler = this.calculateExpectedEulerCharacteristic(signature);
+    
+    // Return absolute difference
+    return Math.abs(eulerCharacteristic - expectedEuler);
+  }
+
+  /**
+   * Calculate expected Euler characteristic for Quranic patterns
+   */
+  private calculateExpectedEulerCharacteristic(signature: TopologicalSignature): number {
+    // Based on sacred numbers and Quranic topology
+    const baseValue = this.SACRED_NUMBERS.SEVEN; // Base sacred number
+    const complexityFactor = signature.complexity;
+    const depthFactor = signature.depth;
+    
+    return baseValue * (1 + complexityFactor * 0.1) * (1 + depthFactor * 0.05);
+  }
+
+  /**
+   * Estimate number of faces in topological structure
+   */
+  private calculateFaces(signature: TopologicalSignature): number {
+    // Simplified face calculation based on cycles
+    // In practice, this would use full persistent homology
+    const cycles = this.detectCycles(signature);
+    return cycles.length;
+  }
+
+  /**
+   * Detect cycles in topological structure
+   */
+  private detectCycles(signature: TopologicalSignature): string[][] {
+    const cycles: string[][] = [];
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+    
+    // Build adjacency list
+    const adjacency = new Map<string, string[]>();
+    for (const node of signature.nodes) {
+      adjacency.set(node.id, node.connections);
+    }
+    
+    // DFS to detect cycles
+    for (const node of signature.nodes) {
+      if (!visited.has(node.id)) {
+        const path: string[] = [];
+        this.detectCyclesDFS(node.id, adjacency, visited, recursionStack, path, cycles);
+      }
+    }
+    
+    return cycles;
+  }
+
+  /**
+   * DFS helper for cycle detection
+   */
+  private detectCyclesDFS(
+    nodeId: string,
+    adjacency: Map<string, string[]>,
+    visited: Set<string>,
+    recursionStack: Set<string>,
+    path: string[],
+    cycles: string[][]
+  ): void {
+    visited.add(nodeId);
+    recursionStack.add(nodeId);
+    path.push(nodeId);
+    
+    const neighbors = adjacency.get(nodeId) || [];
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        this.detectCyclesDFS(neighbor, adjacency, visited, recursionStack, path, cycles);
+      } else if (recursionStack.has(neighbor)) {
+        // Found a cycle
+        const cycleStart = path.indexOf(neighbor);
+        if (cycleStart !== -1) {
+          cycles.push(path.slice(cycleStart));
+        }
+      }
+    }
+    
+    recursionStack.delete(nodeId);
+    path.pop();
+  }
+
+  /**
+   * Calculate adaptive kernel offsets
+   * Implements adaptive kernel learning from FeTA 2024
+   */
+  private calculateAdaptiveKernelOffsets(signature: TopologicalSignature): number[][] {
+    const kernelSize = 3;
+    const offsets: number[][] = Array(kernelSize).fill(0).map(() => Array(kernelSize).fill(0));
+    
+    // Calculate offsets based on node resonance and topology
+    for (let i = 0; i < kernelSize; i++) {
+      for (let j = 0; j < kernelSize; j++) {
+        // Adaptive offset based on local topology
+        const localResonance = this.calculateLocalResonance(signature, i, j);
+        const topologicalSignificance = this.calculateTopologicalSignificance(signature, i, j);
+        
+        offsets[i][j] = localResonance * topologicalSignificance * 0.1;
+      }
+    }
+    
+    return offsets;
+  }
+
+  /**
+   * Calculate local resonance for kernel position
+   */
+  private calculateLocalResonance(signature: TopologicalSignature, x: number, y: number): number {
+    // Find nodes near this position
+    const nearbyNodes = signature.nodes.filter((node, index) => {
+      const nodeX = index % 3;
+      const nodeY = Math.floor(index / 3);
+      return Math.abs(nodeX - x) <= 1 && Math.abs(nodeY - y) <= 1;
+    });
+    
+    if (nearbyNodes.length === 0) return 0;
+    
+    return nearbyNodes.reduce((sum, node) => sum + node.resonance, 0) / nearbyNodes.length;
+  }
+
+  /**
+   * Calculate topological significance for kernel position
+   */
+  private calculateTopologicalSignificance(signature: TopologicalSignature, x: number, y: number): number {
+    // Calculate based on edge density and connectivity
+    const nearbyNodes = signature.nodes.filter((node, index) => {
+      const nodeX = index % 3;
+      const nodeY = Math.floor(index / 3);
+      return Math.abs(nodeX - x) <= 1 && Math.abs(nodeY - y) <= 1;
+    });
+    
+    if (nearbyNodes.length === 0) return 0;
+    
+    const totalConnections = nearbyNodes.reduce((sum, node) => sum + node.connections.length, 0);
+    const maxPossibleConnections = nearbyNodes.length * (nearbyNodes.length - 1);
+    
+    return maxPossibleConnections > 0 ? totalConnections / maxPossibleConnections : 0;
+  }
+
+  /**
+   * Extract persistent homology features
+   */
+  private extractPersistentHomologyFeatures(signature: TopologicalSignature): number[] {
+    const features: number[] = [];
+    
+    // H0: Connected components
+    features.push(signature.nodes.length);
+    
+    // H1: Loops/cycles
+    features.push(this.detectCycles(signature).length);
+    
+    // H2: Voids (estimated)
+    features.push(Math.floor(signature.complexity * 0.1));
+    
+    // Betti numbers ratio
+    const h0 = features[0];
+    const h1 = features[1];
+    features.push(h1 / Math.max(h0, 1));
+    
+    // Topological complexity
+    features.push(signature.complexity);
+    
+    // Resonance-weighted topology
+    const avgResonance = signature.nodes.reduce((sum, node) => sum + node.resonance, 0) / signature.nodes.length;
+    features.push(avgResonance * h1);
+    
+    return features;
   }
 
   /**

@@ -1,24 +1,26 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
-      "es2020"
+      "ES2022"
     ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "noEmit": false,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "NodeNext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
     "allowImportingTsExtensions": true,
-        "baseUrl": ".",
+    "baseUrl": "./",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "plugins": [
       {
         "name": "next"
@@ -88,16 +90,26 @@
       "#orchestrator/*": [
         "./orchestrator/*"
       ]
-    },
-    "forceConsistentCasingInFileNames": true
+    }
   },
   "include": [
     "next-env.d.ts",
+    "lib/iqra/**/*",
+    "tests/**/*",
+    "scripts/**/*",
+    "agents/**/*",
+    "src/**/*",
+    "iqra-core/**/*",
+    "orchestrator/**/*",
+    "schema/**/*",
     "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    ".next",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }
