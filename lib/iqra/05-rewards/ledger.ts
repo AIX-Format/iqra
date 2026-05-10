@@ -16,7 +16,7 @@ import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
 import type {
   RewardEntry, PathKey, RewardSummary, DiscoveryLevel,
-} from './types.ts';
+} from './types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

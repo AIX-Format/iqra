@@ -30,7 +30,7 @@
 
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
-import { MemoryBridge, type BridgeEntry } from '#memory/memory_bridge.ts';
+import { MemoryBridge, type BridgeEntry } from '#memory/memory_bridge';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

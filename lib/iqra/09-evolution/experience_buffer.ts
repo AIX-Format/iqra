@@ -30,7 +30,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
-import type { WorkerReport } from '../../../agents/contracts.ts';
+import type { WorkerReport } from '../../../agents/contracts';
 import { EbbinghausEngine } from '#memory/micro_memory';
 
 // ── Constants ─────────────────────────────────────────────────────────────────

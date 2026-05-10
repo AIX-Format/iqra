@@ -1,28 +1,28 @@
-import { ResonanceWorker } from '#workers/resonance.ts';
-import { ResearchWorker } from '#workers/research.ts';
-import { ValidationWorker } from '#workers/validator.ts';
-import { ExecutionWorker } from '#workers/execution.ts';
-import type { WorkerReport, WorkerResult, MissionState, SovereignWorker } from '#workers/protocol.ts';
-import { IQRALogger } from '#infra/logger.ts';
-import type { Provider } from '#connectors/index.ts';
+import { ResonanceWorker } from '#workers/resonance';
+import { ResearchWorker } from '#workers/research';
+import { ValidationWorker } from '#workers/validator';
+import { ExecutionWorker } from '#workers/execution';
+import type { WorkerReport, WorkerResult, MissionState, SovereignWorker } from '#workers/protocol';
+import { IQRALogger } from '#infra/logger';
+import type { Provider } from '#connectors/index';
 import fs from 'fs';
 import path from 'path';
-import { logToIQRAFile, appendToTrustChain } from '#security/security.ts';
-import { ResourceFactory } from '#core/conscience/resource_factory.ts';
-import { RewardEngine } from '#rewards/engine.ts';
+import { logToIQRAFile, appendToTrustChain } from '#security/security';
+import { ResourceFactory } from '#core/conscience/resource_factory';
+import { RewardEngine } from '#rewards/engine';
 import { SovereignIdentity } from '#security/sovereign_identity';
-import { TopologicalAnalyzer } from '#skills/topological_analyzer.ts';
-import { Search369 } from '#evolution/search_369.ts';
-import { LeagueManager } from '#evolution/league_manager.ts';
+import { TopologicalAnalyzer } from '#skills/topological_analyzer';
+import { Search369 } from '#evolution/search_369';
+import { LeagueManager } from '#evolution/league_manager';
 import { FithrahBaseline } from '#security/audit/fithrah_baseline';
-import { IQRAMemory } from '#memory/memory.ts';
+import { IQRAMemory } from '#memory/memory';
 
 // ── Damir يُحمَّل lazily لتجنب circular imports ──────────────────────────────
-let _missionDamir: import('#core/damir_conscience.ts').DamirConscience | null = null;
+let _missionDamir: import('#core/damir_conscience').DamirConscience | null = null;
 
 async function getMissionDamir() {
   if (!_missionDamir) {
-    const { DamirConscience } = await import('#core/damir_conscience.ts');
+    const { DamirConscience } = await import('#core/damir_conscience');
     _missionDamir = new DamirConscience();
   }
   return _missionDamir;

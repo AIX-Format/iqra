@@ -1,4 +1,4 @@
-import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol';
 import type { MissionHandoff } from '#core/mission-context';
 import * as fs from 'fs';
 import * as path from 'path';

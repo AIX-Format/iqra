@@ -35,7 +35,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
-import { TurboCompressor } from './turbo_compressor.ts';
+import { TurboCompressor } from './turbo_compressor';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

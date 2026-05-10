@@ -1,8 +1,8 @@
 import { IQRALogger } from '#infra/logger';
 import { IQRAMemory } from '#memory/memory';
-import { MemoryBridge } from '#memory/memory_bridge.ts';
+import { MemoryBridge } from '#memory/memory_bridge';
 import { appendToTrustChain } from '#security/security';
-import { iqraThink, IQRABrainMode } from '../brain.ts';
+import { iqraThink, IQRABrainMode } from '../brain';
 import { IQRATopology } from '#topology/topology';
 
 // ── Types ─────────────────────────────────────────────────────────────────────

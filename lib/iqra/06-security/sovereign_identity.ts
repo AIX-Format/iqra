@@ -6,7 +6,7 @@
  * يدمج الروح (Soul) والنبض (Heartbeat) والذاكرة (Memory) في سياق واحد.
  */
 
-import { IQRA_SOUL } from '#utils/prompts.ts';
+import { IQRA_SOUL } from '#utils/prompts';
 import { HeartbeatSystem } from '../12-infrastructure/heartbeat.js';
 import { IQRAMemory } from '#memory/memory';
 import { getPersona, Persona } from '../13-utils/personas.js';

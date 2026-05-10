@@ -7,7 +7,7 @@
  * Evaluates decisions through Expansion, Simulation, and Backpropagation.
  */
 
-import { ConnectorFactory } from '../../../src/connectors/index.ts';
+import { ConnectorFactory } from '../../../src/connectors/index';
 import { IQRAMemory } from '#memory/memory';
 import { TopologicalAnalyzer } from '../skills/topological_analyzer';
 import { GitSkill } from '../skills/git_skill';

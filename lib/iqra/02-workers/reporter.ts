@@ -19,16 +19,16 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MissionContext, HandoffResult } from '#core/mission-context.js';
+import { MissionContext, HandoffResult } from '#core/mission-context';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
 import { RewardEngine } from '#rewards/engine';
 import { RewardLedger } from '#rewards/ledger';
-import { IQRAMemory } from '#memory/memory.js';
-import { PatternMemory } from '#memory/pattern_memory.ts';
+import { IQRAMemory } from '#memory/memory';
+import { PatternMemory } from '#memory/pattern_memory';
 import type { RewardEntry, RewardVector } from '#rewards/types';
-import type { ValidationReport } from './mission_validator.ts';
-import type { ResearchOutput } from './researcher.ts';
+import type { ValidationReport } from './mission_validator';
+import type { ResearchOutput } from './researcher';
 
 export async function executeReporter(context: MissionContext): Promise<HandoffResult> {
   const { scope, workingDir, previousOutput } = context;

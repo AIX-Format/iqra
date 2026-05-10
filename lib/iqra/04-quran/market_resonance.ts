@@ -9,7 +9,7 @@
  */
 
 import { IQRALogger } from '#infra/logger';
-import { RewardEngine } from '#rewards/engine.ts';
+import { RewardEngine } from '#rewards/engine';
 
 export interface MarketSignal {
   symbol: string;

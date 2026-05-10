@@ -16,7 +16,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol';
 import type { MissionHandoff } from '#core/mission-context';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';

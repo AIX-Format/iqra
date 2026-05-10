@@ -14,8 +14,8 @@
 
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
-import { SimulationEngine } from '#core/intelligence/simulation_engine.ts';
-import { executeWithSkill } from '#core/brain.ts';
+import { SimulationEngine } from '#core/intelligence/simulation_engine';
+import { executeWithSkill } from '#core/brain';
 
 export interface JobOpportunity {
   id: string;

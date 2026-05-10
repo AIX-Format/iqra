@@ -93,7 +93,7 @@ const IQRA_SOUL = \`
 \${DASTUR}
 \`;`,
     good_code: `// brain.ts
-import { IQRA_SOUL } from '#utils/prompts.ts';
+import { IQRA_SOUL } from '#utils/prompts';
 // IQRA_SOUL already contains MITHAQ + DASTUR + MURAQABAH
 // Do NOT redefine it locally`,
     error_type: 'ReferenceError: MITHAQ is not defined',

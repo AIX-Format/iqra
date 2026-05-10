@@ -17,7 +17,7 @@ import path from 'path';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import { IQRALogger } from '#infra/logger';
-import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout.ts';
+import { withTimeout, IQRA_TIMEOUTS } from '#utils/timeout';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

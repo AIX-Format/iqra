@@ -12,7 +12,7 @@ import path from 'path';
 import { MissionContext, HandoffResult } from '../01-core/mission-context.js';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
-import type { ResearchOutput } from './researcher.ts';
+import type { ResearchOutput } from './researcher';
 
 export interface ValidationReport {
   verdict: 'PASS' | 'FAIL';

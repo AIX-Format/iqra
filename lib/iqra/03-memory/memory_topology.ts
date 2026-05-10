@@ -26,8 +26,8 @@
 
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
-import { MicroMemory } from './micro_memory.ts';
-import { MemoryBridge } from '#memory/memory_bridge.ts';
+import { MicroMemory } from './micro_memory';
+import { MemoryBridge } from '#memory/memory_bridge';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

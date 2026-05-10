@@ -13,8 +13,8 @@
  */
 
 import { DamirConscience } from '#security/damir_conscience';
-import { ResourceFactory } from '#core/conscience/resource_factory.ts';
-import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error.ts';
+import { ResourceFactory } from '#core/conscience/resource_factory';
+import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error';
 import { logToIQRAFile, appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
 

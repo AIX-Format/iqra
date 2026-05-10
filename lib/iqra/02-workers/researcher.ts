@@ -23,7 +23,7 @@ import path from 'path';
 import { MissionContext, HandoffResult } from '#core/mission-context.js';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
-import { IQRA_SOUL } from '#utils/prompts.ts';
+import { IQRA_SOUL } from '#utils/prompts';
 import type { MissionHandoff } from '#core/mission-context';
 
 // ── Embedded Dastūr Prompt Fragment ──────────────────────────────────────────

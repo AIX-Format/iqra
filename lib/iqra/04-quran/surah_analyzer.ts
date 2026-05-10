@@ -29,13 +29,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import { TopologicalCuriosityEngine, TopologicalResonance } from './topological_curiosity.ts';
+import { TopologicalCuriosityEngine, TopologicalResonance } from './topological_curiosity';
 import { goEngine } from './go_engine_client';
-import { PatternMemory } from '#memory/pattern_memory.ts';
+import { PatternMemory } from '#memory/pattern_memory';
 import { IQRAMemory } from '#memory/memory';
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
-import { NumericalValidator } from './numerical_validator.ts';
+import { NumericalValidator } from './numerical_validator';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
