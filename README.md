@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-10` |
-| 💡 **آخر خطوة \| Last Step** | fix(sovereign): 7-Round Meta-Debug Loop #3 — add missing imports (fs, path, SovereignError, IQRALogger, SourceAttestation, SovereignEngine) | Resonance +2.46% | 366→357 errors |
-| 🔗 **الـ Commit** | `338ecb1` |
+| 💡 **آخر خطوة \| Last Step** | debug Js Errors and Mismatches |
+| 🔗 **الـ Commit** | `6e781d0` |
 
 <!-- IQRA-LATEST-END -->
 
