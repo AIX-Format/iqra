@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-10` |
-| 💡 **آخر خطوة \| Last Step** | [SOVEREIGN] 7-Round Meta-Debug Loop: Fix TS2307 errors, add Smart Fixer script, 18+ files corrected |
-| 🔗 **الـ Commit** | `1b50eca` |
+| 💡 **آخر خطوة \| Last Step** | fix(sovereign): 7-Round Meta-Debug Loop — restore allowImportingTsExtensions, remove deprecated files, cleanup security risks | Resonance +7.94% | 428→394 errors |
+| 🔗 **الـ Commit** | `814b629` |
 
 <!-- IQRA-LATEST-END -->
 
