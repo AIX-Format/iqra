@@ -6,7 +6,7 @@
  */
 
 import { QalbinNode, QalbinKind, Modality } from './qalbin_node';
-import { SovereignError } from '#security/security';
+import { SovereignError, SovereignErrorCode } from '#errors/sovereign_error';
 
 export class Qalbin_VM {
   private nodes: Map<number, QalbinNode> = new Map();

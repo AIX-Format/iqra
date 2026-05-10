@@ -9,7 +9,7 @@ import { MissionControl } from '#core/sovereign_orchestrator';
 import { IQRAMemory } from '#memory/memory';
 import { IQRALogger } from '#infra/logger';
 import { IQRAStoryteller } from '#utils/storyteller';
-import { SovereignError, RetryAttempt } from '#core/sovereign_error';
+import { SovereignError, SovereignErrorCode, RetryAttempt } from '#errors/sovereign_error';
 import { appendToTrustChain } from '#security/security';
 
 /**
@@ -56,19 +56,23 @@ export class TopologicalLoop {
           IQRALogger.info('✅ [ORCHESTRATOR] Retry succeeded with reduced scope');
         } else {
           // Log detailed diagnostics before aborting
-          const error = new SovereignError('VALIDATION_FAILED', {
-            mission_id: this.mission.mission_id,
-            phase: 'validation',
-            reason: 'Validation Gate Failed after retry',
-            partialResults: this.collectPartialResults(),
-            retryHistory: retryResult.retryHistory,
-            diagnostics: {
-              valReportFound: !!valReport,
-              proceduresFollowed: valReport?.procedures_followed,
-              totalReports: this.reports.length,
-              workerStatuses: this.reports.map(r => ({ id: r.worker_id, status: r.status }))
+          const error = new SovereignError(
+            `Validation Gate Failed after retry — Mission ${this.mission.mission_id}`,
+            SovereignErrorCode.VALIDATION_FAILED,
+            {
+              severity: 'CRITICAL',
+              source: 'TopologicalLoop',
+              recovery_strategy: 'HALT',
+              partialResults: this.collectPartialResults(),
+              retryHistory: retryResult.retryHistory,
+              diagnostics: {
+                valReportFound: !!valReport,
+                proceduresFollowed: valReport?.procedures_followed,
+                totalReports: this.reports.length,
+                workerStatuses: this.reports.map(r => ({ id: r.worker_id, status: r.status }))
+              }
             }
-          }, false);
+          );
           
           await error.logToTawbah();
           appendToTrustChain(

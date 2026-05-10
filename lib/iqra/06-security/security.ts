@@ -11,29 +11,8 @@
  * ══════════════════════════════════════════════════════════════
  */
 
-/**
- * 🛑 SovereignError — خطأ سيادي
- * Custom error class for IQRA to handle MĪTHĀQ violations and 
- * core logic failures without resorting to mocks.
- */
-export class SovereignError extends Error {
-  public code: string;
-  public severity: 'FATAL' | 'WARNING' | 'INFO';
-  public timestamp: number;
-
-  constructor(message: string, code: string = 'SOVEREIGN_FAILURE', severity: 'FATAL' | 'WARNING' | 'INFO' = 'FATAL') {
-    super(`[${code}] ${message}`);
-    this.name = 'SovereignError';
-    this.code = code;
-    this.severity = severity;
-    this.timestamp = Date.now();
-
-    // Log immediately on creation if fatal
-    if (severity === 'FATAL') {
-      console.error(`🛑 [SOVEREIGN_ERROR] ${code}: ${message}`);
-    }
-  }
-}
+// [TC] reason: DEAD SovereignError removed - canonical version is src/errors/sovereign_error.ts | id: TC-remove-dead-sovereign-error
+// This FATAL/WARNING/INFO version conflicts with the canonical LOW/MEDIUM/HIGH/CRITICAL version
 
 
 // import { z } from 'zod'; // Sovereign fallback handled below

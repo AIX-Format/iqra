@@ -36,6 +36,24 @@
   ],
   "author": "Moe Abdelaziz",
   "license": "ISC",
+  "imports": {
+    "#core/*": "./lib/iqra/01-core/*.ts",
+    "#workers/*": "./lib/iqra/02-workers/*.ts",
+    "#memory/*": "./lib/iqra/03-memory/*.ts",
+    "#quran/*": "./lib/iqra/04-quran/*.ts",
+    "#rewards/*": "./lib/iqra/05-rewards/*.ts",
+    "#security/*": "./lib/iqra/06-security/*.ts",
+    "#llm/*": "./lib/iqra/07-llm/*.ts",
+    "#skills/*": "./lib/iqra/08-skills/*.ts",
+    "#evolution/*": "./lib/iqra/09-evolution/*.ts",
+    "#topology/*": "./lib/iqra/10-topology/*.ts",
+    "#trading/*": "./lib/iqra/11-trading/*.ts",
+    "#infra/*": "./lib/iqra/12-infrastructure/*.ts",
+    "#utils/*": "./lib/iqra/13-utils/*.ts",
+    "#connectors/*": "./src/connectors/*.ts",
+    "#errors/*": "./src/errors/*.ts",
+    "#agents/*": "./agents/*.ts"
+  },
   "bugs": {
     "url": "https://github.com/Moeabdelaziz007/iqra/issues"
   },
