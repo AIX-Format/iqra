@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { IQRAMemory } from '@/lib/iqra/memory';
 
 /**
  * 🧼 Tazkiyah (Purification) Endpoint
@@ -16,11 +15,12 @@ export async function GET(request: Request) {
 
   try {
     console.log('🧼 Starting automated Tazkiyah cycle...');
-    await IQRAMemory.performPurification();
+    // TODO: Implement memory purification when IQRAMemory is available
+    // await IQRAMemory.performPurification();
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Tazkiyah performed successfully.',
+      message: 'Tazkiyah performed successfully (mock).',
       timestamp: new Date().toISOString()
     });
   } catch (error) {

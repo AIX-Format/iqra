@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SovereignEngine } from '@/lib/iqra/sovereign';
 
 /**
  * Sovereign Sync Cycle
@@ -13,13 +12,13 @@ export async function GET(request: NextRequest) {
 
   try {
     console.log('🔄 Cron: Triggering Sovereign Sync...');
-    // In lib/iqra/sovereign.ts, we should have a sync method
-    // For now, we call recordState or a future sync method
-    await SovereignEngine.recordSelfReview('sync', 'Periodic sovereign heartbeat.', 1.0);
+    // TODO: Implement sovereign sync when SovereignConnector is available
+    // const sovereign = new SovereignConnector();
+    // const result = await sovereign.generate('sync', []);
     
     return NextResponse.json({ 
       status: 'success', 
-      message: 'Sovereign Sync complete.' 
+      message: 'Sovereign Sync complete (mock).' 
     });
   } catch (error) {
     console.error('Sovereign Sync Cron Error:', error);

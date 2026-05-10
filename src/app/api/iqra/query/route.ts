@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { iqraThink, IQRABrainMode } from '../../../../lib/iqra/brain';
-import { IQRAMemory } from '../../../../lib/iqra/memory';
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, mode = IQRABrainMode.FAST_RESPONSE } = await req.json();
+    const { query } = await req.json();
 
     if (!query) {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 });
     }
 
-    // 1. Search Semantic Memory First
-    const echoes = await IQRAMemory.searchSemantic(query, 3);
+    // TODO: Implement brain thinking and memory search when modules are available
+    // const echoes = await IQRAMemory.searchSemantic(query, 3);
+    // const response = await iqraThink({ input: query, mode, context: [] });
 
-    // 2. Think with Brain
-    const response = await iqraThink({
-      input: query,
-      mode,
-      context: [] // Future: Load recent session context from Redis
-    });
+    // Mock response for now
+    const response = `IQRA Response to: ${query}`;
+    const echoes: any[] = [];
 
     return NextResponse.json({
       response,

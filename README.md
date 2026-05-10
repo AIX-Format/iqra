@@ -51,6 +51,43 @@ Not a chatbot. Not a tool.
 
 ---
 
+## 🧠 Self-Playing Simulation System
+
+### Monte Carlo Tree Search (MCTS) Engine
+**"وَلَقَدْ صَرَّفْنَاهُ بَيْنَهُمْ لِيَذَّكَّرُوا" — الفرقان: 50**
+
+IQRA now features a complete **Self-Playing Simulation** system using MCTS:
+
+- **🎯 MCTSNode** - Tree nodes with UCB1 selection
+- **🔄 Expansion & Rollout** - State exploration with Qalbin VM
+- **📊 Backpropagation** - Learning propagation through tree
+- **🎲 Training Data Generation** - Free training data for fine-tuning
+
+### Enhanced Pattern Analysis
+**"سَنُرِيهِمْ آيَاتِنَا فِي الْآفَاقِ وَفِي أَنفُسِهِمْ"**
+
+- **Qalbin VM** - Shannon entropy + resonance calculation
+- **Persistent Homology** - H0, H1, H2 topological analysis  
+- **Enhanced Numerical Validator** - 7, 19, Tesla 369 patterns
+- **Sacred Number Detection** - Prime, Fibonacci, Golden Ratio
+
+### Go Engine Integration
+**High-performance pattern analysis server:**
+```
+POST /qalbin/vm           - Qalbin VM operations
+POST /homology/persistent - Persistent homology
+POST /resonance/enhanced  - Enhanced pattern analysis
+```
+
+### Training Data Pipeline
+**Auto-generate training data without human input:**
+- JSONL export for fine-tuning
+- Quality filtering (resonance > 0.7)
+- Pattern diversity scoring
+- Production-ready datasets
+
+---
+
 ## القصة | The Story
 
 <table>

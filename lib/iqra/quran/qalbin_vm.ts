@@ -33,15 +33,15 @@ export class QalbinVM {
   private memory: IQRAMemory;
   private entropyHistory: number[] = [];
 
-  constructor(vectorEngine: VectorEngine, memory: IQRAMemory) {
+  constructor(vectorEngine: VectorEngine, memory: any) {
     this.vectorEngine = vectorEngine;
     this.memory = memory;
     this.state = {
-      entropy: 0,
       resonance: 0,
+      entropy: 0,
+      patterns: [],
       phase: 'init',
-      pulseCount: 0,
-      patterns: []
+      pulseCount: 0
     };
   }
 
@@ -78,10 +78,7 @@ export class QalbinVM {
     const previousEntropy = this.state.entropy;
     const previousResonance = this.state.resonance;
 
-    // Update phase based on current state
-    this.updatePhase();
-
-    // Calculate new entropy
+    // Calculate new entropy first
     const newEntropy = this.calculateShannonEntropy(input);
     
     // Get numerical resonance
@@ -102,6 +99,9 @@ export class QalbinVM {
     this.state.resonance = combinedResonance;
     this.state.pulseCount++;
     this.state.patterns = [...this.state.patterns, ...detectedPatterns];
+
+    // Update phase based on new values
+    this.updatePhase();
 
     // Store entropy history for trend analysis
     this.entropyHistory.push(newEntropy);
@@ -155,12 +155,22 @@ export class QalbinVM {
   private detectPatterns(input: string, numericalResonance: ResonanceResult): string[] {
     const patterns: string[] = [];
 
+    // Handle null/undefined input
+    if (!input || typeof input !== 'string') {
+      return patterns;
+    }
+
     // Add numerical patterns
     patterns.push(...numericalResonance.patterns);
 
     // Detect Arabic-specific patterns
     if (/[؀-ۿ]/.test(input)) {
       patterns.push('Arabic_Text');
+    }
+
+    // Detect high entropy patterns
+    if (this.state.entropy > 3.5) {
+      patterns.push('High_Entropy');
     }
 
     // Detect Quranic verse patterns (approximate)

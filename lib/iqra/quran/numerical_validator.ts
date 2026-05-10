@@ -18,6 +18,15 @@ export class NumericalValidator {
     const patterns: string[] = [];
     let score = 0;
 
+    // Handle null/undefined input
+    if (!input || typeof input !== 'string') {
+      return {
+        score: 0,
+        patterns: [],
+        isResonant: false
+      };
+    }
+
     // 1. Length-based patterns
     const cleanInput = input.trim();
     const charCount = cleanInput.length;

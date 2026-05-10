@@ -22,6 +22,27 @@ npm-debug.log*
 .iqra/visual_notes/
 .iqra/auto_improve_state.json
 .iqra_loop_state
+.iqra/iqra_memory.db*
+.iqra/knowledge/
+.iqra/path_registry.json
+.iqra/pattern_memory.json
+.iqra/resonance_training_data.json
+.iqra/trust_chain.jsonl
+.iqra/LEARNINGS.md
+.iqra/IQRA_FOLDER_AUDIT.md
+.iqra/fix_patterns.json
+
+# Node compile cache and scratch
+node-compile-cache/
+scratch/tmp/
+
+# Obsidian and VSCode
+.obsidian/
+.vscode/
+
+# IQRA Core data
+iqra-core/data/reward_ledger.jsonl
+knowledge/
 
 # Build artifacts
 raw_api_payload*.json

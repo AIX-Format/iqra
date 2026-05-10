@@ -75,9 +75,22 @@ func main() {
 	http.HandleFunc("/fourier/transform", fourierHandler)
 	http.HandleFunc("/resonance/evaluate", resonanceHandler)
 	http.HandleFunc("/evolve/cycle", evolveHandler)
+	
+	// New Qalbin VM and Enhanced Pattern endpoints
+	http.HandleFunc("/qalbin/vm", qalbinVMHandler)
+	http.HandleFunc("/homology/persistent", persistentHomologyHandler)
+	http.HandleFunc("/resonance/enhanced", enhancedResonanceHandler)
 
 	port := "127.0.0.1:8082"
-	fmt.Printf("🌙 IQRA Go Engine starting on %s...\n", port)
+	fmt.Printf("🌙 IQRA Go Engine with Qalbin VM integration starting on %s...\n", port)
+	fmt.Printf("📡 Available endpoints:\n")
+	fmt.Printf("   - GET  /health\n")
+	fmt.Printf("   - GET  /fourier/transform\n")
+	fmt.Printf("   - POST /resonance/evaluate\n")
+	fmt.Printf("   - POST /evolve/cycle\n")
+	fmt.Printf("   - POST /qalbin/vm\n")
+	fmt.Printf("   - POST /homology/persistent\n")
+	fmt.Printf("   - POST /resonance/enhanced\n")
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}

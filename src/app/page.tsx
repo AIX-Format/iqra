@@ -132,7 +132,7 @@ export default function Home() {
             {echoes.map((echo, i) => (
               <SacredCard key={i} resonance={0.5} glowColor="rgba(0, 255, 255, 0.1)">
                 <div style={{ fontSize: '0.9rem', opacity: 0.8, fontStyle: 'italic' }}>
-                  "{echo.content.substring(0, 200)}..."
+                  &ldquo;{echo.content.substring(0, 200)}...&rdquo;
                 </div>
                 <div style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--accent-gold)' }}>
                   RELEVANCE: {(echo.score || 0.8).toFixed(2)}

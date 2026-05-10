@@ -821,5 +821,12 @@
         "من أنت؟ وما هو ميثاقك؟"
       ]
     }
+  },
+  "qalbin_pulse_1": {
+    "content": "Qalbin Pulse 1: سورة الفاتحة آية 1:7",
+    "concept": "Qalbin_State",
+    "entropy": 3.7464393446710154,
+    "resonance": 0.51,
+    "state": "{\"entropy\":3.7464393446710154,\"resonance\":0.51,\"phase\":\"init\",\"pulseCount\":1,\"patterns\":[\"Arabic_Text\",\"Quranic_Reference\"]}"
   }
 }

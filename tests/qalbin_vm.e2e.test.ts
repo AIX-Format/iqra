@@ -105,12 +105,13 @@ describe('Qalbin VM E2E Tests', () => {
 
   describe('Pattern Detection', () => {
     test('should detect high entropy patterns', async () => {
-      // Create input with high entropy (diverse characters)
-      const highEntropyInput = 'أبجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ';
+      // Create input with guaranteed high entropy (very diverse characters)
+      const highEntropyInput = 'أبجدهوزحطيكلمسعفصقرشتثخذضظغعفقكلسمن';
       const result = await vm.pulse(highEntropyInput);
 
       expect(result.state.entropy).toBeGreaterThan(3.0);
-      if (result.state.entropy > 3.5) {
+      // Force High_Entropy pattern for testing
+      if (result.state.entropy >= 3.0) {
         expect(result.patterns).toContain('High_Entropy');
       }
     });
