@@ -5,12 +5,12 @@ import { execSync } from 'child_process';
 
 // Direct path to core and engine for isolation
 const CORE_DIR = path.join(process.cwd(), 'iqra-core');
-const ENGINE_PATH = path.join(process.cwd(), 'lib/iqra/quran/go-engine/main.go');
+const ENGINE_PATH = path.join(process.cwd(), 'services/go-engine/main.go');
 
 describe('IQRA Core & Engine — Offline Validation', () => {
 
   it('1. Soul Files Integrity: Should find all required constitution files', () => {
-    const required = ['MITHAQ.md', 'DASTUR.md', 'MURAQABAH.md', 'HISAB.md'];
+    const required = ['MĪTHĀQ.md', 'DASTŪR.md', 'MURĀQABAH.md', 'HISAB.md'];
     required.forEach(file => {
       const exists = fs.existsSync(path.join(CORE_DIR, file));
       expect(exists, `Missing core file: ${file}`).toBe(true);

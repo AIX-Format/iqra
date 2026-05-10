@@ -267,6 +267,8 @@ export enum IQRABrainMode {
   FAST_RESPONSE = 'groq',      // Groq — speed
   QURAN_ANALYSIS = 'google',   // Gemini — sacred text
   RESEARCH = 'google',         // Gemini — long context
+  // [TC] reason: add THOUGHT_ONLY used by iqra-core/run_iqra.ts | id: TC-thought-only-mode
+  THOUGHT_ONLY = 'thought',    // Internal reasoning only
 }
 
 

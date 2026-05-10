@@ -384,3 +384,33 @@
 - **Source**: INTEGRITY_SCAN
 - **Recovery**: HALT
 ---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-10T15:00:46.760Z
+- **Code**: CONNECTION_FAILURE
+- **Message**: Test Failure
+- **Severity**: HIGH
+- **Source**: TEST_UNIT
+- **Recovery**: RETRY
+
+
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-10T15:00:46.767Z
+- **Code**: HALLUCINATION_DETECTED
+- **Message**: Hallucination in Surah analysis
+- **Severity**: CRITICAL
+- **Source**: ORACLE_CHECK
+- **Recovery**: HALT
+
+
+---
+
+### ❌ [SOVEREIGN_FAILURE] | 2026-05-10T15:00:46.772Z
+- **Code**: MITHAQ_VIOLATION
+- **Message**: Mock data detected in core logic
+- **Severity**: CRITICAL
+- **Source**: INTEGRITY_SCAN
+- **Recovery**: HALT
+
+
+---
