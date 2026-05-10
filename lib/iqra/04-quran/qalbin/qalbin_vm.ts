@@ -53,7 +53,16 @@ export class Qalbin_VM {
       steps++;
 
       if (steps > 1000) {
-        throw new SovereignError(`QALBIN_OVERFLOW: Interaction limit exceeded (${steps}). Possible infinite loop in topology.`, "HALT", "CRITICAL");
+        throw new SovereignError(
+          `QALBIN_OVERFLOW: Interaction limit exceeded (${steps}). Possible infinite loop in topology.`,
+          SovereignErrorCode.QALBIN_OVERFLOW,
+          {
+            severity: 'CRITICAL',
+            source: 'QalbinVM',
+            recovery_strategy: 'HALT',
+            context: { steps }
+          }
+        );
       }
     }
 
@@ -84,16 +93,34 @@ export class Qalbin_VM {
 
   private verifyMoralConstraints(a: QalbinNode, b: QalbinNode) {
     // 1. Protection against high-risk interactions (Hidayah Filter)
-    if ((a.modality === Modality.AMAN || b.modality === Modality.AMAN) && 
+    if ((a.modality === Modality.AMAN || b.modality === Modality.AMAN) &&
         (a.metadata['risk_score'] > 0.9 || b.metadata['risk_score'] > 0.9)) {
-      throw new SovereignError("AMAN_VIOLATION: High-risk interaction blocked by Hidayah filter.", "TAWBAH", "CRITICAL");
+      throw new SovereignError(
+        "AMAN_VIOLATION: High-risk interaction blocked by Hidayah filter.",
+        SovereignErrorCode.AMAN_VIOLATION,
+        {
+          severity: 'CRITICAL',
+          source: 'QalbinVM',
+          recovery_strategy: 'HALT',
+          context: { a: a.kind, b: b.kind, risk_a: a.metadata['risk_score'], risk_b: b.metadata['risk_score'] }
+        }
+      );
     }
 
     // 2. AMAN Sovereignty: Security tokens are "Indivisible" and "Non-Clonable"
     // In Interaction Combinators, cloning happens during Commute (kind mismatch)
     if (a.kind !== b.kind) {
       if (a.modality === Modality.AMAN || b.modality === Modality.AMAN) {
-        throw new SovereignError("AMAN_SOVEREIGNTY: Security protocols cannot be fragmented or replicated during interaction.", "TAWBAH", "HALT");
+        throw new SovereignError(
+          "AMAN_SOVEREIGNTY: Security protocols cannot be fragmented or replicated during interaction.",
+          SovereignErrorCode.AMAN_VIOLATION,
+          {
+            severity: 'CRITICAL',
+            source: 'QalbinVM',
+            recovery_strategy: 'HALT',
+            context: { a: a.kind, b: b.kind, modality_a: a.modality, modality_b: b.modality }
+          }
+        );
       }
     }
     

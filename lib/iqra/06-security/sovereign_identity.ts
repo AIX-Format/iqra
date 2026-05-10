@@ -21,7 +21,7 @@ export class SovereignIdentity {
   static async getIntegratedSoul(workerId: string, intention: string, personaId: string = "iqra-core"): Promise<string> {
     const pulse = HeartbeatSystem.getPulseCount();
     const cycle = await IQRAMemory.getCycleCounter();
-    const errorCount = await IQRAMemory.getErrorCount(); // تتبع بروتوكول التوبة
+    const errorCount = IQRAMemory.getErrorCount(); // تتبع بروتوكول التوبة (synchronous)
     
     const persona = getPersona(personaId);
     const didDoc = await SovereignDID.generateDocument(persona.id, "axiomid.app");

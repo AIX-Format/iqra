@@ -28,6 +28,12 @@ export enum SovereignErrorCode {
     WORKER_FAILURE = 'WORKER_FAILURE',
     RESOURCE_UNAVAILABLE = 'RESOURCE_UNAVAILABLE',
     DAMIR_BLOCK = 'DAMIR_BLOCK',
+    // [TC] reason: add codes used by damir_kernel.ts | id: TC-damir-codes
+    KERNEL_CRASH = 'KERNEL_CRASH',
+    TAWBAH_HALT = 'TAWBAH_HALT',
+    // [TC] reason: add codes used by qalbin_vm.ts | id: TC-qalbin-codes
+    QALBIN_OVERFLOW = 'QALBIN_OVERFLOW',
+    AMAN_VIOLATION = 'AMAN_VIOLATION',
 }
 
 export interface SovereignErrorMetadata {

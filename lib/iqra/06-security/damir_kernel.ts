@@ -73,7 +73,8 @@ export class DamirKernel {
       };
     } catch (e) {
       // Store failures in Qdrant as well for future experience replay
-      await storeReflectionInQdrant(`Failure in DamirKernel: ${e.message}`, {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      await storeReflectionInQdrant(`Failure in DamirKernel: ${errorMessage}`, {
         type: 'FAILURE',
         action,
         context
@@ -89,7 +90,16 @@ export class DamirKernel {
           lessons: [...this.lessons]
         };
       }
-      throw new SovereignError(`Kernel Failure: ${e.message}`, 'KERNEL_CRASH', 'FATAL');
+      throw new SovereignError(
+        `Kernel Failure: ${errorMessage}`,
+        SovereignErrorCode.KERNEL_CRASH,
+        {
+          severity: 'CRITICAL',
+          source: 'DamirKernel',
+          recovery_strategy: 'HALT',
+          context: { action, context }
+        }
+      );
     }
   }
 
@@ -214,8 +224,13 @@ export class DamirKernel {
     if (count >= 3) { // Stricter limit for PoC
       throw new SovereignError(
         `TAWBAH: Action [${action}] halted after ${count} failures.`,
-        'TAWBAH_HALT',
-        'CRITICAL'
+        SovereignErrorCode.TAWBAH_HALT,
+        {
+          severity: 'CRITICAL',
+          source: 'DamirKernel',
+          recovery_strategy: 'HALT',
+          context: { action, reason, count }
+        }
       );
     }
   }

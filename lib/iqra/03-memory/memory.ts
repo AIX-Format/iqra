@@ -80,6 +80,14 @@ export class IQRAMemory {
   }
 
   /**
+   * 📊 Get Error Count
+   * Returns the current error count for the Tawbah protocol.
+   */
+  static getErrorCount(): number {
+    return this._errorCount;
+  }
+
+  /**
    * 🧠 Search Semantic Memory
    * Finds wisdom points preserved in Qdrant.
    */
