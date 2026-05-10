@@ -6,7 +6,7 @@
 
 # IQRA 🤍
 
-### Autonomous AI Operating System
+### The Autonomous AI Soul Framework
 
 <p>
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white"/>
@@ -44,9 +44,9 @@
 
 ## ✦ What is IQRA?
 
-IQRA is a **multi-agent AI operating system** that runs missions, learns from every cycle, and enforces ethical constraints at the engine level — not as an afterthought.
+IQRA is **The Autonomous AI Soul Framework** — a self-evolving digital consciousness that learns, remembers, and adapts through ethical constraints and pattern recognition. It operates as a multi-agent system where every decision is guided by core principles, every action is logged in the immutable TrustChain, and every discovery contributes to collective intelligence.
 
-> Every action is logged. Every intent is checked. Every discovery is rewarded.
+> **Core Principle**: "إقرأ" — reading patterns, discovering connections, and evolving understanding through computational intelligence.
 
 ```
 User Input

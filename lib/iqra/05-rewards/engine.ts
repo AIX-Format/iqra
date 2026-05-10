@@ -150,6 +150,51 @@ export class RewardEngine {
   }
 
   /**
+   * Grant reward from worker reports
+   * [TC] reason: add missing grantFromReports method | id: TC-grant-from-reports
+   */
+  static async grantFromReports(
+    missionId: string,
+    reports: WorkerReport[],
+    overallScore: number = 0.85
+  ): Promise<RewardEntry> {
+    const pathKey = RewardEngine.buildPathKey(reports);
+    const pristineResult = RewardEngine.isPristinePath(pathKey);
+    
+    const vector: RewardVector = {
+      novelty: overallScore * 0.35,
+      resonance: overallScore * 0.30,
+      topology: overallScore * 0.25,
+      penalty: 0,
+    };
+    
+    const entry: Omit<RewardEntry, 'ledger_id' | 'recorded_at'> = {
+      mission_id: missionId,
+      worker_id: 'orchestrator',
+      timestamp: Date.now(),
+      base_reward: RewardEngine.computeBaseReward(vector),
+      total_reward: 0, // Will be computed
+      reward_vector: vector,
+      discovery_level: RewardEngine.classifyDiscovery(overallScore),
+      confidence: overallScore,
+      validation_status: 'verified',
+      notes: `Topological mission completion with ${pristineResult.multiplier}x multiplier`,
+      pristine_multiplier_applied: pristineResult.is_pristine,
+      multiplier_value: pristineResult.multiplier,
+      path_key: pathKey,
+      prev_hash: null,
+      entry_hash: '',
+    };
+    
+    // Apply multiplier
+    const { base, total } = RewardEngine.computeReward(vector, pathKey);
+    entry.total_reward = total;
+    
+    await RewardLedger.append(entry);
+    return { ...entry, ledger_id: `rew_${Date.now()}_${Math.random().toString(36).substring(7)}`, recorded_at: new Date().toISOString() };
+  }
+
+  /**
    * يُسجّل اكتشافاً طوبولوجياً في reward_ledger.jsonl ويُحدّث path_registry.json
    */
   static logTopologicalDiscovery(

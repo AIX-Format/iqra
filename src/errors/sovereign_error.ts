@@ -34,6 +34,8 @@ export enum SovereignErrorCode {
     // [TC] reason: add codes used by qalbin_vm.ts | id: TC-qalbin-codes
     QALBIN_OVERFLOW = 'QALBIN_OVERFLOW',
     AMAN_VIOLATION = 'AMAN_VIOLATION',
+    // [TC] reason: add MISSING_DATA used by memory.ts | id: TC-missing-data
+    MISSING_DATA = 'MISSING_DATA',
 }
 
 export interface SovereignErrorMetadata {

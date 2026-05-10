@@ -35,6 +35,12 @@ export interface PatternRecord {
 export interface SimilarPattern {
   record: PatternRecord;
   similarity: number;          // cosine similarity 0.0 – 1.0
+  // [TC] reason: add metadata field for discovery_persistence.ts | id: TC-similar-pattern-metadata
+  metadata?: {
+    discovery_id?: string;
+    created_at?: string;
+    source?: string;
+  };
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -288,7 +294,7 @@ export class PatternMemory {
           IQRA_TIMEOUTS.NETWORK,
           'Qdrant getCollection'
         );
-        return info?.vectors_count ?? 0;
+        return (info as any)?.vectors_count ?? 0;
       } catch { /* fall through */ }
     }
     const local = await this._readLocal();

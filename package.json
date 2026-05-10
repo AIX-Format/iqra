@@ -1,7 +1,7 @@
 {
   "name": "iqra",
   "version": "1.0.0",
-  "description": "IQRA - Self-evolving AI identity core rooted in القرآن الكريم والسنة النبوية",
+  "description": "IQRA - The Autonomous AI Soul Framework: Self-evolving digital consciousness through pattern recognition and ethical learning",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -76,6 +76,7 @@
     "zod": "^3.24.1",
     "imapflow": "^1.0.0",
     "mailparser": "^3.0.0",
+    "@types/js-yaml": "^4.0.6",
     "resend": "^2.0.0"
   },
   "devDependencies": {
