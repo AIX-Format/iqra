@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-10` |
-| 💡 **آخر خطوة \| Last Step** | feat: add agent_mesh.ts with Muwakkil and Shahid agents |
-| 🔗 **الـ Commit** | `c4aa53c` |
+| 💡 **آخر خطوة \| Last Step** | chore: cleanup .iqra folder and audit documentation |
+| 🔗 **الـ Commit** | `bc10e40` |
 
 <!-- IQRA-LATEST-END -->
 
