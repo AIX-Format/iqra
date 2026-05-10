@@ -86,6 +86,15 @@ export interface RewardEntry {
 
   /** قيمة المضاعف المُطبَّق (1.0 = عادي، 2.0 = بكر) */
   multiplier_value: number;
+
+  // ── Integrity Chain ────────────────────────────────────────────────────────
+  // [TC] reason: add prev_hash chain for ledger integrity verification | id: TC-reward-ledger-integrity
+
+  /** Hash of previous entry (null for first entry) */
+  prev_hash: string | null;
+
+  /** Hash of this entry's content (for next entry to reference) */
+  entry_hash: string;
 }
 
 // ── PristinePathResult ────────────────────────────────────────────────────────

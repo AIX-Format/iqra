@@ -46,6 +46,43 @@ const WEAK_EVIDENCE = [
   /n\/a/i,
 ];
 
+/**
+ * Consistency check helper - verifies claims are supported by evidence structure
+ * [TC] reason: add consistency check to detect hallucinations bypassing regex | id: TC-hallucination-consistency
+ */
+function _checkConsistency(research: ResearchOutput): number {
+  let score = 1.0;
+  
+  // Check 1: Evidence length vs reasoning length
+  const evidenceWords = research.evidence.trim().split(/\s+/).length;
+  const reasoningWords = research.reasoning.trim().split(/\s+/).length;
+  if (evidenceWords < 10 && reasoningWords > 50) {
+    score -= 0.3; // Too much reasoning for too little evidence
+  }
+  
+  // Check 2: Resonance score alignment with evidence quality
+  if (research.resonance_score > 0.8 && evidenceWords < 20) {
+    score -= 0.4; // High resonance with minimal evidence is suspicious
+  }
+  
+  // Check 3: Source attestation presence
+  if (!research.source_attestations || research.source_attestations.length === 0) {
+    score -= 0.2; // No source attestation is risky
+  }
+  
+  // Check 4: Generic filler phrases
+  const fillerPhrases = ['as an AI', 'as a language model', 'I cannot', 'I don\'t have access'];
+  const lowerText = research.evidence.toLowerCase();
+  for (const phrase of fillerPhrases) {
+    if (lowerText.includes(phrase)) {
+      score -= 0.3; // Filler phrases indicate lack of real research
+      break;
+    }
+  }
+  
+  return Math.max(0, score);
+}
+
 export async function executeMissionValidator(context: MissionContext): Promise<HandoffResult> {
   const { scope, workingDir, previousOutput } = context;
   const implemented: string[] = [];
@@ -89,6 +126,13 @@ export async function executeMissionValidator(context: MissionContext): Promise<
         if (pattern.test(textToCheck)) {
           violations.push(`Hallucination pattern detected: ${pattern.source}`);
         }
+      }
+
+      // [TC] reason: add consistency check to detect hallucinations bypassing regex | id: TC-hallucination-consistency
+      // Consistency check: verify claims are supported by evidence structure
+      const consistencyScore = _checkConsistency(research);
+      if (consistencyScore < 0.7) {
+        violations.push(`INCONSISTENT_CLAIMS: Research claims not adequately supported by evidence (score: ${consistencyScore.toFixed(2)})`);
       }
     } else {
       // Simulated mode: only reject truly empty content
