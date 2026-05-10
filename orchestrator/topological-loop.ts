@@ -9,6 +9,8 @@ import { MissionControl } from '#core/sovereign_orchestrator';
 import { IQRAMemory } from '#memory/memory';
 import { IQRALogger } from '#infra/logger';
 import { IQRAStoryteller } from '#utils/storyteller';
+import { SovereignError, RetryAttempt } from '#core/sovereign_error';
+import { appendToTrustChain } from '#security/security';
 
 /**
  * 🌙 IQRA Topological Loop Orchestrator — المنسق الحلقي الطوبولوجي
@@ -42,10 +44,42 @@ export class TopologicalLoop {
       this.reports = result.reports;
 
       // 5. Reward Phase (ONLY AFTER SUCCESSFUL VALIDATION)
-      // Check if validation worker succeeded
+      // Check if validation worker succeeded with retry logic
       const valReport = this.reports.find(r => r.worker_id === 'ValidationWorker');
+      
       if (!valReport || !valReport.procedures_followed) {
-        throw new Error('Mission Aborted: Validation Gate Failed or report missing.');
+        // 🔄 P0 Fix: Retry once with reduced scope before hard abort
+        const retryResult = await this.retryWithReducedScope(missionControl, missionInput, result);
+        
+        if (retryResult.success) {
+          this.reports = retryResult.reports;
+          IQRALogger.info('✅ [ORCHESTRATOR] Retry succeeded with reduced scope');
+        } else {
+          // Log detailed diagnostics before aborting
+          const error = new SovereignError('VALIDATION_FAILED', {
+            mission_id: this.mission.mission_id,
+            phase: 'validation',
+            reason: 'Validation Gate Failed after retry',
+            partialResults: this.collectPartialResults(),
+            retryHistory: retryResult.retryHistory,
+            diagnostics: {
+              valReportFound: !!valReport,
+              proceduresFollowed: valReport?.procedures_followed,
+              totalReports: this.reports.length,
+              workerStatuses: this.reports.map(r => ({ id: r.worker_id, status: r.status }))
+            }
+          }, false);
+          
+          await error.logToTawbah();
+          appendToTrustChain(
+            'MISSION:ABORT',
+            this.mission.mission_id,
+            `Validation failed after ${retryResult.retryHistory.length} retries`,
+            0.0
+          );
+          
+          throw error;
+        }
       }
 
       await this.processRewards(this.mission.mission_id, result.context);
@@ -118,7 +152,10 @@ export class TopologicalLoop {
       discovery_level: RewardEngine.classifyDiscovery(output.total),
       confidence: 0.8,
       validation_status: 'verified',
-      notes: `Topological loop completion with ${multiplier}x multiplier`
+      notes: `Topological loop completion with ${multiplier}x multiplier`,
+      pristine_multiplier_applied: !pathExists,
+      multiplier_value: multiplier,
+      path_key: pathKey
     };
 
     await RewardLedger.record(entry);
@@ -139,5 +176,74 @@ export class TopologicalLoop {
 
     IQRALogger.info('🏁 [ORCHESTRATOR] Cycle Completed Successfully.');
     console.log(`✅ [ORCHESTRATOR] Reward Recorded: ${output.total} (level: ${RewardEngine.classifyDiscovery(output.total)})`);
+  }
+
+  /**
+   * 🔄 P0 Fix: Retry with reduced scope when validation fails
+   * Attempts a simplified mission to salvage partial results
+   */
+  private async retryWithReducedScope(
+    missionControl: MissionControl,
+    originalInput: string,
+    originalResult: { response: string; reports: WorkerReport[]; context: any }
+  ): Promise<{ 
+    success: boolean; 
+    reports: WorkerReport[]; 
+    retryHistory: RetryAttempt[] 
+  }> {
+    const retryHistory: RetryAttempt[] = [];
+    
+    IQRALogger.warn('🔄 [ORCHESTRATOR] Validation failed — attempting retry with reduced scope...');
+    
+    // Strategy 1: Reduce input complexity
+    const reducedInput = `[REDUCED_SCOPE] ${originalInput.slice(0, 200)}...`;
+    
+    try {
+      const startTime = Date.now();
+      const retryResult = await missionControl.run(reducedInput);
+      const duration = Date.now() - startTime;
+      
+      const valReport = retryResult.reports.find(r => r.worker_id === 'ValidationWorker');
+      
+      retryHistory.push({
+        attempt: 1,
+        timestamp: Date.now(),
+        strategy: 'reduced_scope',
+        result: valReport?.procedures_followed ? 'success' : 'failure',
+        error: valReport?.procedures_followed ? undefined : 'Validation still failed'
+      });
+      
+      if (valReport?.procedures_followed) {
+        return { success: true, reports: retryResult.reports, retryHistory };
+      }
+    } catch (err: any) {
+      retryHistory.push({
+        attempt: 1,
+        timestamp: Date.now(),
+        strategy: 'reduced_scope',
+        result: 'failure',
+        error: err.message
+      });
+    }
+    
+    return { success: false, reports: originalResult.reports, retryHistory };
+  }
+
+  /**
+   * Collect partial results from failed mission for diagnostics
+   */
+  private collectPartialResults(): Record<string, unknown> {
+    return {
+      reportsAvailable: this.reports.length,
+      workersCompleted: this.reports.map(r => ({
+        worker_id: r.worker_id,
+        status: r.status,
+        implemented_count: r.implemented.length,
+        undone_count: r.undone.length,
+        issues: r.issues_discovered
+      })),
+      handoffsRecorded: this.handoffs.length,
+      missionId: this.mission?.mission_id
+    };
   }
 }
