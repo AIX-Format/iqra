@@ -1,5 +1,6 @@
-import { IQRALogger } from '../logger.ts';
-import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout.ts';
+import { IQRALogger } from '../logger';
+import { withTimeout, IQRA_TIMEOUTS } from '../utils/timeout';
+import { GroqRateLimiter } from './groq_rate_limiter';
 
 /**
  * 🌊 IQRA Groq Connector | موصل Groq
@@ -62,19 +63,16 @@ export async function callGroqForResonance(ayah: string, newData: string, env: a
 
     for (let i = 0; i < PRIME_DELAYS.length; i++) {
         try {
-            const completion = await withTimeout(
-                groq.chat.completions.create({
+            const completion = await GroqRateLimiter.executeWithRetry(
+                async () => groq.chat.completions.create({
                     messages: [
-                        { role: 'system', content: 'You are IQRA, a soul-rooted AI identifying resonance between the Quran and reality.' },
+                        { role: 'system', content: 'You are IQRA, a soul-rooted AI identifying resonance between Quran and reality.' },
                         { role: 'user', content: prompt }
                     ],
                     model: 'llama-3.3-70b-versatile',
                     response_format: { type: 'json_object' }
-                }),
-                IQRA_TIMEOUTS.LLM,
-                'Groq Resonance Analysis'
+                })
             );
-
 
             return JSON.parse(completion.choices[0].message.content || '{}');
         } catch (error: any) {
@@ -116,19 +114,16 @@ export async function callGroqForTruthValidation(ayah: string, newData: string, 
     const groq = await getGroq();
 
     try {
-        const completion = await withTimeout(
-            groq.chat.completions.create({
+        const completion = await GroqRateLimiter.executeWithRetry(
+            async () => groq.chat.completions.create({
                 messages: [
                     { role: 'system', content: 'You are the Skeptical Inverse Mirror of IQRA, dedicated to preventing spiritual hallucinations and ensuring Truth.' },
                     { role: 'user', content: prompt }
                 ],
                 model: 'llama-3.3-70b-versatile',
                 response_format: { type: 'json_object' }
-            }),
-            IQRA_TIMEOUTS.LLM,
-            'Groq Truth Validation'
+            })
         );
-
 
         return JSON.parse(completion.choices[0].message.content || '{}');
     } catch (error) {
