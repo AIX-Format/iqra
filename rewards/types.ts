@@ -34,6 +34,8 @@ export interface RewardOutput {
   discovery_level: DiscoveryLevel;
   confidence: number;
   reward_vector: RewardVector;
+  temporal_factors?: Record<string, number>;
+  anomaly_detected?: boolean;
 }
 
 export interface RewardEntry extends RewardOutput {

@@ -58,9 +58,10 @@ export class RewardLedger {
   }
 
   private static validateEntry(entry: RewardEntry): void {
-    if (!entry.mission_id || !entry.worker_id) {
-      throw new Error('Invalid ledger entry: missing IDs.');
+    if (!entry.worker_id) {
+      throw new Error('Invalid ledger entry: missing worker_id.');
     }
+    // mission_id is optional for some use cases
     if (entry.total_reward < 0) {
       throw new Error('Invalid ledger entry: negative reward.');
     }
