@@ -4,104 +4,159 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { goEngine } from '#quran/go_engine_client';
 import { IQRALogger } from '#infra/logger';
+import { appendToTrustChain } from '#security/security';
+
+// ── Hallucination patterns to reject ─────────────────────────────────────────
+const HALLUCINATION_PATTERNS = [
+  /lorem ipsum/i,
+  /test data/i,
+  /\[simulated\]/i,
+  /placeholder/i,
+  /fake/i,
+  /mock/i,
+  /example\.com/i,
+  /foo bar/i,
+  /undefined/i,
+  /null/i,
+];
+
+// ── Weak evidence patterns ────────────────────────────────────────────────────
+const WEAK_EVIDENCE = [
+  /لا يوجد/i,
+  /no evidence/i,
+  /not found/i,
+  /unknown/i,
+  /n\/a/i,
+];
+
+export interface ValidationReport {
+  verdict: 'PASS' | 'FAIL';
+  violations: string[];
+  warnings: string[];
+  resonance_score?: number;
+  hallucination_penalty: number;
+  checked_at: string;
+}
 
 export class ValidationWorker extends SovereignWorker {
   id = 'ValidationWorker';
-  intention = 'التحقق من صحة الكود وتوافقه مع DASTŪR.md والمبادئ الأخلاقية';
+  intention = 'التحقق من صحة الكود وتوافقه مع DASTŪR.md والمبادئ الأخلاقية والحقيقة';
 
-  async execute(input: string, state: MissionState): Promise<WorkerResult> {
+  async execute(input: any, state: MissionState): Promise<WorkerResult> {
     this.report.worker_id = this.id;
     this.report.timestamp = Date.now();
 
     const textToValidate = typeof input === 'string' ? input : JSON.stringify(input);
+    const violations: string[] = [];
+    const warnings: string[] = [];
 
     try {
-      // 1. Read Dastur
+      // 1. Dastur Check
       const dasturPath = path.join(process.cwd(), 'iqra-core', 'DASTUR.md');
-      const dastur = fs.readFileSync(dasturPath, 'utf-8');
-      this.markImplemented('Loaded Dastur for validation');
+      if (fs.existsSync(dasturPath)) {
+        const dastur = fs.readFileSync(dasturPath, 'utf-8');
+        const haramMatch = dastur.match(/HARAM_LIST = \[([\s\S]*?)\]/);
+        let forbidden: string[] = ['كذب', 'غش', 'أذى', 'سرقة', 'harm', 'cheat', 'lie'];
+        
+        if (haramMatch && haramMatch[1]) {
+          const customHaram = haramMatch[1]
+            .split(',')
+            .map(item => item.trim().replace(/"/g, ''))
+            .filter(item => item.length > 0);
+          forbidden = [...new Set([...forbidden, ...customHaram])];
+        }
 
-      // 2. Extract HARAM_LIST (Simple parsing for now)
-      const haramMatch = dastur.match(/HARAM_LIST = \[([\s\S]*?)\]/);
-      let forbidden: string[] = ['كذب', 'غش', 'أذى', 'سرقة', 'harm', 'cheat', 'lie'];
-      
-      if (haramMatch && haramMatch[1]) {
-        const customHaram = haramMatch[1]
-          .split(',')
-          .map(item => item.trim().replace(/"/g, ''))
-          .filter(item => item.length > 0);
-        forbidden = [...new Set([...forbidden, ...customHaram])];
-        this.markImplemented(`Extracted ${customHaram.length} custom haram rules from Dastur`);
+        const violator = forbidden.find(word => textToValidate.toLowerCase().includes(word));
+        if (violator) {
+          violations.push(`Dastur Compliance Failure: Violation of "${violator}" prohibited.`);
+        }
       }
 
-      // 3. Compliance Check
-      const violates = forbidden.some(word => textToValidate.toLowerCase().includes(word));
-      if (violates) {
-        const violator = forbidden.find(word => textToValidate.toLowerCase().includes(word));
-        this.logIssue(`Potential Dastur violation detected: "${violator}"`);
-        this.report.procedures_followed = false;
-        this.report.status = 'FAIL';
-        this.report.exit_code = 1;
+      // 2. Hallucination & Evidence Checks (from mission_validator)
+      for (const pattern of HALLUCINATION_PATTERNS) {
+        if (pattern.test(textToValidate)) {
+          violations.push(`Hallucination pattern detected: ${pattern.source}`);
+        }
+      }
+
+      for (const pattern of WEAK_EVIDENCE) {
+        if (pattern.test(textToValidate)) {
+          violations.push(`Weak evidence detected in input`);
+        }
+      }
+
+      // 3. Verse Reference Check (if applicable)
+      const verseMatch = textToValidate.match(/\b\d+:\d+\b/);
+      if (textToValidate.includes('verse') && !verseMatch) {
+        warnings.push('Input mentions verse but no "surah:ayah" format found');
+      }
+
+      // 4. Final Verdict
+      const hallucination_penalty = violations.length > 0 ? Math.min(1.0, violations.length * 0.25) : 0.0;
+      const verdict = violations.length === 0 ? 'PASS' : 'FAIL';
+
+      this.report.status = verdict;
+      this.report.procedures_followed = true;
+      this.report.exit_code = verdict === 'PASS' ? 0 : 1;
+
+      if (verdict === 'FAIL') {
+        this.logIssue(violations.join(' | '));
         return {
           success: false,
-          error: `Dastur Compliance Failure: Violation of "${violator}" prohibited.`,
+          error: violations[0],
           report: this.report
         };
       }
 
-      // 4. Structural Integrity Check (The "Truth Hunter" Logic)
-      this.markImplemented('Checking structural resonance for Truth Pattern');
-      const goResonance = await goEngine.calculateResonance(textToValidate);
+      this.markImplemented('All validation checks passed');
       
-      if (goResonance && goResonance.is_truth_pattern) {
-        this.markImplemented('Verified: Structural TRUTH_PATTERN detected via Go Engine');
-        IQRALogger.info(`✨ [VALIDATOR] Truth Pattern Detected! Coherence: ${goResonance.coherence}`);
-      } else if (goResonance && goResonance.coherence < 0.3) {
-        this.logIssue(`Low Coherence Warning: ${goResonance.coherence}. Content may be weak or hallucinated.`);
-        // We don't fail here unless we want to be very strict, but we log the warning.
-      }
+      // Log to Trust Chain
+      appendToTrustChain(
+        `VALIDATOR:${verdict}`,
+        state.mission_id || 'manual',
+        `violations:${violations.length}:penalty:${hallucination_penalty.toFixed(2)}`,
+        verdict === 'PASS' ? 1.0 : 0.0
+      );
 
-      const updatedContext = {
-        ...state.context,
-        validation: { success: true, timestamp: Date.now() }
-      };
-
-      const updatedState: MissionState = {
-        ...state,
-        context: updatedContext,
-        reports: [...state.reports, this.report]
-      };
-
-      this.markImplemented('Input keywords validated against full Dastur HARAM_LIST');
-      this.report.procedures_followed = true;
-      
-
-      const handoff: MissionHandoff = {
-        mission_id: state.metadata.mission_id,
-        from_worker: this.id,
-        to_worker: 'ExecutionWorker',
-        timestamp: Date.now(),
-        artifacts: [],
-        pending_tasks: ['Final execution under Muraqabah'],
-        known_issues: this.report.issues_discovered,
-        validation_rules: ['Verified compliance'],
-        context_data: updatedContext
-      };
-      
       return {
         success: true,
-        data: { validated: true },
-        report: this.report,
-        updated_state: updatedState,
-        next_handoff: handoff
+        data: {
+          verdict,
+          hallucination_penalty,
+          violations,
+          warnings
+        },
+        report: this.report
       };
-    } catch (error: any) {
-      this.logIssue(`ValidationWorker Error: ${error.message}`);
+
+    } catch (err: any) {
+      this.report.status = 'FAIL';
       return {
         success: false,
-        error: error.message,
+        error: `Validation Error: ${err.message}`,
         report: this.report
       };
     }
   }
+}
+
+/**
+ * Functional wrapper for mission flow compatibility
+ */
+export async function executeMissionValidator(context: any): Promise<any> {
+  const worker = new ValidationWorker();
+  const input = context.previousOutput?.data || context.previousOutput || '';
+  const result = await worker.execute(input, { mission_id: context.scope?.mission_id } as any);
+  
+  return {
+    status: result.success ? 'success' : 'failure',
+    worker: 'ValidationWorker',
+    next: result.success ? 'Planner' : null,
+    data: result.data,
+    report: result.report,
+    implemented: result.report.implemented,
+    issues: result.report.issues,
+    procedures_followed: result.report.procedures_followed,
+    timestamp: Date.now()
+  };
 }
