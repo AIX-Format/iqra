@@ -7,6 +7,7 @@
 
 import { MissionControl } from '../lib/iqra/sovereign_orchestrator';
 import { IQRALogger } from '../lib/iqra/logger';
+import { IQRAMemory } from '../lib/iqra/memory';
 
 describe('Sovereign Worker Orchestration Real E2E Tests', () => {
   let missionControl: MissionControl;
@@ -290,7 +291,7 @@ describe('Sovereign Worker Orchestration Real E2E Tests', () => {
           expect(result.response).toBeDefined();
         } catch (error) {
           // يجب أن لا يرمي استثناء للمدخلات الفارغة
-          fail(`Should not throw error for invalid input: ${invalidInput}`);
+          expect(error).toBeUndefined();
         }
       }
     });
