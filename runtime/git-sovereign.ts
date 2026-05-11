@@ -5,7 +5,7 @@
  */
 
 import { execSync } from 'child_process';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
+import { IQRALogger } from '#infra/logger';
 
 export class GitSovereign {
   

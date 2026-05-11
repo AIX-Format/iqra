@@ -7,7 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
+import { IQRALogger } from '#infra/logger';
 
 export interface ResearchResult {
   query: string;

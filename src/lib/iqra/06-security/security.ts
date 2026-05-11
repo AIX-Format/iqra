@@ -56,7 +56,7 @@ export class SovereignIdentityGuard {
    * Generates a "Quantum Fingerprint" of the core files.
    */
   static async verifyIntegrity(): Promise<string> {
-    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const dirPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest');
     let combinedContent = '';
 
     for (const file of this.CORE_FILES) {
@@ -76,7 +76,7 @@ export class SovereignIdentityGuard {
    * Returns a distilled version of the constitution for injection into LLM prompts.
    */
   static async getContext(): Promise<string> {
-    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const dirPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest');
     let context = '### 🌙 IQRA SOVEREIGN CONSTITUTION\n';
     
     for (const file of this.CORE_FILES) {
@@ -279,7 +279,7 @@ export async function tasbihTriplet(provider: string, context?: string) {
   });
   
   try {
-    const logPath = path.join(process.cwd(), 'iqra-core', 'data', 'tawbah_log.jsonl');
+    const logPath = path.join(process.cwd(), '.iqra', 'data', 'tawbah_log.jsonl');
     const logDir = path.dirname(logPath);
     if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
     fs.appendFileSync(logPath, logEntry + '\n', 'utf-8');
@@ -329,7 +329,7 @@ ${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
  */
 export async function logToIQRAFile(fileName: string, content: string) {
   try {
-    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const dirPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest');
     const filePath = path.join(dirPath, fileName);
     
     if (!fs.existsSync(dirPath)) {
@@ -379,7 +379,7 @@ ${AL_FATIHAH_HEADER}
   `.trim();
 
   try {
-    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const dirPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest');
     const filePath = path.join(dirPath, 'ASK_HUMAN.md');
     
     if (!fs.existsSync(dirPath)) {
@@ -432,7 +432,7 @@ ${AL_FATIHAH_HEADER}
   `.trim();
 
   try {
-    const dirPath = path.join(process.cwd(), 'iqra-core');
+    const dirPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest');
     const filePath = path.join(dirPath, 'BARAKAH_REPORT.md');
     
     if (!fs.existsSync(dirPath)) {
@@ -458,7 +458,7 @@ ${AL_FATIHAH_HEADER}
  * Ensures the interaction aligns with IQRA's core mission and ethics.
  */
 export async function verifyCovenant(input: string): Promise<{ valid: boolean; reasoning?: string }> {
-  const mīthāqPath = path.join(process.cwd(), 'iqra-core', 'MĪTHĀQ.md');
+  const mīthāqPath = path.join(process.cwd(), 'src', 'lib', 'iqra', '00-manifest', 'MĪTHĀQ.md');
   if (!fs.existsSync(mīthāqPath)) return { valid: true }; // Fallback
 
   const mīthāq = await fsPromises.readFile(mīthāqPath, 'utf-8');

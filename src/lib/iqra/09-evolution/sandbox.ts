@@ -30,13 +30,26 @@ export class DeterministicSandbox {
     fs.writeFileSync(testFile, code);
 
     try {
-      // Running using vitest or tsx in a sub-process
-      // This is a simplified version of a real sandbox
-      const output = execSync(`npx tsx ${testFile}`, { timeout: 10000 }).toString();
-      return { success: true, output };
+      const { spawnSync } = await import('child_process');
+      const tsxPath = path.join(process.cwd(), 'node_modules', '.bin', 'tsx');
+      
+      const child = spawnSync(tsxPath, [testFile], {
+        timeout: 3000, // Reduced to 3s for even faster feedback on 8GB RAM
+        maxBuffer: 512 * 1024, // 512KB is plenty
+      });
+
+      if (child.status === 0) {
+        return { success: true, output: child.stdout.toString() };
+      } else {
+        return { 
+          success: false, 
+          output: child.stdout?.toString() || '', 
+          error: child.stderr?.toString() || 'Execution failed' 
+        };
+      }
     } catch (error: any) {
-      IQRALogger.warn(`❌ [SANDBOX] Validation failed for ${vectorId}: ${error.message}`);
-      return { success: false, output: error.stdout?.toString() || '', error: error.stderr?.toString() };
+      IQRALogger.warn(`❌ [SANDBOX] Validation error for ${vectorId}: ${error.message}`);
+      return { success: false, output: '', error: error.message };
     }
   }
 

@@ -7,7 +7,8 @@
  * and topological resonance to find the optimal path of Barakah.
  */
 
-import { ConnectorFactory } from '../../../src/connectors/index';
+import { gemma4Local } from '#llm/ollama';
+import { goEngine } from '#quran/go_engine_client';
 import { IQRAMemory } from '#memory/memory';
 import { TopologicalAnalyzer } from '#skills/topological_analyzer';
 import { GitSkill } from '#skills/git_skill';
@@ -24,6 +25,11 @@ export interface IntrospectiveNode {
   score: number;
   visits: number;
   children: string[];
+  metrics?: {
+    h1: number;
+    lid: number;
+    entropy: number;
+  };
   failureContext?: string;
 }
 
@@ -86,7 +92,8 @@ export class Search369 {
         veracity: simResult.success,
         score: simResult.hybridScore,
         visits: 1,
-        children: []
+        children: [],
+        metrics: simResult.metrics
       };
 
       this.nodes.set(nodeId, newNode);
@@ -98,41 +105,69 @@ export class Search369 {
   }
 
   private static async introspectiveExpand(parent: IntrospectiveNode, intention: string) {
-    const connector = ConnectorFactory.getConnector('google');
     const prompt = `
-      You are the IQRA Introspector.
+      You are the IQRA Introspector (Sovereign Mode).
       INTENTION: ${intention}
       PARENT VECTOR: ${parent.vector}
       PARENT STATUS: ${parent.veracity ? 'SUCCESS' : 'FAILURE'}
+      PARENT RESONANCE: ${parent.resonance}
       
       Analyze the parent node. If it failed, propose 3 radically different corrections.
       If it succeeded, propose 3 evolutionary leaps forward.
       
       Format your response as a JSON array of: { "title": string, "reasoning": string }
+      DO NOT USE EXTERNAL APIS. STICK TO LOGICAL RESONANCE.
     `;
 
-    const result = await connector.generate(prompt);
+    const result = await gemma4Local.generate(prompt);
     try {
-      return JSON.parse(typeof result === 'string' ? result : result.content);
+      // Clean potential markdown blocks
+      const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleanJson);
     } catch {
+      IQRALogger.warn('⚠️ [I-MCTS] Local expansion parse error, using fallback.');
       return [{ title: 'Fallback Vector', reasoning: 'Defaulting due to parse error' }];
     }
   }
 
   private static async simulate(vector: any, intention: string) {
-    const connector = ConnectorFactory.getConnector('google');
-    const prompt = `Generate a TypeScript proof-of-concept for: ${vector.title}. Objective: ${intention}. Output MUST print "RESONANCE_PASS" if logic holds. No mocks.`;
+    const prompt = `Generate a robust TypeScript proof-of-concept for: ${vector.title}. Objective: ${intention}. Output MUST print "RESONANCE_PASS" if logic holds. NO PLACEHOLDERS. NO MOCKS.`;
     
-    const code = await connector.generate(prompt);
+    const code = await gemma4Local.generate(prompt);
     const result = await DeterministicSandbox.validate(vector.title.replace(/\s/g, '_'), code);
     
-    const analysis = await TopologicalAnalyzer.analyze(result.output, [vector.title]);
+    // Mathematical Truth via Go Engine
+    const embedding = await IQRAMemory.generateEmbedding(result.output || vector.title);
     
-    // Hybrid Reward Formula
-    const veracityBonus = result.success ? 20.0 : -40.0;
-    const hybridScore = (analysis.resonance * 10) + (analysis.novelty * 5) + veracityBonus;
+    let h1 = 0;
+    let resonance = 0;
+    let lid = 0;
 
-    return { success: result.success, resonance: analysis.resonance, hybridScore };
+    try {
+      // Parallelize calls to Go Engine for maximum CPU efficiency
+      const [homology, resonanceData, lidData] = await Promise.all([
+        goEngine.analyzeHomology({ embedding, threshold: 0.4 }).catch(() => ({ h1: 0 })),
+        goEngine.calculateResonance(result.output).catch(() => ({ coherence: 0 })),
+        goEngine.analyzeLID({ embedding, references: [embedding] }).catch(() => ({ lid: 0 }))
+      ]);
+      
+      h1 = homology.h1;
+      resonance = resonanceData.coherence;
+      lid = lidData.lid;
+    } catch (e) {
+      IQRALogger.warn(`⚠️ [I-MCTS] Go Engine metrics failed: ${(e as Error).message}`);
+    }
+    
+    // Hybrid Reward Formula (Sovereign Version)
+    const veracityBonus = result.success ? 30.0 : -60.0;
+    const hybridScore = (resonance * 20) + (h1 * 10) - (lid * 5) + veracityBonus;
+
+    return { 
+      success: result.success, 
+      resonance, 
+      hybridScore,
+      metrics: { h1, lid, entropy: 0 } 
+    };
   }
 
   private static backpropagate(node: IntrospectiveNode) {

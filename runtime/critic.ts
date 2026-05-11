@@ -5,7 +5,7 @@
  * Prevents context drift and ensures logical consistency.
  */
 
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger';
+import { IQRALogger } from '#infra/logger';
 
 export interface ReflectionResult {
   insight: string;

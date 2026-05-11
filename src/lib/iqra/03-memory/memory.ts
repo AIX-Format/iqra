@@ -68,6 +68,12 @@ export class IQRAMemory {
   private static readonly SUPABASE_TABLE = 'iqra_embeddings';
   private static readonly QUANTUM_COLLECTION = 'iqra_quantum';
 
+  private static _redis: any = null;
+  private static _supabase: any = null;
+  private static _qdrant: any = null;
+  private static _googleAI: any = null;
+  private static _errorCount: number = 0;
+
   /**
    * 🌌 Store Quantum Memory
    * Entangles a memory point at a specific coordinate.

@@ -151,7 +151,7 @@ export class PatternMemory {
           qdrant.upsert(PATTERN_COLLECTION, {
             wait: true,
             points: [{
-              id,
+              id: finalId,
               vector: embedding,
               payload: {
                 verse,
@@ -167,7 +167,7 @@ export class PatternMemory {
           'Qdrant pattern upsert'
         );
         IQRALogger.info(`🌀 [PATTERN_MEMORY] Stored [fetched] Qdrant: ${verse} × ${field} (score: ${resonance_score.toFixed(3)})`);
-        return id;
+        return finalId;
       } catch (e) {
         IQRALogger.warn(`⚠️ [PATTERN_MEMORY] Qdrant upsert failed, falling back to local: ${(e as Error).message}`);
       }
@@ -179,7 +179,7 @@ export class PatternMemory {
     existing.push(record);
     await this._writeLocal(existing);
     IQRALogger.info(`🌀 [PATTERN_MEMORY] Stored [read] local: ${verse} × ${field}`);
-    return id;
+    return finalId;
   }
 
   // ── getSimilarPatterns ────────────────────────────────────────────────────

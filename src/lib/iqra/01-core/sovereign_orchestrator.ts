@@ -343,12 +343,12 @@ export class MissionControl {
       
       if (report.implemented.length > 0) {
         output += `\n**What was implemented | ما تم إنجازه:**\n`;
-        output += report.implemented.map(item => `- ${item}`).join("\n") + "\n";
+        output += report.implemented.map((item: string) => `- ${item}`).join("\n") + "\n";
       }
       
       if (report.undone.length > 0) {
         output += `\n**What was left undone | ما لم يكتمل:**\n`;
-        output += report.undone.map(item => `- ${item}`).join("\n") + "\n";
+        output += report.undone.map((item: string) => `- ${item}`).join("\n") + "\n";
       }
       
       if (report.commands_run.length > 0) {
@@ -361,7 +361,7 @@ export class MissionControl {
       
       if (report.issues_discovered.length > 0) {
         output += `\n**Issues Discovered | المشكلات المكتشفة:**\n`;
-        output += report.issues_discovered.map(item => `- ${item}`).join("\n") + "\n";
+        output += report.issues_discovered.map((item: string) => `- ${item}`).join("\n") + "\n";
       }
       
       output += `\n**Mission ID**: \`${report.mission_id}\`\n`;

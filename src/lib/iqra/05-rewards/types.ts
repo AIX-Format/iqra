@@ -97,6 +97,12 @@ export interface RewardEntry {
 
   /** هل تم اكتشاف شذوذ؟ */
   anomaly_detected?: boolean;
+
+  /** بصمة السجل الحالي (SHA-256) */
+  hash?: string;
+
+  /** بصمة السجل السابق */
+  prev_hash?: string;
 }
 
 // ── PristinePathResult ────────────────────────────────────────────────────────

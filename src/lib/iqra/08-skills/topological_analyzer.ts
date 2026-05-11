@@ -9,6 +9,8 @@
 
 import { IQRAMemory } from '#memory/memory';
 import { IQRALogger } from '#infra/logger';
+import { goEngine } from '#quran/go_engine_client';
+import { MicroMemory } from '#memory/micro_memory';
 
 export interface ResonanceResult {
   resonance: number;
@@ -23,36 +25,34 @@ export class TopologicalAnalyzer {
    * 🔎 Analyze the topological structure of a given text (Surah/Ayah)
    */
   static async analyze(text: string, segments: string[]): Promise<ResonanceResult> {
-    IQRALogger.info('🌀 [TOPO_ANALYZER] Beginning high-dimensional mapping...');
+    IQRALogger.info('🌀 [TOPO_ANALYZER] Connecting to Go Engine for TDA...');
     
     try {
-      // 1. Generate Embeddings for all segments
-      const segmentEmbeddings = await Promise.all(
-        segments.map(s => IQRAMemory.generateEmbedding(s))
-      );
-
-      // 2. Calculate Mirror Symmetry (Chiasmus Detection)
-      // We compare the first half with the reversed second half
-      const symmetryScore = this.calculateChiasmusResonance(segmentEmbeddings);
-
-      // 3. Calculate Overall Resonance (based on internal coherence)
-      const resonance = 1.0 + (symmetryScore * 0.5); // Baseline is 1.0
-
-      // 4. Calculate Novelty (compared to existing memory)
       const fullTextEmbedding = await IQRAMemory.generateEmbedding(text);
+      
+      // 1. Persistent Homology via Go
+      const homology = await goEngine.analyzeHomology({ 
+        embedding: fullTextEmbedding, 
+        threshold: 0.4 
+      });
+
+      // 2. Shannon Entropy & Fractal Signature
+      const signature = MicroMemory.hasQuranSignature(text);
+      
+      // 3. Resonance Calculation
+      const resonanceData = await goEngine.calculateResonance(text);
+
       const novelty = await IQRAMemory.computeNovelty(fullTextEmbedding);
 
-      IQRALogger.info(`✨ [TOPO_ANALYZER] Mapping complete. Resonance: ${resonance.toFixed(4)}`);
-
       return {
-        resonance,
-        symmetryScore,
-        patterns: symmetryScore > 0.8 ? ['CHIASMUS_DETECTED'] : [],
+        resonance: resonanceData.coherence,
+        symmetryScore: homology.h1 > 0 ? 0.9 : 0.5,
+        patterns: resonanceData.patterns,
         novelty
       };
 
     } catch (error) {
-      IQRALogger.error('❌ [TOPO_ANALYZER] Analysis failed:', error);
+      IQRALogger.warn('⚠️ [TOPO_ANALYZER] Go Engine failed, using semantic fallback.');
       return { resonance: 1.0, symmetryScore: 0, patterns: [], novelty: 0 };
     }
   }

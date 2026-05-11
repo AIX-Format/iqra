@@ -13,8 +13,8 @@ export default defineConfig({
     testTimeout: 120000,
     hookTimeout: 30000,
     reporters: ['verbose'],
-    include: ['tests/**/*.test.ts', 'tests/**/*.e2e.ts', 'tests/e2e/*.ts'],
-    setupFiles: ['tests/setup.ts'],
+    include: ['src/tests/**/*.test.ts', 'src/tests/**/*.e2e.ts', 'src/tests/e2e/*.ts'],
+    setupFiles: ['src/tests/setup.ts'],
     sequence: {
       concurrent: false,
     },

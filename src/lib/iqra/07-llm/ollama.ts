@@ -32,7 +32,7 @@ import { appendToTrustChain } from '#security/security';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434';
+const OLLAMA_BASE_URL = process.env.OLLAMA_URL ?? 'http://MacBook-Pro-moe.local:11434';
 
 /**
  * النموذج المفضل — يُختار تلقائياً بناءً على المتاح
@@ -41,7 +41,7 @@ const OLLAMA_BASE_URL = process.env.OLLAMA_URL ?? 'http://localhost:11434';
  * ملاحظة: gemma3:27b يحتاج ~18GB RAM — غير عملي على أجهزة 8GB
  * gemma3:4b (~3GB) هو الخيار الأمثل لأجهزة 8GB
  */
-const PREFERRED_MODELS = ['gemma3:4b', 'gemma3:2b', 'gemma3:1b', 'gemma4:4b', 'gemma3:27b'];
+const PREFERRED_MODELS = ['gemma3:1b', 'llama3.2:1b', 'gemma3:2b', 'gemma3:4b', 'gemma4:4b', 'gemma3:27b'];
 
 /** timeout للاستدعاء المحلي */
 const LOCAL_TIMEOUT_MS = 120_000; // دقيقتان
@@ -445,9 +445,10 @@ export class Gemma4Local {
     // num_gpu: 0 على Mac Intel (لا GPU مخصص)
     const isLargeModel = model.includes('27b') || model.includes('70b') || model.includes('671b');
     const options = {
-      num_ctx: isLargeModel ? 1024 : 2048,
+      num_ctx: isLargeModel ? 512 : 1024, // Aggressive 8GB RAM optimization (from 2048)
       num_gpu: 0,
-      num_threads: 0, // تلقائي — Ollama يختار الأنسب
+      num_threads: 4, // Explicitly limit threads to reduce CPU spikes
+      repeat_penalty: 1.1,
     };
 
     const body: any = {
@@ -455,6 +456,7 @@ export class Gemma4Local {
       messages,
       stream: false,
       options,
+      keep_alive: '1m', // Unload model quickly to free up 8GB RAM
     };
 
     // gemma3 لا يدعم tools API — نستخدم prompt-based fallback

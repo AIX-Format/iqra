@@ -17,95 +17,49 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-            "baseUrl": ".",
+    "baseUrl": ".",
+    "paths": {
+      "#manifest/*": ["./src/lib/iqra/00-manifest/*"],
+      "#core/*": ["./src/lib/iqra/01-core/*"],
+      "#iqra-core/*": ["./src/lib/iqra/01-core/*"],
+      "#orchestrator/*": ["./src/lib/iqra/01-core/*"],
+      "#workers/*": ["./src/lib/iqra/02-workers/*"],
+      "#memory/*": ["./src/lib/iqra/03-memory/*"],
+      "#quran/*": ["./src/lib/iqra/04-quran/*"],
+      "#rewards/*": ["./src/lib/iqra/05-rewards/*"],
+      "#security/*": ["./src/lib/iqra/06-security/*"],
+      "#llm/*": ["./src/lib/iqra/07-llm/*"],
+      "#skills/*": ["./src/lib/iqra/08-skills/*"],
+      "#evolution/*": ["./src/lib/iqra/09-evolution/*"],
+      "#topology/*": ["./src/lib/iqra/10-topology/*"],
+      "#trading/*": ["./src/lib/iqra/11-trading/*"],
+      "#infra/*": ["./src/lib/iqra/12-infrastructure/*"],
+      "#utils/*": ["./src/lib/iqra/13-utils/*"],
+      "#agents/*": ["./src/lib/iqra/01-core/agents/*"],
+      "#connectors/*": ["./src/connectors/*"],
+      "#scripts/*": ["./src/scripts_v2/*"],
+      "#tests/*": ["./src/tests/*"],
+      "#services/*": ["./src/services/*"],
+      "#schema/*": ["./src/schema/*"],
+      "@/*": ["./src/*"]
+    },
+    "forceConsistentCasingInFileNames": true,
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@iqra/*": [
-        "./src/lib/iqra/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ],
-      "@/lib/iqra/*": [
-        "./src/lib/iqra/*"
-      ],
-      "@/errors/*": [
-        "./src/lib/iqra/01-core/*"
-      ],
-      "#core/*": [
-        "./src/lib/iqra/01-core/*"
-      ],
-      "#workers/*": [
-        "./src/lib/iqra/02-workers/*"
-      ],
-      "#memory/*": [
-        "./src/lib/iqra/03-memory/*"
-      ],
-      "#quran/*": [
-        "./src/lib/iqra/04-quran/*"
-      ],
-      "#rewards/*": [
-        "./src/lib/iqra/05-rewards/*"
-      ],
-      "#security/*": [
-        "./src/lib/iqra/06-security/*"
-      ],
-      "#llm/*": [
-        "./src/lib/iqra/07-llm/*"
-      ],
-      "#skills/*": [
-        "./src/lib/iqra/08-skills/*"
-      ],
-      "#evolution/*": [
-        "./src/lib/iqra/09-evolution/*"
-      ],
-      "#topology/*": [
-        "./src/lib/iqra/10-topology/*"
-      ],
-      "#trading/*": [
-        "./src/lib/iqra/11-trading/*"
-      ],
-      "#infra/*": [
-        "./src/lib/iqra/12-infrastructure/*"
-      ],
-      "#utils/*": [
-        "./src/lib/iqra/13-utils/*"
-      ],
-      "#scripts/*": [
-        "./scripts/*"
-      ],
-      "#connectors/*": [
-        "./src/lib/iqra/07-llm/connectors/*"
-      ],
-      "#errors/*": [
-        "./src/lib/iqra/01-core/*"
-      ],
-      "#iqra-core/*": [
-        "./iqra-core/*"
-      ],
-      "#agents/*": [
-        "./agents/*"
-      ],
-      "#schema/*": [
-        "./schema/*"
-      ],
-      "#orchestrator/*": [
-        "./orchestrator/*"
-      ]
-    },
-    "forceConsistentCasingInFileNames": true
+    ]
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "next-env.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "dist",
+    ".gemini",
+    "typescript_errors.log"
   ]
 }
