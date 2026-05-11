@@ -85,9 +85,6 @@ func resonanceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Create context for graceful shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// Setup signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)

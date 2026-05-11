@@ -696,6 +696,67 @@ export class IQRAMemory {
     const magnitude = Math.sqrt(mag1) * Math.sqrt(mag2);
     return magnitude === 0 ? 0 : dotProduct / magnitude;
   }
+
+  /**
+   * Fallback to local storage when Redis is unavailable
+   */
+  private static async fallbackToLocal(key: string, value: any): Promise<void> {
+    try {
+      const instance = this.getInstance();
+      instance._errorCount++;
+      IQRALogger.warn(`⚠️ [MEMORY] Falling back to local storage for key: ${key}`);
+      
+      const data = await this.getLocalData();
+      data[key] = value;
+      await this.saveLocalData(data);
+      
+      IQRALogger.info(`✅ [MEMORY] Successfully stored locally: ${key}`);
+    } catch (error) {
+      IQRALogger.error(`❌ [MEMORY] Failed to fallback to local storage:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get local storage data (alias for getLocalData for consistency)
+   */
+  private static async getLocalStorage(): Promise<any> {
+    return await this.getLocalData();
+  }
+
+  /**
+   * Get recent list entries from local storage
+   */
+  static async getRecentList<T>(key: string, count: number): Promise<T[]> {
+    try {
+      // Try Redis first
+      const redis = await this.getRedis();
+      if (redis) {
+        const listKey = `iqra:list:${key}`;
+        const recent = await withTimeout(
+          redis.lrange(listKey, -count, -1), 
+          IQRA_TIMEOUTS.REDIS, 
+          `Redis LRANGE ${key}`
+        );
+        return recent as T[];
+      }
+    } catch (error) {
+      IQRALogger.warn(`⚠️ [MEMORY] Redis getRecentList failed, using local:`, error);
+    }
+
+    // Fallback to local storage
+    try {
+      const data = await this.getLocalData();
+      const listKey = `list:${key}`;
+      const list = (data[listKey] || []) as T[];
+      
+      // Return the most recent N entries (maintaining insertion order)
+      return list.slice(-count);
+    } catch (error) {
+      IQRALogger.error(`❌ [MEMORY] Failed to get recent list from local storage:`, error);
+      return [];
+    }
+  }
 }
 
 export class QuantumTopologyStore {
