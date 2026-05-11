@@ -329,9 +329,9 @@ iqra/
 
 | | |
 |---|---|
-| 📅 **التاريخ \| Date** | `2026-05-10` |
-| 💡 **آخر خطوة \| Last Step** | debug Js Errors and Mismatches |
-| 🔗 **الـ Commit** | `6e781d0` |
+| 📅 **التاريخ \| Date** | `2026-05-11` |
+| 💡 **آخر خطوة \| Last Step** | Merge pull request #7 from Moeabdelaziz007/nicho-fishhook |
+| 🔗 **الـ Commit** | `2b3c1db` |
 
 <!-- IQRA-LATEST-END -->
 
