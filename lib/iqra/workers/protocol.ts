@@ -16,6 +16,15 @@ export interface MissionState {
   metadata: {
     start_time: number;
     mission_id: string;
+    phase_history?: Array<{
+      phase: string;
+      attempt: number;
+      success: boolean;
+      timestamp: number;
+      worker_id?: string;
+    }>;
+    error_count?: number;
+    retry_count?: number;
   };
 }
 

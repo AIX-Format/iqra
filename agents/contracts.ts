@@ -32,15 +32,23 @@ export interface WorkerReport {
 }
 
 export interface MissionHandoff {
+  schemaVersion: string;
+  trace_id: string;
   mission_id: string;
   from_worker: string;
   to_worker: string;
   timestamp: number;
+  summary?: string;
   artifacts: string[];
   pending_tasks: string[];
   known_issues: string[];
   validation_rules: string[];
   context_data: Record<string, any>;
+  output_contract?: {
+    next_required_fields: string[];
+    quality_threshold: Record<string, any>;
+  };
+  error?: string | null;
 }
 
 /**

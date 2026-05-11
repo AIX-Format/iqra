@@ -1,8 +1,8 @@
-import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
-import type { MissionHandoff } from '../../../agents/contracts.ts';
-import { GoEngineBridge } from '../engine_bridge.ts';
-import { IQRAMemory, QuantumTopologyStore } from '../memory.ts';
-import { IQRALogger } from '../logger.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol';
+import type { MissionHandoff } from '../../../agents/contracts';
+import { GoEngineBridge } from '../engine_bridge';
+import { IQRAMemory, QuantumTopologyStore } from '../memory';
+import { IQRALogger } from '../logger';
 
 /**
  * 🌊 ResonanceWorker — عامل الرنين
@@ -60,6 +60,8 @@ export class ResonanceWorker extends SovereignWorker {
       };
 
       const handoff: MissionHandoff = {
+        schemaVersion: '1.0.0',
+        trace_id: `resonance_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         mission_id: state.metadata.mission_id,
         from_worker: this.id,
         to_worker: 'ResearchWorker',
@@ -68,7 +70,14 @@ export class ResonanceWorker extends SovereignWorker {
         pending_tasks: ['Context synthesis', 'Dastur validation'],
         known_issues: this.report.issues_discovered,
         validation_rules: [],
-        context_data: updatedContext
+        context_data: updatedContext,
+        output_contract: {
+          next_required_fields: ['research_synthesis'],
+          quality_threshold: {
+            resonance_coherence: coherence,
+            novelty_score: novelty
+          }
+        }
       };
 
       this.markImplemented('Topological curiosity reward granted');

@@ -1,8 +1,8 @@
-import { SovereignWorker, WorkerResult, MissionState } from './protocol.ts';
-import type { MissionHandoff } from '../../../agents/contracts.ts';
+import { SovereignWorker, WorkerResult, MissionState } from './protocol';
+import type { MissionHandoff } from '../../../agents/contracts';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IQRALogger } from '../logger.ts';
+import { IQRALogger } from '../logger';
 
 /**
  * 📚 ResearchWorker — عامل البحث
@@ -70,6 +70,8 @@ export class ResearchWorker extends SovereignWorker {
       this.report.procedures_followed = true;
 
       const handoff: MissionHandoff = {
+        schemaVersion: '1.0.0',
+        trace_id: `research_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         mission_id: state.metadata.mission_id,
         from_worker: this.id,
         to_worker: 'ValidationWorker',
@@ -78,7 +80,13 @@ export class ResearchWorker extends SovereignWorker {
         pending_tasks: ['Dastur compliance check'],
         known_issues: this.report.issues_discovered,
         validation_rules: ['HARAM_LIST compliance'],
-        context_data: updatedContext
+        context_data: updatedContext,
+        output_contract: {
+          next_required_fields: ['validation_result'],
+          quality_threshold: {
+            research_completeness: updatedContext.research ? 1.0 : 0.5
+          }
+        }
       };
       
       return {
