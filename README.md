@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-11` |
-| 💡 **آخر خطوة \| Last Step** | تحسينات أمان وأداء: OWASP pattern implementation و Go engine fixes |
-| 🔗 **الـ Commit** | `c41ff2d` |
+| 💡 **آخر خطوة \| Last Step** | IQRA v0.3.6.9 updates and reshape rules. |
+| 🔗 **الـ Commit** | `e24722e` |
 
 <!-- IQRA-LATEST-END -->
 
