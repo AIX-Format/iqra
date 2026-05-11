@@ -77,6 +77,20 @@ export interface HandoffResult {
   issues: string[];
   procedures_followed: boolean;
   timestamp: number;
+  
+  // For compatibility with WorkerResult
+  success?: boolean;
+  error?: string;
+  
+  // Additional properties from WorkerResult for full compatibility
+  report?: any;  // WorkerReport type
+  next_handoff?: any;  // MissionHandoff type
+  updated_state?: any;  // MissionState type
+  path_key?: string;
+  
+  // Common missing properties
+  worker_id?: string;
+  mission_id?: string;
 }
 
 // ── Parser ────────────────────────────────────────────────────────────────────

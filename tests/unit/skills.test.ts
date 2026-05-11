@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SkillBank } from '#08-skills/skill_bank.js';
+import { SkillBank } from '#skills/skill_bank';
 import fs from 'fs';
 import path from 'path';
 

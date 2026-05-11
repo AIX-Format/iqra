@@ -1,6 +1,6 @@
 import { it, expect, describe, beforeAll } from 'vitest';
-import { SelfPlayLoop } from '#core/../11-trading/self_play_loop';
-import { MarketData } from '#core/../11-trading/market_data';
+import { SelfPlayLoop } from '#trading/self_play_loop';
+import { MarketData } from '#trading/market_data';
 import { IQRALogger } from '#infra/logger';
 
 /**
