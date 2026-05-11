@@ -8,8 +8,8 @@
  * This is the HEART of IQRA — no mocks allowed.
  */
 import { describe, it, expect } from 'vitest';
-import { CuriosityEngine, ResonanceType } from '../lib/iqra/quran/curiosity.ts';
-import { computeArabicSimilarity, normalizeArabic } from '../lib/iqra/utils/similarity.ts';
+import { CuriosityEngine, ResonanceType } from '../lib/iqra/quran/curiosity';
+import { computeArabicSimilarity, normalizeArabic } from '../lib/iqra/utils/similarity';
 
 // ── Real Quranic Ayahs ────────────────────────────────────────────────────────
 const AYAH_CREATION = 'وَجَعَلْنَا مِنَ الْمَاءِ كُلَّ شَيْءٍ حَيٍّ أَفَلَا يُؤْمِنُونَ';

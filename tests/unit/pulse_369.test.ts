@@ -6,9 +6,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
-import { Pulse369 } from '#03-memory/pulse_369.ts';
-import { MemoryBridge } from '#memory/memory_bridge.ts';
-import { MicroMemory } from '#memory/micro_memory.ts';
+import { Pulse369 } from '#03-memory/pulse_369';
+import { MemoryBridge } from '#memory/memory_bridge';
+import { MicroMemory } from '#memory/micro_memory';
 import fs from 'fs';
 import path from 'path';
 

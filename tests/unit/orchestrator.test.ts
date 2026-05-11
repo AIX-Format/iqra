@@ -27,11 +27,11 @@ vi.mock('@langchain/openai', () => ({
 }));
 
 // Mock IQRA_SOUL and other internal imports
-vi.mock('../../lib/iqra/brain', () => ({
+vi.mock('../#core/brain', () => ({
   IQRA_SOUL: 'Mocked Soul Content',
 }));
 
-vi.mock('../../lib/iqra/memory', () => ({
+vi.mock('../#memory/memory', () => ({
   IQRAMemory: {},
 }));
 

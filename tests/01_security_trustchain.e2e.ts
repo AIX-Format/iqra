@@ -12,7 +12,7 @@ import {
   validateInput,
   secureRandomId,
   type TrustChainEntry,
-} from '../lib/iqra/security.ts';
+} from '../lib/iqra/security';
 
 // ── Helper: rebuild audit hash the same way security.ts does ─────────────────
 function recomputeAuditHash(

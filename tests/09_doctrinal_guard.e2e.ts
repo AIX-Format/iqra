@@ -8,7 +8,7 @@
  * - Closed-loop self-training pipeline
  */
 import { describe, it, expect } from 'vitest';
-import { DoctrinalGuard, type DoctrinalClaim } from '../lib/iqra/quran/doctrinal_guard.ts';
+import { DoctrinalGuard, type DoctrinalClaim } from '../lib/iqra/quran/doctrinal_guard';
 import { SovereignEvolution } from '../lib/iqra/09-evolution/evolution.js';
 import {
   ClosedLoopTaskGenerator,
@@ -16,7 +16,7 @@ import {
   ClosedLoopReviewer,
   SERAExporter,
   ClosedLoopOrchestrator,
-} from '../lib/iqra/learning/closed_loop.ts';
+} from '../lib/iqra/learning/closed_loop';
 import fs from 'fs';
 import path from 'path';
 

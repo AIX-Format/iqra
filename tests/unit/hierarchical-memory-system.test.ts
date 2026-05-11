@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { HierarchicalMemorySystem } from '../../lib/iqra/01-core/HierarchicalMemorySystem';
+import { HierarchicalMemorySystem } from '../#core/HierarchicalMemorySystem';
 
 describe('HierarchicalMemorySystem', () => {
   let memorySystem: HierarchicalMemorySystem;

@@ -10,8 +10,8 @@
  *   tsx scripts/analyze_surahs.ts --batch=5          # حجم الدفعة
  */
 
-import { SurahAnalyzer } from '../lib/iqra/quran/surah_analyzer.ts';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
+import { SurahAnalyzer } from '#quran/surah_analyzer';
+import { IQRALogger } from '#infra/logger';
 
 // ── Parse CLI Args ────────────────────────────────────────────────────────────
 

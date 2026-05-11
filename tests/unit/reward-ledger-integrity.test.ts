@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { RewardLedger } from '../../ledger/reward-ledger';
-import type { RewardEntry } from '../../lib/iqra/05-rewards/types';
+import type { RewardEntry } from '../#rewards/types';
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 

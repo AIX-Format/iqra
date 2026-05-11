@@ -6,9 +6,9 @@
  * Real system metrics — no mocks.
  */
 import { describe, it, expect } from 'vitest';
-import { IQRATopology as QuranTopology } from '../lib/iqra/quran/topology.ts';
+import { IQRATopology as QuranTopology } from '../lib/iqra/quran/topology';
 import { IQRATopology as CoreTopology, TopologicalState } from '../lib/iqra/10-topology/topology.js';
-import { NestedSevensEngine } from '../lib/iqra/quran/nested_sevens.ts';
+import { NestedSevensEngine } from '../lib/iqra/quran/nested_sevens';
 import { SacredGeometry } from '../lib/iqra/13-utils/style.js';
 
 describe('🌀 Quran Topology — طوبولوجيا المعرفة', () => {

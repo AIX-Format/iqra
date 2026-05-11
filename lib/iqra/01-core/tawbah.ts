@@ -116,3 +116,17 @@ export function clearTawbah(): void {
   }
   errorLog.clear();
 }
+
+/**
+ * Unified TAWBAH Interface
+ */
+export const TAWBAH = {
+  record: recordError,
+  check: checkHumility,
+  clear: clearTawbah,
+  perform: async () => {
+    IQRALogger.info("📿 [TAWBAH] Performing repentance ritual: Acknowledging deviation and seeking correction.");
+    // In a real scenario, this could trigger a self-fix or a specific log entry
+  }
+};
+

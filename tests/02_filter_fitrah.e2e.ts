@@ -6,7 +6,7 @@
  * No mocks — real file reads, real keyword matching.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { IQRAFilter } from '../lib/iqra/filter.ts';
+import { IQRAFilter } from '../lib/iqra/filter';
 
 beforeAll(() => {
   // Force re-initialization from real .md files

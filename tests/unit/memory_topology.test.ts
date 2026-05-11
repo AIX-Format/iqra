@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { MemoryTopology, type TopologicalPattern } from '#memory/memory_topology.ts';
-import { MicroMemory } from '#memory/micro_memory.ts';
+import { MemoryTopology, type TopologicalPattern } from '#memory/memory_topology';
+import { MicroMemory } from '#memory/micro_memory';
 import fs from 'fs';
 import path from 'path';
 

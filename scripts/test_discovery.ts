@@ -1,4 +1,4 @@
-import { TadabburLoop } from '../lib/iqra/quran/discovery_loop';
+import { TadabburLoop } from '#quran/discovery_loop';
 
 async function main() {
   console.log("🚀 Starting Verification Mission: Surah Ya-Sin (36)...");

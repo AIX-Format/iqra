@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { MarketResonanceAnalyzer, Candle } from '../../lib/iqra/11-trading/market_analyzer';
+import { MarketResonanceAnalyzer, Candle } from '../#trading/market_analyzer';
 import { setupMockEnv, resetMockEnv } from '../utils/mock_env';
 
 beforeAll(() => {

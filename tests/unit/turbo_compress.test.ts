@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { TurboCompressor } from '#memory/turbo_compressor.ts';
+import { TurboCompressor } from '#memory/turbo_compressor';
 
 // ── Helper: Generate Random Embedding ────────────────────────────────────────
 

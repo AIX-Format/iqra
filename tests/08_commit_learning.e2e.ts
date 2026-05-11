@@ -15,12 +15,12 @@ import {
   getDatasetStats,
   type CommitLesson,
   type TrainingDataPoint,
-} from '../lib/iqra/learning/commit_learner.ts';
+} from '../lib/iqra/learning/commit_learner';
 import {
   designWithStitch,
   createVisualNote,
   IQRA_DESIGN_TOKENS,
-} from '../lib/iqra/design/stitch.ts';
+} from '../lib/iqra/design/stitch';
 import fs from 'fs';
 import path from 'path';
 

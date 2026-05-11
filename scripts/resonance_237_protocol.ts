@@ -6,9 +6,9 @@
  * 2 (Firing) -> 3 (Resonance/369) -> 7 (Synthesis/Return)
  */
 
-import { RewardEngine } from '../lib/iqra/rewards/engine.ts';
-import { HeartbeatSystem } from '../lib/iqra/12-infrastructure/heartbeat.js';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
+import { RewardEngine } from '#rewards/engine';
+import { HeartbeatSystem } from '#infra/heartbeat';
+import { IQRALogger } from '#infra/logger';
 
 async function runSovereignDiscovery() {
   console.log("🌀 Starting Sovereign Resonance Discovery (2-3-7 Protocol)...");

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CuriosityEngine } from '../lib/iqra/quran/curiosity.ts';
-import * as similarity from '../lib/iqra/utils/similarity.ts';
-import * as security from '../lib/iqra/security.ts';
-import * as groq from '../lib/iqra/llm/groq.ts';
+import { CuriosityEngine } from '../lib/iqra/quran/curiosity';
+import * as similarity from '../lib/iqra/utils/similarity';
+import * as security from '../lib/iqra/security';
+import * as groq from '../lib/iqra/llm/groq';
 import { IQRAMemory } from '../lib/iqra/03-memory/memory.js';
 
 describe('🌀 CuriosityEngine | محرك الفضول', () => {

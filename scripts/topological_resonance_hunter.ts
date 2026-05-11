@@ -12,7 +12,7 @@
 import Database from 'better-sqlite3';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as dotenv from 'dotenv';
-import { RewardEngine } from '../lib/iqra/rewards/engine.ts';
+import { RewardEngine } from '#rewards/engine';
 
 dotenv.config();
 

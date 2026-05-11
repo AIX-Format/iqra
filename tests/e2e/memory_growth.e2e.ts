@@ -9,9 +9,9 @@ import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
 import { runMission } from '#01-core/mission-runner.js';
-import { RewardLedger } from '../../ledger/reward-ledger.ts';
+import { RewardLedger } from '../../ledger/reward-ledger';
 import { IQRAMemory } from '#03-memory/memory.js';
-import { PatternMemory } from '#memory/pattern_memory.ts';
+import { PatternMemory } from '#memory/pattern_memory';
 
 function writeMission(id: string, verse: string, field: string): string {
   const p = path.join(os.tmpdir(), `iqra-mem-test-${id}.yml`);

@@ -1,5 +1,5 @@
 import { SovereignEngine } from '../lib/iqra/sovereign';
-import { RewardEngine } from '../lib/iqra/rewards/engine';
+import { RewardEngine } from '#rewards/engine';
 import { TopologicalResonanceHunter } from './topological_resonance_hunter';
 import Database from 'better-sqlite3';
 import path from 'path';

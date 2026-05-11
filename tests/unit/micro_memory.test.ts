@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { MicroMemory } from '#memory/micro_memory.ts';
+import { MicroMemory } from '#memory/micro_memory';
 import fs from 'fs';
 import path from 'path';
 

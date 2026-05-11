@@ -7,8 +7,8 @@
  * 2. Validating the 'Bayyinah' (Clear Proof) logic in a blockchain-like structure.
  */
 
-import { MarketResonanceEngine } from '../lib/iqra/quran/market_resonance.ts';
-import { RewardEngine } from '../lib/iqra/rewards/engine.ts';
+import { MarketResonanceEngine } from '#quran/market_resonance';
+import { RewardEngine } from '#rewards/engine';
 
 async function deCodeTheWorld() {
   console.log("🔓 Initializing World-Code De-coding...");

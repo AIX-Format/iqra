@@ -1,6 +1,6 @@
 // scripts/test_upstash.ts
 import 'dotenv/config';
-import { IQRAMemory } from '../lib/iqra/03-memory/memory';
+import { IQRAMemory } from '#memory/memory';
 
 async function main() {
   console.log('Testing Upstash-backed memory...');

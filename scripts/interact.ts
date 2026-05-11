@@ -26,17 +26,26 @@ const figlet   = (await import('figlet')).default;
 const gradient = (await import('gradient-string')).default;
 
 // ── IQRA imports ──────────────────────────────────────────────────────────────
-import { IQRAMemory } from '../lib/iqra/03-memory/memory.js';
-import { appendToTrustChain } from '../lib/iqra/security.ts';
-import { IQRAFilter } from '../lib/iqra/filter.ts';
+import { IQRAMemory } from '#memory/memory';
+import { appendToTrustChain } from '#security/security';
+import { IQRAFilter } from '#security/filter';
 import {
   GREETINGS,
   THINKING_PHRASES,
   FAREWELLS,
   detectLanguage,
   addPersonalityLayer,
-} from '../lib/iqra/13-utils/personality.js';
-import { iqraThink, IQRABrainMode } from '../lib/iqra/brain.ts';
+  IQRA_PERSONALITY
+} from '#utils/personality';
+import { iqraThink, IQRABrainMode } from '#core/brain';
+import { MISSION_PROMPTS } from '#utils/prompts';
+
+const BRAIN_MODE_MAP: Record<string, string> = {
+  fast: IQRABrainMode.FAST_RESPONSE,
+  deep: IQRABrainMode.DEEP_ANALYSIS,
+  thought: IQRABrainMode.THOUGHT_ONLY,
+  local: IQRABrainMode.LOCAL_SKILL
+};
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
 
@@ -361,9 +370,9 @@ async function handleCommand(cmd: string): Promise<boolean> {
 // Article 3 SHŪRĀ: two providers minimum
 
 async function callLLMDirect(input: string, context: { role: string; content: string }[]): Promise<{ response: string; provider: string }> {
-  const { IQRA_SOUL } = await import('../lib/iqra/prompts.ts');
-  const { IQRA_PERSONA } = await import('../lib/iqra/13-utils/personality.js');
-  const systemPrompt = `${IQRA_SOUL}\n\n${IQRA_PERSONA}`;
+  const { MISSION_PROMPTS } = await import('#utils/prompts');
+  const { IQRA_PERSONALITY } = await import('#utils/personality');
+  const systemPrompt = `${MISSION_PROMPTS.DEFAULT}\n\n${IQRA_PERSONALITY}`;
 
   // ── Provider 1: Gemini ────────────────────────────────────────────────────
   if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -448,8 +457,8 @@ async function processInput(input: string): Promise<void> {
     // Call IQRA Brain (Sovereign Engine)
     const { response, provider } = await iqraThink({
       input,
-      mode: modeArg === 'deep' ? IQRABrainMode.DEEP_THINKING : IQRABrainMode.FAST_RESPONSE,
-      context: context as any
+      context: context as any,
+      options: { mode: modeArg === 'deep' ? IQRABrainMode.DEEP_ANALYSIS : IQRABrainMode.FAST_RESPONSE }
     });
 
     spinner.stop();

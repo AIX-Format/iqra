@@ -5,7 +5,7 @@
  * Methodology: Intuition (LLM) -> Proof (Qalbin) -> Seal (Numerical)
  */
 
-import { discover, PatternType } from '../lib/iqra/quran/pattern_engine';
+import { discover, PatternType } from '#quran/pattern_engine';
 
 async function runPoC() {
   console.log(" بسم الله الرحمن الرحيم ");

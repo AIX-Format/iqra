@@ -5,7 +5,7 @@
  */
 
 import { TadabburLoop } from './lib/iqra/quran/discovery_loop';
-import { IQRALogger } from './lib/iqra/12-infrastructure/logger';
+import { IQRALogger } from '#infra/logger';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

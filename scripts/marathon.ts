@@ -1,8 +1,8 @@
-import { AgentCore } from '../lib/iqra/01-core/core';
-import { IQRAFilter } from '../lib/iqra/filter';
+import { AgentCore } from '#core/core';
+import { IQRAFilter } from '#security/filter';
 import { IQRAExecutionLoop } from '../lib/iqra/loop';
-import { IQRATopology } from '../lib/iqra/10-topology/topology';
-import { IQRAStoryteller } from '../lib/iqra/13-utils/storyteller';
+import { IQRATopology } from '#topology/topology';
+import { IQRAStoryteller } from '#utils/storyteller';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';

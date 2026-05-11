@@ -57,10 +57,13 @@ export class AgentCore {
     }
 
     // Now proceed to THINK
-    const rawThought = await iqraThink({ input, mode });
+    const result = await iqraThink({ 
+      input, 
+      options: { mode } 
+    });
     
     // STYLE
-    const styledResponse = applyIQRAStyle(rawThought);
+    const styledResponse = applyIQRAStyle(result.response);
 
     // VOICE (Optional/Async)
     if (mode === IQRABrainMode.FAST_RESPONSE) {

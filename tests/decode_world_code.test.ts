@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { MarketResonanceEngine } from '../lib/iqra/quran/market_resonance.ts';
-import { RewardEngine } from '../lib/iqra/rewards/engine.ts';
+import { MarketResonanceEngine } from '../lib/iqra/quran/market_resonance';
+import { RewardEngine } from '../lib/iqra/rewards/engine';
 
 describe('World-Code De-coding', () => {
   it('should detect market resonance', async () => {

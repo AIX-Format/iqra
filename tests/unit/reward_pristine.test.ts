@@ -7,12 +7,12 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { RewardEngine } from '#rewards/engine.ts';
-import { RewardLedger } from '#rewards/ledger.ts';
+import { RewardEngine } from '#rewards/engine';
+import { RewardLedger } from '#rewards/ledger';
 import {
   PRISTINE_MULTIPLIER, REPEATED_MULTIPLIER, STALE_MULTIPLIER, STALE_THRESHOLD,
-} from '#rewards/types.ts';
-import type { WorkerReport } from '#workers/protocol.ts';
+} from '#rewards/types';
+import type { WorkerReport } from '#workers/protocol';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

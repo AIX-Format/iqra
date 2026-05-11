@@ -16,9 +16,9 @@
  */
 
 import 'dotenv/config';
-import { PatternHunterRunner } from '../lib/iqra/01-core/pattern_hunter_runner.js';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
-import { IQRATelegramBot } from '../lib/iqra/13-utils/telegram_bot.js';
+import { PatternHunterRunner } from '#core/pattern_hunter_runner';
+import { IQRALogger } from '#infra/logger';
+import { IQRATelegramBot } from '#utils/telegram_bot';
 
 // ── الآيات الافتراضية للصيد الدفعي ──────────────────────────────────────────
 const DEFAULT_VERSES = [

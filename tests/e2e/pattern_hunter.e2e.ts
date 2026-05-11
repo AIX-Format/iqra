@@ -18,10 +18,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import 'dotenv/config';
 
-import { PatternHunter } from '#quran/pattern_hunter.ts';
-import { NumericalValidator } from '#quran/numerical_validator.ts';
-import { AbjadCalculator, ShannonEntropy, FractalAnalyzer, TopologicalAnalyzer } from '#quran/pattern_hunter_tools.ts';
-import { MicroMemory } from '#memory/micro_memory.ts';
+import { PatternHunter } from '#quran/pattern_hunter';
+import { NumericalValidator } from '#quran/numerical_validator';
+import { AbjadCalculator, ShannonEntropy, FractalAnalyzer, TopologicalAnalyzer } from '#quran/pattern_hunter_tools';
+import { MicroMemory } from '#memory/micro_memory';
 import { ToolsRegistry } from '#12-infrastructure/tools_registry.js';
 
 // ── Setup ─────────────────────────────────────────────────────────────────────

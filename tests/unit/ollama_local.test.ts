@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { Gemma4Local, IQRA_LOCAL_TOOLS } from '#llm/ollama.ts';
-import { IQRA_TOOLS, IQRA_TOOLS_LITE } from '#llm/tools.ts';
+import { Gemma4Local, IQRA_LOCAL_TOOLS } from '#llm/ollama';
+import { IQRA_TOOLS, IQRA_TOOLS_LITE } from '#llm/tools';
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
     });
 
     it('compute_shannon_hel يحسب إنتروبي صحيح', async () => {
-      const { MicroMemory } = await import('../../lib/iqra/memory/micro_memory.ts');
+      const { MicroMemory } = await import('../#memory/memory/micro_memory.ts');
       const hel = MicroMemory.computeShannonHEL('بسم الله الرحمن الرحيم');
       expect(hel).toBeGreaterThan(0);
       expect(hel).toBeLessThan(5);

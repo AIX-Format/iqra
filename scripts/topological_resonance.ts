@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { IQRALogger } from '../lib/iqra/12-infrastructure/logger.js';
+import { IQRALogger } from '#infra/logger';
 
 // 🕋 IQRA Topological Resonance Engine v1.0
 // "The 7-Edge Model Orchestrator"

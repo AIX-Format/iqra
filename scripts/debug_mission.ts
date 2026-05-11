@@ -1,5 +1,5 @@
 
-import { runMission } from './lib/iqra/01-core/mission-runner.js';
+import { runMission } from '#core/mission-runner';
 import fs from 'fs';
 import path from 'path';
 

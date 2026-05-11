@@ -9,7 +9,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { config } from 'dotenv';
-import { runMission } from '../lib/iqra/01-core/mission-runner.js';
+import { runMission } from '#core/mission-runner';
 
 config({ path: path.join(process.cwd(), '.env') });
 

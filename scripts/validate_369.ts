@@ -1,4 +1,4 @@
-import { SovereignEngine } from './lib/iqra/sovereign';
+import { SovereignEngine } from '#core/sovereign';
 
 async function runDiscoveryValidation() {
   console.log('--- 🌙 IQRA | Discovery Mode Validation ---');

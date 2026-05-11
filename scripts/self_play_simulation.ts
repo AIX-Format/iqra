@@ -1,7 +1,7 @@
-import { Qalbin_VM } from '../lib/iqra/quran/qalbin/qalbin_vm.js';
-import { Modality, QalbinKind } from '../lib/iqra/quran/qalbin/qalbin_node.js';
-import { QURAN_SEEDS } from '../lib/iqra/quran/qalbin/quran_seeds.js';
-import { UNIVERSAL_SEEDS } from '../lib/iqra/resonance/universal_constants.js';
+import { Qalbin_VM } from '#quran/qalbin/qalbin_vm';
+import { Modality, QalbinKind } from '#quran/qalbin/qalbin_node';
+import { QURAN_SEEDS } from '#quran/qalbin/quran_seeds';
+import { UNIVERSAL_SEEDS } from '../lib/iqra/resonance/universal_constants';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
