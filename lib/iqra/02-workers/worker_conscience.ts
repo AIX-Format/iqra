@@ -91,14 +91,14 @@ export async function assertConscience(
 
     // رفع SovereignError
     throw new SovereignError(
-      `[DAMIR_BLOCK] Worker "${workerId}" blocked: ${verdict.reason}`,
       SovereignErrorCode.MITHAQ_VIOLATION,
-      {
-        severity: 'HIGH',
-        source: workerId,
-        context: { missionId, intention, reason: verdict.reason },
-        recovery_strategy: 'HALT',
-      }
+      { 
+        mission_id: missionId, 
+        worker_id: workerId, 
+        reason: verdict.reason,
+        diagnostics: { severity: 'HIGH', recovery_strategy: 'HALT' }
+      },
+      false
     );
   }
 

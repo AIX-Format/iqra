@@ -113,7 +113,7 @@ export class ValidationWorker extends SovereignWorker {
       // Log to Trust Chain
       appendToTrustChain(
         `VALIDATOR:${verdict}`,
-        state.mission_id || 'manual',
+        state.metadata?.mission_id || 'manual',
         `violations:${violations.length}:penalty:${hallucination_penalty.toFixed(2)}`,
         verdict === 'PASS' ? 1.0 : 0.0
       );
@@ -155,7 +155,7 @@ export async function executeMissionValidator(context: any): Promise<any> {
     data: result.data,
     report: result.report,
     implemented: result.report.implemented,
-    issues: result.report.issues,
+    issues: result.report.issues_discovered,
     procedures_followed: result.report.procedures_followed,
     timestamp: Date.now()
   };
