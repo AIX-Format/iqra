@@ -5,7 +5,8 @@ import { ExecutionWorker } from './workers/execution';
 import { StateCoordinator } from './workers/state_coordinator';
 import type { WorkerReport, WorkerResult, MissionState, SovereignWorker } from './workers/protocol';
 import { IQRALogger } from './logger';
-import type { Provider } from '../../src/connectors/index.ts';
+import { delay } from './utils/timeout';
+import type { Provider } from '../../../src/connectors/index';
 import fs from 'fs';
 import path from 'path';
 
@@ -217,7 +218,7 @@ export class MissionControl {
               // Retry with exponential backoff
               const backoffMs = Math.pow(2, attempt) * 1000;
               IQRALogger.info(`⏳ [MISSION_CONTROL] Retrying phase '${phase}' in ${backoffMs}ms...`);
-              await new Promise(resolve => setTimeout(resolve, backoffMs));
+              await delay(backoffMs, `Retry phase '${phase}'`);
               state.metadata.retry_count = (state.metadata.retry_count || 0) + 1;
             }
           }

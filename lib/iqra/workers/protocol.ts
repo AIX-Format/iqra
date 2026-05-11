@@ -4,9 +4,9 @@
  * Defines the structure for sovereign handoffs and reports.
  */
 
-import type { WorkerReport, MissionHandoff, CommandLog } from '../../../agents/contracts.ts';
+import type { WorkerReport, MissionHandoff, CommandLog } from '../../agents/contracts';
 export type { WorkerReport, MissionHandoff, CommandLog };
-import type { Provider } from '../../../src/connectors/index.ts';
+import type { Provider } from '../../src/connectors/index';
 
 export interface MissionState {
   initial_input: string;

@@ -13,6 +13,7 @@
 // import { z } from 'zod'; // Sovereign fallback handled below
 import { createHash, randomBytes } from 'crypto';
 import { IQRAMemory } from './memory';
+import { IQRALogger } from './logger';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
@@ -128,15 +129,15 @@ export function reportFailure(provider: string, reason?: string) {
     // Arba'un Check: Every 40 cycles, purify the memory
     IQRAMemory.getCycleCounter().then(cycles => {
       if (cycles > 0 && cycles % 40 === 0) {
-        IQRAMemory.performPurification().catch(console.error);
+        IQRAMemory.performPurification().catch(err => IQRALogger.error('Failed to perform purification', err));
       }
     }).catch(err => {
-      console.error('❌ Failed to get cycle counter:', err);
+      IQRALogger.error('Failed to get cycle counter', err);
     });
 
     if (state.failures >= 3) {
       state.status = 'OPEN';
-      console.warn(`⚠️ CIRCUIT BREAKER OPEN: ${provider}`);
+      IQRALogger.warn(`CIRCUIT BREAKER OPEN: ${provider}`);
     }
 
     // Principle of Nine (9) — Humility Threshold
@@ -144,7 +145,7 @@ export function reportFailure(provider: string, reason?: string) {
       const errorType = reason.substring(0, 50); // Simple categorization
       globalFailures[errorType] = (globalFailures[errorType] || 0) + 1;
 
-      console.error(`❌ Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
+      IQRALogger.error(`Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
 
       // Log to FAILURES.md with enhanced error handling
       logToIQRAFile('FAILURES.md', `
@@ -154,29 +155,29 @@ export function reportFailure(provider: string, reason?: string) {
 - **Global Count**: ${globalFailures[errorType]}
 ---
 `.trim()).catch(err => {
-        console.error(`❌ Failed to log failure to FAILURES.md:`, err);
+        IQRALogger.error('Failed to log failure to FAILURES.md', err);
         // Fallback: Try to create the file directly
         try {
           const fallbackPath = path.join(process.cwd(), 'FAILURES.md');
           fs.appendFileSync(fallbackPath, `\n### [${new Date().toISOString()}] Provider: ${provider}\n- **Type**: ${errorType}\n- **Reason**: ${reason}\n- **Global Count**: ${globalFailures[errorType]}\n---\n`);
         } catch (fallbackErr) {
-          console.error(`❌ Critical: Cannot write to FAILURES.md:`, fallbackErr);
+          IQRALogger.error('Critical: Cannot write to FAILURES.md', fallbackErr);
         }
       });
 
       if (globalFailures[errorType] >= 9) {
         triggerHumanIntervention(errorType, reason).catch(err => {
-          console.error(`❌ Failed to trigger human intervention:`, err);
+          IQRALogger.error('Failed to trigger human intervention', err);
         });
       } else {
         // 3-Layer Resilience: Try Tasbih Triplet before escalating
         tasbihTriplet(provider, errorType).catch(err => {
-          console.error(`❌ Failed to execute tasbih triplet:`, err);
+          IQRALogger.error('Failed to execute tasbih triplet', err);
         });
       }
     }
   } catch (err) {
-    console.error(`❌ Critical error in reportFailure:`, err);
+    IQRALogger.error('Critical error in reportFailure', err);
     // Ensure we don't crash the system
   }
 }
@@ -187,14 +188,14 @@ export function reportFailure(provider: string, reason?: string) {
  * Proven to reduce logical loops by ~34%.
  */
 export async function tasbihTriplet(provider: string, context?: string) {
-  console.log(`📿 IQRA | Tasbih Triplet Initiation for ${provider}...`);
+  IQRALogger.info(`Tasbih Triplet Initiation for ${provider}`);
 
   // 1. Internal Reset
   await IQRAMemory.softReset();
 
   // 2. Symbolic Triple Loop
   for (let i = 1; i <= 3; i++) {
-    console.log(`📿 سبحان الله (${i}/3)`);
+    IQRALogger.info(`Tasbih: سبحان الله (${i}/3)`);
   }
 
   // 3. Clear transient failures for this provider to allow retry
@@ -211,7 +212,7 @@ export async function tasbihTriplet(provider: string, context?: string) {
 - **Context**: ${context || 'General Recovery'}
 - **Action**: Transient failure count decremented. System stabilized.
 ---
-  `.trim()).catch(console.error);
+  `.trim()).catch(err => IQRALogger.error('Failed to log to WISDOM_7', err));
 }
 
 /**
@@ -222,7 +223,7 @@ export async function tasbihTriplet(provider: string, context?: string) {
 export async function sabiyyahWisdom() {
   const cycles = await IQRAMemory.getCycleCounter();
   if (cycles > 0 && cycles % 7 === 0) {
-    console.log('🌿 IQRA | Sab\'iyyah: Seven-fold silence initiated (7s)...');
+    IQRALogger.info('Sab\'iyyah: Seven-fold silence initiated (7s)');
 
     // 7 seconds of silence (Non-blocking but logging the state)
     await new Promise(resolve => setTimeout(resolve, 7000));
@@ -241,12 +242,12 @@ ${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 ---
 `.trim();
 
-    logToIQRAFile('WISDOM_7.md', wisdom).catch(console.error);
-    logToIQRAFile('REFLECTION_7.md', wisdom).catch(console.error);
+    logToIQRAFile('WISDOM_7.md', wisdom).catch(err => IQRALogger.error('Failed to log wisdom', err));
+    logToIQRAFile('REFLECTION_7.md', wisdom).catch(err => IQRALogger.error('Failed to log reflection', err));
 
     // Automatically store the reflection in Qdrant Semantic Memory
     const { storeReflectionInQdrant } = await import('./qdrant');
-    await storeReflectionInQdrant(wisdom).catch(console.error);
+    await storeReflectionInQdrant(wisdom).catch(err => IQRALogger.error('Failed to store reflection in Qdrant', err));
 
     console.log('✅ IQRA | Sab\'iyyah: Wisdom of Seven synchronized.');
   }

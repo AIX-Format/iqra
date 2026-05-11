@@ -4,6 +4,8 @@
  * "وَكَانَ أَمْرُ اللَّهِ قَدَرًا مَّقْدُورًا" — الأحزاب: 38
  */
 
+import { IQRALogger } from '../logger';
+
 export class TimeoutError extends Error {
   constructor(message: string = 'Operation timed out') {
     super(message);
@@ -46,3 +48,13 @@ export const IQRA_TIMEOUTS = {
   FILE_IO: 2000,
   NETWORK: 7000
 };
+
+/**
+ * Creates a delay promise for cleaner code
+ */
+export async function delay(ms: number, reason?: string): Promise<void> {
+  if (reason && ms > 1000) {
+    IQRALogger?.info?.(`⏳ Delay: ${reason} (${ms}ms)`);
+  }
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

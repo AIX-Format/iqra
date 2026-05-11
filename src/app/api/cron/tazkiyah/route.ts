@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { IQRAMemory } from '../../../../../lib/iqra/memory';
 
 /**
  * Arba'ūn Tazkiyah Cycle (40)
@@ -12,15 +13,22 @@ export async function GET(request: NextRequest) {
 
   try {
     console.log('🧼 Cron: Triggering Tazkiyah purification...');
-    // TODO: Implement memory purification when IQRAMemory is available
-    // await IQRAMemory.performPurification();
+    
+    // Perform memory purification
+    await IQRAMemory.performPurification();
     
     return NextResponse.json({ 
       status: 'success', 
-      message: 'Tazkiyah performed successfully (mock).' 
+      message: 'Tazkiyah performed successfully.',
+      timestamp: new Date().toISOString(),
+      cycles: await IQRAMemory.getCycleCounter()
     });
   } catch (error) {
     console.error('Tazkiyah Cron Error:', error);
-    return NextResponse.json({ status: 'error' }, { status: 500 });
+    return NextResponse.json({ 
+      status: 'error', 
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

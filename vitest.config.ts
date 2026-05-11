@@ -14,8 +14,6 @@ export default defineConfig({
     reporters: ['verbose'],
     include: ['tests/**/*.test.ts', 'tests/**/*.e2e.ts'],
     setupFiles: ['tests/setup.ts'],
-    sequence: {
-      sequential: true,      // Run one at a time — no race conditions
     },
   },
   resolve: {

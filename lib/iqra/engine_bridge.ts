@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { IQRALogger } from './logger';
 
 export class GoEngineBridge {
@@ -14,11 +14,22 @@ export class GoEngineBridge {
         return this.fallbackResonance(input);
       }
       
-      // Execute Go tool directly
-      const cmd = `go run "${this.ENGINE_PATH}" -mode resonance -input "${input.replace(/"/g, '\\"')}"`;
-      const output = execSync(cmd, { encoding: 'utf-8' });
-      const result = JSON.parse(output);
-      return result.data;
+      // Execute Go tool with secure argument passing
+      try {
+        const output = execFileSync('go', [
+          'run',
+          this.ENGINE_PATH,
+          '-mode',
+          'resonance',
+          '-input',
+          input
+        ], { encoding: 'utf-8' });
+        const result = JSON.parse(output);
+        return result.data;
+      } catch (execError) {
+        IQRALogger.error('❌ [GO-BRIDGE] ExecFileSync failed:', execError);
+        return this.fallbackResonance(input);
+      }
     } catch (e) {
       IQRALogger.error('❌ [GO-BRIDGE] Execution failed:', e);
       return this.fallbackResonance(input);

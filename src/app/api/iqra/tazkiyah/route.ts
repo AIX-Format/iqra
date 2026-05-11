@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { IQRAMemory } from '../../../../lib/iqra/memory';
 
 /**
  * 🧼 Tazkiyah (Purification) Endpoint
@@ -15,16 +16,22 @@ export async function GET(request: Request) {
 
   try {
     console.log('🧼 Starting automated Tazkiyah cycle...');
-    // TODO: Implement memory purification when IQRAMemory is available
-    // await IQRAMemory.performPurification();
+    
+    // Perform memory purification
+    await IQRAMemory.performPurification();
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Tazkiyah performed successfully (mock).',
-      timestamp: new Date().toISOString()
+      message: 'Tazkiyah performed successfully.',
+      timestamp: new Date().toISOString(),
+      cycles: await IQRAMemory.getCycleCounter()
     });
   } catch (error) {
     console.error('❌ Tazkiyah Failed:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Internal Server Error',
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

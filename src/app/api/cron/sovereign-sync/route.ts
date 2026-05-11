@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SovereignConnector } from '../../../../../lib/iqra/quran/sovereign_connector';
 
 /**
  * Sovereign Sync Cycle
@@ -12,16 +13,23 @@ export async function GET(request: NextRequest) {
 
   try {
     console.log('🔄 Cron: Triggering Sovereign Sync...');
-    // TODO: Implement sovereign sync when SovereignConnector is available
-    // const sovereign = new SovereignConnector();
-    // const result = await sovereign.generate('sync', []);
+    
+    // Perform sovereign synchronization
+    const sovereign = new SovereignConnector();
+    const result = await sovereign.generate('sync', []);
     
     return NextResponse.json({ 
       status: 'success', 
-      message: 'Sovereign Sync complete (mock).' 
+      message: 'Sovereign Sync complete.',
+      result,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('Sovereign Sync Cron Error:', error);
-    return NextResponse.json({ status: 'error' }, { status: 500 });
+    return NextResponse.json({ 
+      status: 'error', 
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

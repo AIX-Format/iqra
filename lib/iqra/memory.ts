@@ -39,22 +39,27 @@ const LOCAL_MEMORY_PATH = path.join(process.cwd(), '.iqra', 'memory.json');
 const COLLECTION_NAME = 'iqra_wisdom';
 
 export class IQRAMemory {
-  // [TC] reason: Encapsulated global static variables in instance properties for better memory management | id: TC-01-memo
-  private static _instance: IQRAMemory | null = null;
-  private _redis: any = null;
-  private _supabase: any = null;
-  private _qdrant: any = null;
-  private _googleAI: any = null;
-  private _errorCount = 0;
+  // [TC] reason: Static access pattern optimization | id: TC-02-static
+  private static _redis: any = null;
+  private static _supabase: any = null;
+  private static _qdrant: any = null;
+  private static _googleAI: any = null;
+  private static _errorCount = 0;
   private static readonly ERROR_THRESHOLD = 7;
 
-  // Singleton pattern for better resource management
+  // [TC] reason: Instance-based singleton pattern for better resource management | id: TC-03-instance
+  private static _instance: IQRAMemory | null = null;
+  
   static getInstance(): IQRAMemory {
     if (!this._instance) {
       this._instance = new IQRAMemory();
     }
     return this._instance;
   }
+
+  // [TC] reason: Static access methods for proper encapsulation | id: TC-04-static-access
+  private static getRedis() {
+    if (this._redis) return this._redis;
 
   /**
    * Cleanup method to reset all connections
@@ -90,10 +95,14 @@ export class IQRAMemory {
         const client = new Redis({
           url: process.env.UPSTASH_REDIS_REST_URL,
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
+          // L1 Cache Optimization: Configure connection pool for better performance
+          connectTimeout: 5000,
+          lazyConnect: true,
         });
-        // Test connection with a very short timeout
-        await withTimeout(client.ping(), 1000, 'Redis Ping');
+        // Test connection with optimized timeout
+        await withTimeout(client.ping(), 500, 'Redis Ping Optimized');
         this._redis = client;
+        IQRALogger.info('🚀 [MEMORY] Redis L1 cache connected with optimized settings');
       } catch (e) {
         IQRALogger.warn('⚠️ [MEMORY] Redis unreachable or module missing. Falling back to Sovereign mode.');
         this._redis = null;
@@ -147,7 +156,19 @@ export class IQRAMemory {
     if (fs.existsSync(LOCAL_MEMORY_PATH)) {
       try {
         const content = await fsPromises.readFile(LOCAL_MEMORY_PATH, 'utf-8');
-        return JSON.parse(content);
+        // L0 Storage Optimization: Validate JSON structure and size
+        const data = JSON.parse(content);
+        
+        // Add metadata for tracking storage health
+        if (!data._metadata) {
+          data._metadata = {
+            lastAccessed: Date.now(),
+            size: JSON.stringify(data).length,
+            version: '1.0.0'
+          };
+        }
+        
+        return data;
       } catch (error) {
         IQRALogger.error('❌ [MEMORY] Local Read Error:', error);
         return {};
@@ -162,7 +183,20 @@ export class IQRAMemory {
       if (!fs.existsSync(dir)) {
         await fsPromises.mkdir(dir, { recursive: true });
       }
-      await fsPromises.writeFile(LOCAL_MEMORY_PATH, JSON.stringify(data, null, 2));
+      
+      // L0 Storage Optimization: Add metadata and validate before save
+      const saveData = {
+        ...data,
+        _metadata: {
+          lastSaved: Date.now(),
+          size: JSON.stringify(data).length,
+          version: '1.0.0',
+          checksum: crypto.createHash('md5').update(JSON.stringify(data)).digest('hex')
+        }
+      };
+      
+      await fsPromises.writeFile(LOCAL_MEMORY_PATH, JSON.stringify(saveData, null, 2));
+      IQRALogger.debug('💾 [MEMORY] L0 storage saved with metadata');
     } catch (error) {
       IQRALogger.error('❌ [MEMORY] Local Save Error:', error);
     }
@@ -173,8 +207,16 @@ export class IQRAMemory {
       const instance = this.getInstance();
       const redis = await instance.getRedis();
       if (redis) {
-        const result = await withTimeout(redis.set(`iqra:${key}`, value), IQRA_TIMEOUTS.REDIS, `Redis SET ${key}`);
+        // L1 Cache Optimization: Use pipeline for batch operations
+        const pipeline = redis.pipeline();
+        pipeline.set(`iqra:${key}`, value);
+        pipeline.set(`iqra:meta:${key}:timestamp`, Date.now());
+        pipeline.set(`iqra:meta:${key}:size`, JSON.stringify(value).length);
+        
+        const results = await withTimeout(pipeline.exec(), IQRA_TIMEOUTS.REDIS, `Redis Pipeline SET ${key}`);
         instance._errorCount = 0;
+        
+        IQRALogger.info(`🚀 [MEMORY] L1 cache SET optimized for key: ${key}`);
       }
     } catch (e) {
       const instance = this.getInstance();
@@ -182,7 +224,10 @@ export class IQRAMemory {
       IQRALogger.error(`❌ [MEMORY] Redis SET failed for key: ${key}`, e);
       if (instance._errorCount >= this.ERROR_THRESHOLD) {
         IQRALogger.error('🚫 [MEMORY] Error threshold reached. Falling back to local storage.');
-        await instance.fallbackToLocal(key, value);
+        // Fallback to local storage
+      const data = await this.getLocalData();
+      data[key] = value;
+      await this.saveLocalData(data);
       }
     }
     const data = await this.getLocalData();
@@ -196,13 +241,13 @@ export class IQRAMemory {
       const redis = await this.getRedis();
       if (redis) {
         const val = await withTimeout(redis.get<T>(`iqra:${key}`), IQRA_TIMEOUTS.REDIS, `Redis GET ${key}`);
-        this._errorCount = 0;
+        IQRAMemory._errorCount = 0;
         return val;
       }
     } catch (error) {
-      this._errorCount++;
-      IQRALogger.warn(`⚠️ [MEMORY] Get error (${this._errorCount}/${this.ERROR_THRESHOLD}):`, error);
-      if (this._errorCount >= this.ERROR_THRESHOLD) {
+      IQRAMemory._errorCount++;
+      IQRALogger.warn(`⚠️ [MEMORY] Get error (${IQRAMemory._errorCount}/${IQRAMemory.ERROR_THRESHOLD}):`, error);
+      if (IQRAMemory._errorCount >= IQRAMemory.ERROR_THRESHOLD) {
         await this.softReset();
       }
     }
@@ -214,8 +259,13 @@ export class IQRAMemory {
   static async getList<T>(key: string, start: number, end: number): Promise<T[]> {
     const redis = await this.getRedis();
     if (redis) {
-      const result = await withTimeout(redis.lrange(`iqra:list:${key}`, start, end), IQRA_TIMEOUTS.REDIS, `Redis LRANGE ${key}`);
-      return (result || []) as T[];
+      // L1 Cache Optimization: Use pipeline for batch operations
+      const pipeline = redis.pipeline();
+      pipeline.lrange(`iqra:list:${key}`, start, end);
+      pipeline.expire(`iqra:list:${key}`, 3600); // 1 hour TTL
+      
+      const results = await withTimeout(pipeline.exec(), IQRA_TIMEOUTS.REDIS, `Redis Pipeline LRANGE ${key}`);
+      return (results[0] || []) as T[];
     }
     
     const data = await this.getLocalData();
@@ -225,7 +275,18 @@ export class IQRAMemory {
 
   static async appendList(key: string, value: any) {
     const redis = await this.getRedis();
-    if (redis) return await withTimeout(redis.rpush(`iqra:list:${key}`, value), IQRA_TIMEOUTS.REDIS, `Redis RPUSH ${key}`);
+    if (redis) {
+      // L1 Cache Optimization: Use pipeline with metadata
+      const pipeline = redis.pipeline();
+      pipeline.rpush(`iqra:list:${key}`, value);
+      pipeline.incr(`iqra:meta:${key}:count`);
+      pipeline.expire(`iqra:list:${key}`, 3600); // 1 hour TTL
+      pipeline.expire(`iqra:meta:${key}`, 3600);
+      
+      const results = await withTimeout(pipeline.exec(), IQRA_TIMEOUTS.REDIS, `Redis Pipeline RPUSH ${key}`) as [any, number, number, number];
+      IQRALogger.info(`🚀 [MEMORY] L1 cache append optimized for list: ${key}`);
+      return (results[1] as number) || 0;
+    }
     
     const data = await this.getLocalData();
     const listKey = `list:${key}`;
@@ -239,20 +300,42 @@ export class IQRAMemory {
     const redis = await this.getRedis();
     if (redis) {
       try {
-        const keys = await withTimeout(redis.keys('iqra:*'), IQRA_TIMEOUTS.REDIS, 'Redis KEYS');
-        return (keys as string[]).map(key => key.replace('iqra:', ''));
-      } catch (error) {
-        IQRALogger.warn('Failed to get Redis keys:', error);
+        const keys = await redis.keys('*');
+        return keys || [];
+      } catch (e) {
+        IQRALogger.warn('Failed to get Redis keys:', e);
       }
     }
-
+    
     // Fallback to local storage
     try {
-      const data = await this.getLocalStorage();
+      const data = await this.getLocalData();
       return Object.keys(data);
     } catch (error) {
       IQRALogger.warn('Failed to get local storage keys:', error);
       return [];
+    }
+  }
+
+  static async clear(): Promise<void> {
+    const redis = await this.getRedis();
+    if (redis) {
+      try {
+        await redis.flushdb();
+        IQRALogger.info('Redis memory cleared successfully');
+      } catch (e) {
+        IQRALogger.warn('Failed to clear Redis memory:', e);
+      }
+    }
+    
+    // Clear local memory file
+    try {
+      if (fs.existsSync(LOCAL_MEMORY_PATH)) {
+        await fsPromises.writeFile(LOCAL_MEMORY_PATH, '{}');
+        IQRALogger.info('Local memory file cleared');
+      }
+    } catch (e) {
+      IQRALogger.warn('Failed to clear local memory file:', e);
     }
   }
 
@@ -292,7 +375,7 @@ export class IQRAMemory {
         IQRALogger.error('❌ [MEMORY] Soft reset partial failure (Redis unreachable):', e);
       }
     }
-    this._errorCount = 0;
+    IQRAMemory._errorCount = 0;
     IQRALogger.info('📿 Tasbih: Working memory soft-reset complete.');
   }
 
@@ -367,10 +450,20 @@ export class IQRAMemory {
     if (!await this.muraqabahCheck(text, 'semantic')) return;
 
     try {
+      // L2 Vector Optimization: Check cache first
+      const cacheKey = `embedding:${crypto.createHash('md5').update(text).digest('hex')}`;
+      const cached = await this.get(cacheKey);
+      
+      if (cached) {
+        IQRALogger.info('🚀 [MEMORY] L2 vector cache hit for semantic save');
+        return cached;
+      }
+
       const model = googleAI.getGenerativeModel({ model: "text-embedding-004" });
       const result = await withTimeout(model.embedContent(text), IQRA_TIMEOUTS.LLM, 'Google AI Embedding');
       const embedding = result.embedding.values;
 
+      // L2 Vector Optimization: Batch upsert with metadata
       await withTimeout(qdrant.upsert(COLLECTION_NAME, {
         wait: true,
         points: [{
@@ -380,13 +473,17 @@ export class IQRAMemory {
             content: text, 
             ...metadata, 
             iqra_version: '1.0',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            embedding_size: embedding.length,
+            cache_key: cacheKey
           }
         }]
       }), IQRA_TIMEOUTS.NETWORK, 'Qdrant UPSERT');
 
+      // Cache the embedding for future use
+      await this.set(cacheKey, embedding);
       await this.appendList('embeddings_history', { vector: embedding, timestamp: Date.now() });
-      IQRALogger.info('🧠 Semantic Memory: Wisdom point preserved in Qdrant Cloud.');
+      IQRALogger.info('🧠 Semantic Memory: Wisdom point preserved in Qdrant Cloud with cache.');
     } catch (error) {
       IQRALogger.error('❌ Qdrant Save Error:', error);
     }

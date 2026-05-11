@@ -10,6 +10,7 @@ import { IQRALogger } from '../logger';
 import { SovereignPatternsHunter } from '../patterns/sovereign_patterns_hunter';
 import { SovereignMemoryAnalyzer } from '../memory/sovereign_memory_analyzer';
 import { SovereignLearningEngine } from '../learning/sovereign_learning_engine';
+import { delay } from '../utils/timeout';
 
 export interface AdaptationAction {
   id: string;
@@ -33,10 +34,17 @@ export interface AdaptationStep {
   rollback: string;
 }
 
+export interface ExecutedAdaptationStep extends AdaptationStep {
+  success: boolean;
+  error?: string;
+  details?: any;
+  executionTime?: number;
+}
+
 export interface AdaptationResult {
   success: boolean;
   adaptationId: string;
-  appliedSteps: AdaptationStep[];
+  appliedSteps: ExecutedAdaptationStep[];
   outcome: string;
   metrics: {
     beforeAdaptation: any;
@@ -210,7 +218,7 @@ export class SovereignAdaptationEngine {
     try {
       IQRALogger.info(`🔧 [ADAPTATION_ENGINE] Applying adaptation: ${adaptation.name}`);
       
-      const appliedSteps: AdaptationStep[] = [];
+      const appliedSteps: ExecutedAdaptationStep[] = [];
       
       // تنفيذ خطوات التكيف
       for (const step of adaptation.actions) {
@@ -233,8 +241,8 @@ export class SovereignAdaptationEngine {
         appliedSteps,
         outcome: improvement > 0 ? 'Improvement achieved' : 'No significant improvement',
         metrics: {
-          beforeAdaptation,
-          afterAdaptation,
+          beforeMetrics,
+          afterMetrics,
           improvement
         },
         timestamp: Date.now(),
@@ -284,7 +292,7 @@ export class SovereignAdaptationEngine {
   private static async executeAdaptationStep(
     step: AdaptationStep, 
     context: any
-  ): Promise<AdaptationStep> {
+  ): Promise<ExecutedAdaptationStep> {
     try {
       IQRALogger.info(`🔧 [ADAPTATION_ENGINE] Executing step: ${step.name}`);
       
@@ -309,7 +317,9 @@ export class SovereignAdaptationEngine {
       
       return {
         ...step,
-        success: false
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        executionTime: Date.now() - Date.now()
       };
     }
   }
@@ -320,16 +330,17 @@ export class SovereignAdaptationEngine {
   private static async executeCodeChange(
     step: AdaptationStep, 
     context: any
-  ): Promise<AdaptationStep> {
+  ): Promise<ExecutedAdaptationStep> {
     // محاكاة تنفيذ تغييرات الكود
     IQRALogger.info(`📝 [ADAPTATION_ENGINE] Implementing code change: ${step.description}`);
     
     // هنا يتم تنفيذ التغيير الفعلي
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await delay(1000, 'Code change execution');
     
     return {
       ...step,
-      success: true
+      success: true,
+      executionTime: 1000
     };
   }
 
@@ -339,15 +350,16 @@ export class SovereignAdaptationEngine {
   private static async executeConfigurationUpdate(
     step: AdaptationStep, 
     context: any
-  ): Promise<AdaptationStep> {
+  ): Promise<ExecutedAdaptationStep> {
     IQRALogger.info(`⚙️ [ADAPTATION_ENGINE] Updating configuration: ${step.description}`);
     
     // هنا يتم تحديث الإعدادات الفعلي
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await delay(500, 'Configuration update');
     
     return {
       ...step,
-      success: true
+      success: true,
+      executionTime: 500
     };
   }
 
@@ -357,15 +369,16 @@ export class SovereignAdaptationEngine {
   private static async executeResourceAllocation(
     step: AdaptationStep, 
     context: any
-  ): Promise<AdaptationStep> {
+  ): Promise<ExecutedAdaptationStep> {
     IQRALogger.info(`📊 [ADAPTATION_ENGINE] Allocating resources: ${step.description}`);
     
     // هنا يتم تخصيص الموارد الفعلي
-    await new Promise(resolve => setTimeout(resolve, 750));
+    await delay(750, 'Resource allocation');
     
     return {
       ...step,
-      success: true
+      success: true,
+      executionTime: 750
     };
   }
 
@@ -375,15 +388,16 @@ export class SovereignAdaptationEngine {
   private static async executeMonitoringAddition(
     step: AdaptationStep, 
     context: any
-  ): Promise<AdaptationStep> {
+  ): Promise<ExecutedAdaptationStep> {
     IQRALogger.info(`📈 [ADAPTATION_ENGINE] Adding monitoring: ${step.description}`);
     
     // هنا يتم إضافة المراقبة الفعلية
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await delay(600, 'Monitoring addition');
     
     return {
       ...step,
-      success: true
+      success: true,
+      executionTime: 600
     };
   }
 
@@ -434,7 +448,7 @@ export class SovereignAdaptationEngine {
         if (step.rollback) {
           IQRALogger.info(`🔙 [ADAPTATION_ENGINE] Rolling back step: ${step.name}`);
           // هنا يتم تنفيذ التراجع الفعلي
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await delay(500, 'Rollback step');
         }
       }
       

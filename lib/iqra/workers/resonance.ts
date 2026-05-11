@@ -1,5 +1,5 @@
 import { SovereignWorker, WorkerResult, MissionState } from './protocol';
-import type { MissionHandoff } from '../../../agents/contracts';
+import type { MissionHandoff } from '../../agents/contracts';
 import { GoEngineBridge } from '../engine_bridge';
 import { IQRAMemory, QuantumTopologyStore } from '../memory';
 import { IQRALogger } from '../logger';

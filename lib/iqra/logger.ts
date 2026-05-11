@@ -32,9 +32,16 @@ export class IQRALogger {
   }
 
   /**
+   * Log debug information
+   */
+  static debug(message: string, meta: any = {}) {
+    this.log('debug', message, meta);
+  }
+
+  /**
    * Internal logging logic
    */
-  private static log(level: 'info' | 'error' | 'warn', message: string, meta: any) {
+  private static log(level: 'info' | 'error' | 'warn' | 'debug', message: string, meta: any) {
     const timestamp = new Date().toISOString();
     const logEntry = {
       timestamp,
