@@ -33,6 +33,8 @@ export default defineConfig({
       '#trading': resolve(__dirname, 'lib/iqra/11-trading'),
       '#infra': resolve(__dirname, 'lib/iqra/12-infrastructure'),
       '#utils': resolve(__dirname, 'lib/iqra/13-utils'),
+      '#errors': resolve(__dirname, 'src/errors'),
+      '#connectors': resolve(__dirname, 'src/connectors'),
     },
   },
 });
