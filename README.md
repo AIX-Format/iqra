@@ -330,8 +330,8 @@ iqra/
 | | |
 |---|---|
 | 📅 **التاريخ \| Date** | `2026-05-11` |
-| 💡 **آخر خطوة \| Last Step** | Merge pull request #7 from Moeabdelaziz007/nicho-fishhook |
-| 🔗 **الـ Commit** | `2b3c1db` |
+| 💡 **آخر خطوة \| Last Step** | Merge pull request #14 from Moeabdelaziz007/coderabbitai/utg/89c9dc8 |
+| 🔗 **الـ Commit** | `73c39c7` |
 
 <!-- IQRA-LATEST-END -->
 
