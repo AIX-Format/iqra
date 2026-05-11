@@ -12,7 +12,7 @@
 
 // import { z } from 'zod'; // Sovereign fallback handled below
 import { createHash, randomBytes } from 'crypto';
-import { IQRAMemory } from './memory.ts';
+import { IQRAMemory } from './memory';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
@@ -117,47 +117,67 @@ export function checkCircuit(provider: string): boolean {
 const globalFailures: Record<string, number> = {};
 
 export function reportFailure(provider: string, reason?: string) {
-  if (!circuitBreakers[provider]) {
-    circuitBreakers[provider] = { failures: 0, lastFailure: 0, status: 'CLOSED' };
-  }
-  const state = circuitBreakers[provider];
-  state.failures++;
-  state.lastFailure = Date.now();
-
-  // Arba'un Check: Every 40 cycles, purify the memory
-  IQRAMemory.getCycleCounter().then(cycles => {
-    if (cycles > 0 && cycles % 40 === 0) {
-      IQRAMemory.performPurification().catch(console.error);
+  try {
+    if (!circuitBreakers[provider]) {
+      circuitBreakers[provider] = { failures: 0, lastFailure: 0, status: 'CLOSED' };
     }
-  });
+    const state = circuitBreakers[provider];
+    state.failures++;
+    state.lastFailure = Date.now();
 
-  if (state.failures >= 3) {
-    state.status = 'OPEN';
-    console.warn(`⚠️ CIRCUIT BREAKER OPEN: ${provider}`);
-  }
+    // Arba'un Check: Every 40 cycles, purify the memory
+    IQRAMemory.getCycleCounter().then(cycles => {
+      if (cycles > 0 && cycles % 40 === 0) {
+        IQRAMemory.performPurification().catch(console.error);
+      }
+    }).catch(err => {
+      console.error('❌ Failed to get cycle counter:', err);
+    });
 
-  // Principle of Nine (9) — Humility Threshold
-  if (reason) {
-    const errorType = reason.substring(0, 50); // Simple categorization
-    globalFailures[errorType] = (globalFailures[errorType] || 0) + 1;
+    if (state.failures >= 3) {
+      state.status = 'OPEN';
+      console.warn(`⚠️ CIRCUIT BREAKER OPEN: ${provider}`);
+    }
 
-    console.error(`❌ Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
+    // Principle of Nine (9) — Humility Threshold
+    if (reason) {
+      const errorType = reason.substring(0, 50); // Simple categorization
+      globalFailures[errorType] = (globalFailures[errorType] || 0) + 1;
 
-    // Log to FAILURES.md
-    logToIQRAFile('FAILURES.md', `
+      console.error(`❌ Failure reported (${globalFailures[errorType]}/9): ${errorType}`);
+
+      // Log to FAILURES.md with enhanced error handling
+      logToIQRAFile('FAILURES.md', `
 ### [${new Date().toISOString()}] Provider: ${provider}
 - **Type**: ${errorType}
 - **Reason**: ${reason}
 - **Global Count**: ${globalFailures[errorType]}
 ---
-`.trim()).catch(console.error);
+`.trim()).catch(err => {
+        console.error(`❌ Failed to log failure to FAILURES.md:`, err);
+        // Fallback: Try to create the file directly
+        try {
+          const fallbackPath = path.join(process.cwd(), 'FAILURES.md');
+          fs.appendFileSync(fallbackPath, `\n### [${new Date().toISOString()}] Provider: ${provider}\n- **Type**: ${errorType}\n- **Reason**: ${reason}\n- **Global Count**: ${globalFailures[errorType]}\n---\n`);
+        } catch (fallbackErr) {
+          console.error(`❌ Critical: Cannot write to FAILURES.md:`, fallbackErr);
+        }
+      });
 
-    if (globalFailures[errorType] >= 9) {
-      triggerHumanIntervention(errorType, reason);
-    } else {
-      // 3-Layer Resilience: Try Tasbih Triplet before escalating
-      tasbihTriplet(provider, errorType).catch(console.error);
+      if (globalFailures[errorType] >= 9) {
+        triggerHumanIntervention(errorType, reason).catch(err => {
+          console.error(`❌ Failed to trigger human intervention:`, err);
+        });
+      } else {
+        // 3-Layer Resilience: Try Tasbih Triplet before escalating
+        tasbihTriplet(provider, errorType).catch(err => {
+          console.error(`❌ Failed to execute tasbih triplet:`, err);
+        });
+      }
     }
+  } catch (err) {
+    console.error(`❌ Critical error in reportFailure:`, err);
+    // Ensure we don't crash the system
   }
 }
 
@@ -259,6 +279,16 @@ export async function logToIQRAFile(fileName: string, content: string) {
     }
   } catch (e) {
     console.error(`Failed to log to ${fileName}:`, e);
+    // Enhanced error handling: Attempt to create directory structure
+    try {
+      const fallbackDir = path.join(process.cwd(), 'iqra-core');
+      if (!fs.existsSync(fallbackDir)) {
+        await fsPromises.mkdir(fallbackDir, { recursive: true });
+        console.log(`✅ Created fallback directory: ${fallbackDir}`);
+      }
+    } catch (fallbackError) {
+      console.error(`❌ Critical: Cannot create directory structure:`, fallbackError);
+    }
   }
 }
 
