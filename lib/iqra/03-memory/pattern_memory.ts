@@ -30,6 +30,7 @@ export interface PatternRecord {
   mission_id: string;
   created_at: string;          // ISO timestamp
   source_tag: '[fetched]' | '[read]' | '[prior-training]';
+  metadata?: Record<string, any>;
 }
 
 export interface SimilarPattern {
@@ -115,7 +116,9 @@ export class PatternMemory {
     field: string,
     resonance_score: number,
     embedding: number[],
-    mission_id: string
+    mission_id: string,
+    id?: string,
+    metadata?: Record<string, any>
   ): Promise<string> {
     if (!verse || !field || !mission_id) {
       throw new Error('PATTERN_ERR: verse, field, mission_id are required');
@@ -127,9 +130,9 @@ export class PatternMemory {
       throw new Error(`PATTERN_ERR: resonance_score out of range: ${resonance_score}`);
     }
 
-    const id = crypto.randomUUID();
+    const finalId = id || crypto.randomUUID();
     const record: PatternRecord = {
-      id,
+      id: finalId,
       verse,
       field,
       resonance_score,
@@ -137,6 +140,7 @@ export class PatternMemory {
       mission_id,
       created_at: new Date().toISOString(),
       source_tag: '[fetched]',
+      metadata
     };
 
     const qdrant = await this.getQdrant();
@@ -155,6 +159,7 @@ export class PatternMemory {
                 resonance_score,
                 mission_id,
                 created_at: record.created_at,
+                metadata: metadata ? JSON.stringify(metadata) : undefined
               },
             }],
           }),
@@ -212,6 +217,7 @@ export class PatternMemory {
             mission_id: hit.payload?.mission_id ?? '',
             created_at: hit.payload?.created_at ?? '',
             source_tag: '[fetched]' as const,
+            metadata: hit.payload?.metadata ? JSON.parse(hit.payload.metadata) : undefined
           },
           similarity: hit.score ?? 0,
         }));
