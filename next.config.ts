@@ -2,7 +2,7 @@
 const nextConfig = {
   serverExternalPackages: ['sharp'],
   typescript: {
-    ignoreBuildErrors: true,
+    // ignoreBuildErrors: true,
   },
   transpilePackages: ['bcrypt'],
 };

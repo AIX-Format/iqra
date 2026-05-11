@@ -14,12 +14,13 @@ export default defineConfig({
     include: ['tests/**/*.test.ts', 'tests/**/*.e2e.ts'],
     setupFiles: ['tests/setup.ts'],
     sequence: {
-      sequential: true,
+      concurrent: false,
     },
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@iqra': resolve(__dirname, 'lib/iqra'),
       '#core': resolve(__dirname, 'lib/iqra/01-core'),
       '#workers': resolve(__dirname, 'lib/iqra/02-workers'),
       '#memory': resolve(__dirname, 'lib/iqra/03-memory'),

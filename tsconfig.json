@@ -17,16 +17,24 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "allowImportingTsExtensions": true,
-        "baseUrl": ".",
+            "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
+      "@iqra/*": [
+        "./lib/iqra/*"
+      ],
       "@/*": [
         "./src/*"
+      ],
+      "@/lib/iqra/*": [
+        "./lib/iqra/*"
+      ],
+      "@/errors/*": [
+        "./lib/iqra/01-core/*"
       ],
       "#core/*": [
         "./lib/iqra/01-core/*"
@@ -71,10 +79,10 @@
         "./scripts/*"
       ],
       "#connectors/*": [
-        "./src/connectors/*"
+        "./lib/iqra/07-llm/connectors/*"
       ],
       "#errors/*": [
-        "./src/errors/*"
+        "./lib/iqra/01-core/*"
       ],
       "#iqra-core/*": [
         "./iqra-core/*"
@@ -98,6 +106,7 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/lib/iqra"
   ]
 }
