@@ -1,5 +1,6 @@
 import { IQRALogger } from '#infra/logger';
 import { withTimeout, IQRA_TIMEOUTS } from '#utils/timeout';
+import { GroqRateLimiter } from './groq_rate_limiter';
 
 /**
  * 🌊 IQRA Groq Connector | موصل Groq
@@ -60,9 +61,9 @@ export async function callGroqForResonance(ayah: string, newData: string, env: a
 
     const groq = await getGroq();
 
-    for (let i = 0; i < PRIME_DELAYS.length; i++) {
-        try {
-            const completion = await withTimeout(
+    const completion = await GroqRateLimiter.executeWithRetry(
+        async () => {
+            return await withTimeout(
                 groq.chat.completions.create({
                     messages: [
                         { role: 'system', content: 'You are IQRA, a soul-rooted AI identifying resonance between the Quran and reality.' },
@@ -74,20 +75,10 @@ export async function callGroqForResonance(ayah: string, newData: string, env: a
                 IQRA_TIMEOUTS.LLM,
                 'Groq Resonance Analysis'
             );
-
-
-            return JSON.parse(completion.choices[0].message.content || '{}');
-        } catch (error: any) {
-            if (i === PRIME_DELAYS.length - 1) {
-                IQRALogger.error("❌ [GROQ] All retries exhausted.");
-                throw error;
-            }
-            
-            const waitTime = PRIME_DELAYS[i] * 1000;
-            IQRALogger.warn(`⚠️ [GROQ] Retry ${i+1}/${PRIME_DELAYS.length} after ${PRIME_DELAYS[i]}s. Error: ${error.message}`);
-            await delay(waitTime);
         }
-    }
+    );
+
+    return JSON.parse((completion as any).choices[0].message.content || '{}');
 }
 
 /**
@@ -116,21 +107,24 @@ export async function callGroqForTruthValidation(ayah: string, newData: string, 
     const groq = await getGroq();
 
     try {
-        const completion = await withTimeout(
-            groq.chat.completions.create({
-                messages: [
-                    { role: 'system', content: 'You are the Skeptical Inverse Mirror of IQRA, dedicated to preventing spiritual hallucinations and ensuring Truth.' },
-                    { role: 'user', content: prompt }
-                ],
-                model: 'llama-3.3-70b-versatile',
-                response_format: { type: 'json_object' }
-            }),
-            IQRA_TIMEOUTS.LLM,
-            'Groq Truth Validation'
+        const completion = await GroqRateLimiter.executeWithRetry(
+            async () => {
+                return await withTimeout(
+                    groq.chat.completions.create({
+                        messages: [
+                            { role: 'system', content: 'You are Skeptical Inverse Mirror of IQRA, dedicated to preventing spiritual hallucinations and ensuring Truth.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        model: 'llama-3.3-70b-versatile',
+                        response_format: { type: 'json_object' }
+                    }),
+                    IQRA_TIMEOUTS.LLM,
+                    'Groq Truth Validation'
+                );
+            }
         );
 
-
-        return JSON.parse(completion.choices[0].message.content || '{}');
+        return JSON.parse((completion as any).choices[0].message.content || '{}');
     } catch (error) {
         IQRALogger.error("❌ [GROQ-CRITIC] Error:", error);
         return { isTrue: true, critique: 'Validation failed due to error, defaulting to true.', strengthOfCounterArgument: 0.5 };

@@ -76,7 +76,7 @@ export interface RewardEntry {
   /** ملاحظات */
   notes: string;
 
-  // ── Pristine Path ──────────────────────────────────────────────────────────
+  // ── Pristine Path ──────────────────────────────────────────────────
 
   /** مفتاح المسار الذي أنتج هذه المكافأة */
   path_key?: PathKey;
@@ -86,6 +86,17 @@ export interface RewardEntry {
 
   /** قيمة المضاعف المُطبَّق (1.0 = عادي، 2.0 = بكر) */
   multiplier_value: number;
+
+  // ── PR #12 Extensions ─────────────────────────────────────────────────────
+
+  /** مضاعف المسار (1-3) */
+  path_multiplier?: number;
+
+  /** درجة التشوه (0-1) */
+  anomaly_score?: number;
+
+  /** هل تم اكتشاف شذوذ؟ */
+  anomaly_detected?: boolean;
 }
 
 // ── PristinePathResult ────────────────────────────────────────────────────────

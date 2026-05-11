@@ -120,5 +120,39 @@ export class RewardLedger {
     if (!entry.validation_status) {
       throw new Error('LEDGER_ERR: validation_status is required');
     }
+    
+    // 🔧 NEW: Additional validation for PR #12 patterns
+    if (entry.path_multiplier && (entry.path_multiplier < 1 || entry.path_multiplier > 3)) {
+      throw new Error(`LEDGER_ERR: path_multiplier must be between 1 and 3, got ${entry.path_multiplier}`);
+    }
+    
+    if (entry.anomaly_score && (entry.anomaly_score < 0 || entry.anomaly_score > 1)) {
+      throw new Error(`LEDGER_ERR: anomaly_score must be between 0 and 1, got ${entry.anomaly_score}`);
+    }
+  }
+
+  // ── Query with Advanced Filters ─────────────────────────────────────────────────────────
+  static async queryWithFilters(filters: {
+    worker_id?: string;
+    mission_id?: string;
+    path_multiplier?: number;
+    min_reward?: number;
+    max_reward?: number;
+    date_from?: string;
+    date_to?: string;
+  }): Promise<RewardEntry[]> {
+    const all = await this.getAll();
+    
+    return all.filter(entry => {
+      if (filters.worker_id && entry.worker_id !== filters.worker_id) return false;
+      if (filters.mission_id && entry.mission_id !== filters.mission_id) return false;
+      if (filters.path_multiplier && entry.path_multiplier !== filters.path_multiplier) return false;
+      if (filters.min_reward && entry.total_reward < filters.min_reward) return false;
+      if (filters.max_reward && entry.total_reward > filters.max_reward) return false;
+      if (filters.date_from && new Date(entry.recorded_at) < new Date(filters.date_from)) return false;
+      if (filters.date_to && new Date(entry.recorded_at) > new Date(filters.date_to)) return false;
+      
+      return true;
+    });
   }
 }

@@ -47,13 +47,18 @@ export async function withTimeout<T>(
   timeoutMs: number,
   context?: string
 ): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>;
+
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       reject(new Error(`TIMEOUT: Operation exceeded ${timeoutMs}ms${context ? ` [${context}]` : ''}`));
     }, timeoutMs);
   });
 
-  return Promise.race([promise, timeoutPromise]);
+  return Promise.race([promise, timeoutPromise])
+    .finally(() => {
+      clearTimeout(timeoutId); // 🔧 FIX: Prevent memory leak
+    }) as Promise<T>;
 }
 
 /**
