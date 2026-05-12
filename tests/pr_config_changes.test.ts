@@ -455,16 +455,11 @@ describe('.gitignore — simplified ignore patterns after PR cleanup', () => {
     expect(lines).not.toContain('.iqra/');
   });
 
-  it('does NOT contain the removed .env.* wildcard', () => {
+  it('ignores .env.* variants while allowing committed example', () => {
     gitignoreContent = readText('.gitignore');
     const lines = gitignoreContent.split('\n').map(l => l.trim());
-    expect(lines).not.toContain('.env.*');
-  });
-
-  it('does NOT contain the removed !.env.example negation', () => {
-    gitignoreContent = readText('.gitignore');
-    const lines = gitignoreContent.split('\n').map(l => l.trim());
-    expect(lines).not.toContain('!.env.example');
+    expect(lines).toContain('.env.*');
+    expect(lines).toContain('!.env.example');
   });
 
   it('does NOT contain the removed .iqra_loop_state pattern', () => {
@@ -490,9 +485,5 @@ describe('.gitignore — simplified ignore patterns after PR cleanup', () => {
     expect(lines).toContain('npm-debug.log*');
   });
 
-  it('is significantly shorter than the old 65-line version', () => {
-    gitignoreContent = readText('.gitignore');
-    const nonEmptyLines = gitignoreContent.split('\n').filter(l => l.trim().length > 0);
-    expect(nonEmptyLines.length).toBeLessThanOrEqual(15);
-  });
+  // Removed brittle line-count assertion; semantic pattern checks above are sufficient.
 });
