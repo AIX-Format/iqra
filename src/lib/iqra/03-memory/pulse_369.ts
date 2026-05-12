@@ -407,8 +407,8 @@ export class Pulse369 {
   ): Promise<void> {
     try {
       // ② تحليل عبر Groq (مع مهارة quran_deep_analysis)
-      const { SkillBank } = await import('../08-skills/skill_bank');
-      const skillContent = SkillBank.getSkillContent('quran_deep_analysis');
+      const { SkillLoader } = await import('../08-skills/loader');
+      const skillContent = SkillLoader.getSkillContent('quran_deep_analysis');
       if (!skillContent) return;
 
       let analysisResult: any = null;

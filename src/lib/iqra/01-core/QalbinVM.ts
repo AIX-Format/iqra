@@ -25,7 +25,7 @@ export interface TopologicalSignature {
 export class QalbinVM {
   private nodes: Map<string, QalbinNode> = new Map();
   private edges: Map<string, Array<{ from: string; to: string; weight: number }>> = new Map();
-  private currentDimension: number = 3;
+  private currentDepth: number = 3;
 
   /**
    * Initialize VM with default topological structure
@@ -36,11 +36,11 @@ export class QalbinVM {
 
   private initializeBaseTopology() {
     // Create core nodes for Islamic numerical constants
-    this.addNode('1', 1, [], 'verse');
-    this.addNode('3', 3, [], 'verse');
-    this.addNode('6', 6, [], 'verse');
-    this.addNode('7', 7, [], 'verse');
-    this.addNode('9', 9, [], 'verse');
+    this.addNode('1', 1, [], 'verse', 1.0, 1);
+    this.addNode('3', 3, [], 'verse', 0.9, 1);
+    this.addNode('6', 6, [], 'verse', 0.8, 1);
+    this.addNode('7', 7, [], 'verse', 0.95, 1);
+    this.addNode('9', 9, [], 'verse', 0.85, 1);
     
     // Connect with sacred geometry (3-6-9)
     this.addEdge('1', '3', 0.5);
@@ -52,12 +52,21 @@ export class QalbinVM {
   /**
    * Add a node to the topological space
    */
-  addNode(id: string, value: number, connections: string[] = [], type: QalbinNode['type'] = 'pattern'): void {
+  addNode(
+    id: string, 
+    value: string | number, 
+    connections: string[] = [], 
+    type: QalbinNode['type'] = 'pattern',
+    resonance: number = 0.5,
+    depth: number = 1
+  ): void {
     this.nodes.set(id, {
       id,
       value,
       connections,
-      type
+      type,
+      resonance,
+      depth
     });
   }
 
@@ -74,59 +83,57 @@ export class QalbinVM {
    * Calculate topological signature of current state
    */
   getSignature(): TopologicalSignature {
+    const nodes = Array.from(this.nodes.values());
+    const edges = Array.from(this.edges.entries()).flatMap(([from, edges]) => 
+      edges.map(edge => ({ ...edge, from }))
+    );
+    
     return {
-      nodes: Array.from(this.nodes.values()),
-      edges: Array.from(this.edges.entries()).flatMap(([from, edges]) => 
-        edges.map(edge => ({ ...edge, from }))
-      ),
-      dimension: this.currentDimension,
-      integrity: this.calculateIntegrity()
+      nodes,
+      edges,
+      resonance: this.calculateGlobalResonance(nodes),
+      depth: this.currentDepth,
+      complexity: this.calculateComplexity(nodes, edges)
     };
   }
 
-  /**
-   * Calculate structural integrity based on node connections
-   */
-  private calculateIntegrity(): number {
-    let integrity = 0;
-    let totalConnections = 0;
+  private calculateGlobalResonance(nodes: QalbinNode[]): number {
+    if (nodes.length === 0) return 0;
+    const sum = nodes.reduce((acc, node) => acc + node.resonance, 0);
+    return sum / nodes.length;
+  }
 
-    for (const [_, edges] of this.edges.entries()) {
-      totalConnections += edges.length;
-      // Weight integrity by edge strength
-      integrity += edges.reduce((sum, edge) => sum + edge.weight, 0);
-    }
-
-    return totalConnections > 0 ? integrity / totalConnections : 0;
+  private calculateComplexity(nodes: QalbinNode[], edges: any[]): number {
+    // Complexity = (V + E) / (Depth + 1)
+    return (nodes.length + edges.length) / (this.currentDepth + 1);
   }
 
   /**
    * Transform input through topological operations
    */
   transform(input: string): TopologicalSignature {
-    // Parse input for numerical patterns
     const numbers = input.match(/\d+/g) || [];
     
-    // Add each number as a pattern node
     numbers.forEach((num, index) => {
-      const nodeId = `pattern_${index}`;
-      this.addNode(nodeId, parseInt(num), [], 'pattern');
+      const val = parseInt(num);
+      const nodeId = `pattern_${index}_${val}`;
       
-      // Connect to nearest sacred number
-      const nearestSacred = this.findNearestSacredNumber(parseInt(num));
-      if (nearestSacred) {
-        this.addEdge(nodeId, nearestSacred.toString(), 0.3);
+      // Calculate resonance based on proximity to sacred numbers
+      const nearestSacred = this.findNearestSacredNumber(val);
+      const resonance = nearestSacred !== null ? 1 / (1 + Math.abs(val - nearestSacred)) : 0.1;
+      
+      this.addNode(nodeId, val, [], 'pattern', resonance, this.currentDepth);
+      
+      if (nearestSacred !== null) {
+        this.addEdge(nodeId, nearestSacred.toString(), resonance);
       }
     });
 
     return this.getSignature();
   }
 
-  /**
-   * Find nearest sacred number (1,3,6,7,9) for resonance
-   */
   private findNearestSacredNumber(num: number): number | null {
-    const sacred = [1, 3, 6, 7, 9];
+    const sacred = [1, 3, 6, 7, 9, 19, 40, 700];
     let nearest = null;
     let minDistance = Infinity;
 
@@ -150,3 +157,4 @@ export class QalbinVM {
     this.initializeBaseTopology();
   }
 }
+

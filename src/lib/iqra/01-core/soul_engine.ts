@@ -4,7 +4,7 @@
 
 import { IQRAMemory } from '#memory/memory';
 import { SovereignEvolution } from '../09-evolution/evolution'
-import { SkillBank } from '../08-skills/skill_bank'
+import { SkillLoader } from '../08-skills/loader'
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
 import { Pulse369 } from '#memory/pulse_369'
@@ -36,9 +36,9 @@ export class SoulEngine {
       await Pulse369.tick(missionId);
 
       // Record performance for all skills used/available
-      const skills = SkillBank.listSkills();
+      const skills = SkillLoader.listSkills();
       for (const skill of skills) {
-        await SkillBank.recordPerformance(skill, success);
+        await SkillLoader.recordPerformance(skill, success);
       }
 
       // 1. Every 3 pulses: Reflection

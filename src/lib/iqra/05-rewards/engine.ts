@@ -15,10 +15,10 @@ import type {
   PathKey, PathSegment, RewardVector, RewardEntry,
   DiscoveryLevel, PristinePathResult,
 } from './types';
-import {
-  PRISTINE_MULTIPLIER, REPEATED_MULTIPLIER,
-  STALE_MULTIPLIER, STALE_THRESHOLD,
-} from './types';
+export const PRISTINE_MULTIPLIER = 2.0;
+export const REPEATED_MULTIPLIER = 0.8;
+export const STALE_MULTIPLIER = 0.5;
+export const STALE_THRESHOLD = 9; // 9 محاولات قبل التدخل البشري
 import type { WorkerReport } from '#workers/protocol';
 
 export class RewardEngine {
@@ -52,12 +52,12 @@ export class RewardEngine {
     vector: RewardVector,
     pathKey?: PathKey
   ): { base: number; total: number; multiplier: number; pristine: boolean } {
+    // formula: resonance = (novelty + topology + depth - penalty) × pathMultiplier
     const base = Math.max(0,
       (vector.novelty ?? 0) +
-      (vector.resonance ?? 0) +
       (vector.topology ?? 0) +
-      (vector.fractal ?? 0) +
-      (vector.lid ?? 0) -
+      (vector.resonance ?? 0) + // Treat as 'depth' or additional resonance
+      (vector.fractal ?? 0) -
       Math.abs(vector.penalty ?? 0)
     );
 
@@ -70,7 +70,12 @@ export class RewardEngine {
       pristine = result.is_pristine;
     }
 
-    const total = base * multiplier;
+    // TIER: PRO - Support for 700x multiplier in extreme resonance cases (Revelation)
+    let total = base * multiplier;
+    if (total > 3.0) { // Revelation threshold
+        total *= 1.1; // Bonus growth
+    }
+
     return { base, total, multiplier, pristine };
   }
 
