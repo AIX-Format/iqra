@@ -231,7 +231,7 @@ export class IQRAMemory {
     try {
       const redis = await this.getRedis();
       if (redis) {
-        const val = await withTimeout(redis.get<T>(`iqra:${key}`), IQRA_TIMEOUTS.REDIS, `Redis GET ${key}`);
+        const val = (await withTimeout(redis.get(`iqra:${key}`), IQRA_TIMEOUTS.REDIS, `Redis GET ${key}`)) as T | null;
         this._errorCount = 0;
         return val;
       }
@@ -274,7 +274,7 @@ export class IQRAMemory {
   static async getRecentList<T>(key: string, count: number): Promise<T[]> {
     const redis = await this.getRedis();
     if (redis) {
-      const total = await withTimeout(redis.llen(`iqra:list:${key}`), IQRA_TIMEOUTS.REDIS, `Redis LLEN ${key}`);
+      const total = (await withTimeout(redis.llen(`iqra:list:${key}`), IQRA_TIMEOUTS.REDIS, `Redis LLEN ${key}`)) as number;
       const start = Math.max(0, total - count);
       const result = await withTimeout(redis.lrange(`iqra:list:${key}`, start, total - 1), IQRA_TIMEOUTS.REDIS, `Redis LRANGE (recent) ${key}`);
       return (result || []) as T[];
@@ -308,7 +308,7 @@ export class IQRAMemory {
       return await this.get(`curiosity:${key}`);
     }
     const redis = await this.getRedis();
-    if (redis) return (await redis.get<number>('iqra:curiosity_score')) || 0.5;
+    if (redis) return ((await redis.get('iqra:curiosity_score')) as number | null) || 0.5;
     const data = await this.getLocalData();
     return data['curiosity_score'] || 0.5;
   }
@@ -359,7 +359,7 @@ export class IQRAMemory {
   static async getCycleCounter(): Promise<number> {
     const redis = await this.getRedis();
     if (!redis) return 0;
-    return (await redis.get<number>('iqra:cycle_counter')) || 0;
+    return ((await redis.get('iqra:cycle_counter')) as number | null) || 0;
   }
 
   /**
@@ -373,9 +373,12 @@ export class IQRAMemory {
     // ❌ لا قيم افتراضية — إما بيانات حقيقية أو خطأ سيادي
     if (!history || history.length === 0) {
       throw new SovereignError(
-        'NO_MOCK: Cannot compute Fithrah centroid without valid embedding history',
-        SovereignErrorCode.MISSING_DATA,
-        { severity: 'HIGH', recovery_strategy: 'HALT' }
+        SovereignErrorCode.RESOURCE_UNAVAILABLE,
+        {
+          reason: 'NO_MOCK: Cannot compute Fithrah centroid without valid embedding history',
+          diagnostics: { severity: 'HIGH', recovery_strategy: 'HALT' },
+        },
+        false,
       );
     }
 
@@ -433,7 +436,7 @@ export class IQRAMemory {
   static async getSuccessCounter(): Promise<number> {
     const redis = await this.getRedis();
     if (!redis) return 0;
-    return (await redis.get<number>('iqra:success_counter')) || 0;
+    return ((await redis.get('iqra:success_counter')) as number | null) || 0;
   }
 
   private static async muraqabahCheck(content: string, type: string): Promise<boolean> {
@@ -455,7 +458,11 @@ export class IQRAMemory {
     const content = typeof data === 'string' ? data : JSON.stringify(data);
     if (!await this.muraqabahCheck(content, 'long-term')) return;
 
-    const { error } = await withTimeout(supabase.from(table).insert([data]), IQRA_TIMEOUTS.NETWORK, `Supabase INSERT ${table}`);
+    const { error } = (await withTimeout(
+      supabase.from(table).insert([data]),
+      IQRA_TIMEOUTS.NETWORK,
+      `Supabase INSERT ${table}`
+    )) as { error?: unknown };
     if (error) IQRALogger.error(`❌ Long-term memory error (${table}):`, error);
 
     // 🏺 [LANCEDB] Also archive in deep storage
@@ -519,7 +526,7 @@ export class IQRAMemory {
         with_payload: true,
         params: { hnsw_ef: 128 }
       });
-      return searchResult.map(hit => ({
+      return searchResult.map((hit: any) => ({
         content: hit.payload?.content,
         score: hit.score,
         metadata: hit.payload
@@ -651,6 +658,134 @@ export class IQRAMemory {
     const magnitude = Math.sqrt(mag1) * Math.sqrt(mag2);
     return magnitude === 0 ? 0 : dotProduct / magnitude;
   }
+
+  /**
+   * Get recent context for a specific interactive session.
+   */
+  static async getContextForSession(sessionId: string, limit: number = 5): Promise<any[]> {
+    try {
+      const contextKey = `session:${sessionId}:context`;
+      const redis = await IQRAMemory.getRedisClient();
+
+      if (!redis) return [];
+
+      const contextData = await redis.get(contextKey);
+      if (!contextData) return [];
+
+      const context = typeof contextData === 'string' ? JSON.parse(contextData) : contextData;
+      return Array.isArray(context) ? context.slice(-limit) : [];
+    } catch (error) {
+      IQRALogger.warn(`⚠️ [MEMORY] Failed to get context for session ${sessionId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Save a discovered reasoning pattern.
+   */
+  static async savePattern(patternData: any): Promise<void> {
+    try {
+      const patternKey = `pattern:${patternData.patternId}`;
+      const redis = await IQRAMemory.getRedisClient();
+
+      if (!redis) {
+        const localPatterns = (await IQRAMemory.get<Record<string, any>>('local_patterns')) || {};
+        localPatterns[patternData.patternId] = {
+          ...patternData,
+          savedAt: Date.now(),
+        };
+        await IQRAMemory.set('local_patterns', localPatterns);
+        return;
+      }
+
+      await redis.setex(patternKey, this.REDIS_TTL, JSON.stringify(patternData));
+
+      const indexKey = 'patterns:index';
+      const indexData = await redis.get(indexKey);
+      const patterns = indexData ? JSON.parse(indexData) : [];
+
+      if (!patterns.find((p: any) => p.patternId === patternData.patternId)) {
+        patterns.push({
+          patternId: patternData.patternId,
+          timestamp: patternData.timestamp,
+          trustScore: patternData.trustScore,
+        });
+
+        await redis.setex(indexKey, this.REDIS_TTL, JSON.stringify(patterns.slice(-1000)));
+      }
+
+      IQRALogger.info(`💾 [MEMORY] Pattern saved: ${patternData.patternId}`);
+    } catch (error) {
+      IQRALogger.error('❌ [MEMORY] Failed to save pattern:', error);
+    }
+  }
+
+  /**
+   * Get pattern memories related to observed signals.
+   */
+  static async getPatternMemories(observations: string[]): Promise<Record<string, any>> {
+    try {
+      const redis = await IQRAMemory.getRedisClient();
+      if (!redis) return {};
+
+      const patterns: Record<string, any> = {};
+
+      for (const observation of observations) {
+        const searchKey = `patterns:search:${observation.slice(0, 50).toLowerCase()}`;
+        const searchResults = await redis.get(searchKey);
+
+        if (searchResults) {
+          const results = typeof searchResults === 'string' ? JSON.parse(searchResults) : searchResults;
+          results.forEach((pattern: any) => {
+            if (!patterns[pattern.patternId]) {
+              patterns[pattern.patternId] = pattern;
+            }
+          });
+        }
+      }
+
+      return patterns;
+    } catch (error) {
+      IQRALogger.warn('⚠️ [MEMORY] Failed to get pattern memories:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Update usage statistics for a saved pattern.
+   */
+  static async updatePatternStatistics(patternId: string, stats: any): Promise<void> {
+    try {
+      const statsKey = `pattern:${patternId}:stats`;
+      const redis = await IQRAMemory.getRedisClient();
+
+      if (!redis) {
+        const localStats = (await IQRAMemory.get<Record<string, any>>('pattern_stats')) || {};
+        localStats[patternId] = {
+          ...localStats[patternId],
+          ...stats,
+          lastUpdated: Date.now(),
+        };
+        await IQRAMemory.set('pattern_stats', localStats);
+        return;
+      }
+
+      const existingStats = await redis.get(statsKey);
+      const parsedStats =
+        typeof existingStats === 'string' ? JSON.parse(existingStats) : existingStats || {};
+      const mergedStats = {
+        ...parsedStats,
+        ...stats,
+        lastUpdated: Date.now(),
+      };
+
+      await redis.setex(statsKey, this.REDIS_TTL, JSON.stringify(mergedStats));
+
+      IQRALogger.info(`📊 [MEMORY] Pattern stats updated: ${patternId}`);
+    } catch (error) {
+      IQRALogger.error('❌ [MEMORY] Failed to update pattern statistics:', error);
+    }
+  }
 }
 
 export class QuantumTopologyStore {
@@ -769,151 +904,4 @@ export class QuantumTopologyStore {
     return await IQRAMemory.generateEmbedding(text);
   }
 
-    /**
-     * Get context for a specific session
-     */
-    static async getContextForSession(sessionId: string, limit: number = 5): Promise<any[]> {
-        try {
-            const contextKey = `session:${sessionId}:context`;
-            const redis = await IQRAMemory.getRedisClient();
-            
-            if (!redis) {
-                return [];
-            }
-
-            // Get context from Redis
-            const contextData = await redis.get(contextKey);
-            
-            if (!contextData) {
-                return [];
-            }
-
-            const context = JSON.parse(contextData);
-            
-            // Return most recent items up to limit
-            return Array.isArray(context) ? context.slice(-limit) : [];
-            
-        } catch (error) {
-            IQRALogger.warn(`⚠️ [MEMORY] Failed to get context for session ${sessionId}:`, error);
-            return [];
-        }
-    }
-
-    /**
-     * Save pattern to memory
-     */
-    static async savePattern(patternData: any): Promise<void> {
-        try {
-            const patternKey = `pattern:${patternData.patternId}`;
-            const redis = await IQRAMemory.getRedisClient();
-            
-            if (!redis) {
-                // Fallback to local storage
-                const localPatterns = await IQRAMemory.get<any>('local_patterns') || {};
-                localPatterns[patternData.patternId] = {
-                    ...patternData,
-                    savedAt: Date.now()
-                };
-                await IQRAMemory.set('local_patterns', localPatterns);
-                return;
-            }
-
-            // Save to Redis with TTL
-            await redis.setex(patternKey, this.REDIS_TTL, JSON.stringify(patternData));
-            
-            // Also save to pattern index
-            const indexKey = 'patterns:index';
-            const indexData = await redis.get(indexKey);
-            const patterns = indexData ? JSON.parse(indexData) : [];
-            
-            if (!patterns.find((p: any) => p.patternId === patternData.patternId)) {
-                patterns.push({
-                    patternId: patternData.patternId,
-                    timestamp: patternData.timestamp,
-                    trustScore: patternData.trustScore
-                });
-                
-                // Keep only last 1000 patterns in index
-                const updatedPatterns = patterns.slice(-1000);
-                await redis.setex(indexKey, this.REDIS_TTL, JSON.stringify(updatedPatterns));
-            }
-            
-            IQRALogger.info(`💾 [MEMORY] Pattern saved: ${patternData.patternId}`);
-            
-        } catch (error) {
-            IQRALogger.error(`❌ [MEMORY] Failed to save pattern:`, error);
-        }
-    }
-
-    /**
-     * Get pattern memories based on observations
-     */
-    static async getPatternMemories(observations: string[]): Promise<Record<string, any>> {
-        try {
-            const redis = await IQRAMemory.getRedisClient();
-            
-            if (!redis) {
-                return {};
-            }
-
-            const patterns: Record<string, any> = {};
-            
-            // Search for patterns related to observations
-            for (const observation of observations) {
-                const searchKey = `patterns:search:${observation.slice(0, 50).toLowerCase()}`;
-                const searchResults = await redis.get(searchKey);
-                
-                if (searchResults) {
-                    const results = JSON.parse(searchResults);
-                    results.forEach((pattern: any) => {
-                        if (!patterns[pattern.patternId]) {
-                            patterns[pattern.patternId] = pattern;
-                        }
-                    });
-                }
-            }
-            
-            return patterns;
-            
-        } catch (error) {
-            IQRALogger.warn(`⚠️ [MEMORY] Failed to get pattern memories:`, error);
-            return {};
-        }
-    }
-
-    /**
-     * Update pattern statistics
-     */
-    static async updatePatternStatistics(patternId: string, stats: any): Promise<void> {
-        try {
-            const statsKey = `pattern:${patternId}:stats`;
-            const redis = await IQRAMemory.getRedisClient();
-            
-            if (!redis) {
-                // Fallback to local storage
-                const localStats = await IQRAMemory.get<any>('pattern_stats') || {};
-                localStats[patternId] = {
-                    ...localStats[patternId],
-                    ...stats,
-                    lastUpdated: Date.now()
-                };
-                await IQRAMemory.set('pattern_stats', localStats);
-                return;
-            }
-
-            // Get existing stats
-            const existingStats = await redis.get(statsKey);
-            const mergedStats = existingStats ? 
-                { ...JSON.parse(existingStats), ...stats, lastUpdated: Date.now() } : 
-                { ...stats, lastUpdated: Date.now() };
-            
-            // Save updated stats
-            await redis.setex(statsKey, this.REDIS_TTL, JSON.stringify(mergedStats));
-            
-            IQRALogger.info(`📊 [MEMORY] Pattern stats updated: ${patternId}`);
-            
-        } catch (error) {
-            IQRALogger.error(`❌ [MEMORY] Failed to update pattern statistics:`, error);
-        }
-    }
 }

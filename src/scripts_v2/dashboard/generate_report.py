@@ -11,7 +11,7 @@ def calculate_integrity_score():
     # We ignore strings that are in comments or specifically allowed test paths
     try:
         # Search for 'mock' case-insensitively in lib/iqra
-        cmd = ["grep", "-ri", "mock", "lib/iqra"]
+        cmd = ["grep", "-ri", "mock", "src/lib/iqra"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         # Count occurrences (rough estimate)
@@ -36,6 +36,7 @@ def get_oracle_count():
     return 0
 
 def generate():
+    os.makedirs('iqra-core', exist_ok=True)
     history_file = 'iqra-core/benchmark_results.json'
     results = []
     
@@ -65,7 +66,8 @@ def generate():
         json.dump(results, f, indent=4)
 
     # Load Template
-    template_path = 'scripts/dashboard/template.html'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(script_dir, 'template.html')
     if not os.path.exists(template_path):
         print("❌ Template missing.")
         return
