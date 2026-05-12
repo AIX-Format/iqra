@@ -2,7 +2,7 @@ import { BybitClient } from './bybit_client';
 import { MarketData } from './market_data';
 import { MarketResonanceAnalyzer } from './market_analyzer';
 import { RewardEngine } from '#rewards/engine';
-import { MissionReporter } from '#workers/reporter';
+
 import * as fs from 'fs';
 import path from 'path';
 

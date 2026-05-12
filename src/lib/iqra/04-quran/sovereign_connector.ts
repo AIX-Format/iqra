@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class SovereignConnector extends BaseConnector {
+  name = 'Sovereign-Offline-Core';
+
   async generate(prompt: string, context: any[]): Promise<ConnectorResponse> {
     const coreDir = path.join(process.cwd(), 'iqra-core');
     const mithaq = fs.existsSync(path.join(coreDir, 'MITHAQ.md')) 
@@ -27,7 +29,8 @@ export class SovereignConnector extends BaseConnector {
 
     return {
       content: response,
-      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+      model: 'iqra-offline-v1',
+      usage: { prompt_tokens: 0, completion_tokens: 0 }
     };
   }
 }

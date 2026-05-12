@@ -140,6 +140,7 @@ export function createHandoff(params: {
     context_snapshot: params.context_snapshot,
     artifacts:        params.artifacts        ?? [],
     pending_tasks:    params.pending_tasks    ?? [],
+    issues_discovered: params.known_issues    ?? [],
     known_issues:     params.known_issues     ?? [],
     validation_gates: params.validation_gates ?? [],
     validation_rules: [],

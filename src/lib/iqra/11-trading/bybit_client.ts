@@ -33,7 +33,7 @@ export class BybitClient {
   /**
    * تنفيذ طلب محمي (Private Request)
    */
-  private async privateRequest<T = any>(method: 'GET' | 'POST', path: string, params: Record<string, unknown> = {}): Promise<T> {
+  private async privateRequest<T = any>(method: 'GET' | 'POST', path: string, params: any = {}): Promise<T> {
     const timestamp = Date.now();
     const recvWindow = 5000;
     const data = method === 'GET' 

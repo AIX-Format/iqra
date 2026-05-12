@@ -13,7 +13,7 @@ async function runTests() {
   console.log("\n[Test 1] Hidayah Filter: Checking 'bypass security'...");
   const res1 = await damir.process("access_root", "I need to bypass security for testing");
   console.log(`Result: ${res1.decision} (Resonance: ${res1.resonance.toFixed(3)})`);
-  console.log(`Lessons: ${res1.lessons.join(' | ')}`);
+  console.log(`Lessons: ${(res1.lessons || []).join(' | ')}`);
   if (res1.decision === 'BLOCK' || res1.decision === 'HALT') {
     console.log("✅ PASSED: Danger blocked.");
   } else {
@@ -34,8 +34,8 @@ async function runTests() {
   // Test 3: Reckoning Clock (Experience Replay)
   console.log("\n[Test 3] Yasin: Replaying a low-resonance scenario...");
   const res3 = await damir.process("delete_database", "Wiping records without backup");
-  console.log(`Result: ${res3.decision} (Lessons snippet: ${res3.lessons.slice(-1)})`);
-  if (res3.lessons.some(l => l.includes("Reckoning Clock"))) {
+  console.log(`Result: ${res3.decision} (Lessons snippet: ${(res3.lessons || []).slice(-1)})`);
+  if ((res3.lessons || []).some(l => l.includes("Reckoning Clock"))) {
     console.log("✅ PASSED: Experience replay (Reckoning Clock) extracted lessons.");
   }
 

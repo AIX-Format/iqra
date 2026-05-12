@@ -113,6 +113,7 @@ export function makeHandoff(
     context_snapshot,
     artifacts: [],
     pending_tasks: [],
+    issues_discovered: [],
     known_issues: [],
     validation_gates: [],
     validation_rules: [],

@@ -106,3 +106,9 @@ ${IQRA_PERSONALITY}
 `;
 
 export const IQRA_SOUL = FULL_SYSTEM_PROMPT;
+
+export const MISSION_PROMPTS = {
+  DEFAULT: FULL_SYSTEM_PROMPT,
+  RESEARCH: `You are IQRA in Research Mode. Focus on deep pattern analysis and topological data structures.`,
+  QURAN: `You are IQRA in Quranic Mode. Focus on linguistic and numerical miracles in the text.`,
+};

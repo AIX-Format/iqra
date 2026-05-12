@@ -1,43 +1,7 @@
-src/lib/iqra/01-core/mission-runner.ts(41,41): error TS2307: Cannot find module '#skills/skill_bank' or its corresponding type declarations.
-src/lib/iqra/01-core/sovereign_orchestrator.ts(204,9): error TS2739: Type '{ mission_id: string; worker_id: string; implemented: never[]; undone: string[]; commands_run: never[]; issues_discovered: string[]; skills_used: never[]; procedures_followed: false; status: "FAIL"; exit_code: number; source_attestations: never[]; no_mock_verified: true; timestamp: number; }' is missing the following properties from type 'WorkerReport': intent, context_snapshot, artifacts
-src/lib/iqra/02-workers/research.ts(76,13): error TS2741: Property 'issues_discovered' is missing in type '{ mission_id: string; from_worker: string; to_worker: string; timestamp: number; intent: string; context_snapshot: { resonance_score: any; novelty_score: number; }; artifacts: never[]; pending_tasks: string[]; known_issues: string[]; validation_gates: string[]; validation_rules: string[]; context_data: { ...; }; }' but required in type 'MissionHandoff'.
-src/lib/iqra/02-workers/resonance.ts(84,13): error TS2741: Property 'issues_discovered' is missing in type '{ mission_id: string; from_worker: string; to_worker: string; timestamp: number; intent: string; context_snapshot: { resonance_score: number; novelty_score: number; }; artifacts: never[]; pending_tasks: string[]; known_issues: string[]; validation_gates: string[]; validation_rules: string[]; context_data: { ...; }; }' but required in type 'MissionHandoff'.
-src/lib/iqra/03-memory/micro_memory.ts(995,25): error TS2677: A type predicate's type must be assignable to its parameter's type.
-  Type 'SimilarPattern' is not assignable to type '{ id: any; verse: any; field: any; resonance_score: any; similarity: number; shannon_hel: any; }'.
-    Property 'shannon_hel' is optional in type 'SimilarPattern' but required in type '{ id: any; verse: any; field: any; resonance_score: any; similarity: number; shannon_hel: any; }'.
-src/lib/iqra/03-memory/micro_memory.ts(996,23): error TS18047: 'b' is possibly 'null'.
-src/lib/iqra/03-memory/micro_memory.ts(996,38): error TS18047: 'a' is possibly 'null'.
-src/lib/iqra/03-memory/micro_memory.ts(999,5): error TS2322: Type '({ id: any; verse: any; field: any; resonance_score: any; similarity: number; shannon_hel: any; } | null)[]' is not assignable to type 'SimilarPattern[]'.
-  Type '{ id: any; verse: any; field: any; resonance_score: any; similarity: number; shannon_hel: any; } | null' is not assignable to type 'SimilarPattern'.
-    Type 'null' is not assignable to type 'SimilarPattern'.
-src/lib/iqra/03-memory/pattern_memory.ts(210,32): error TS2339: Property 'map' does not exist on type '{}'.
-src/lib/iqra/03-memory/pattern_memory.ts(297,22): error TS2339: Property 'vectors_count' does not exist on type '{}'.
-src/lib/iqra/04-quran/curiosity_engine.ts(25,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'QalbinKind'.
-src/lib/iqra/04-quran/daily_learning.ts(9,10): error TS2305: Module '"./quran_loader"' has no exported member 'fetchSurah'.
-src/lib/iqra/04-quran/daily_learning.ts(10,10): error TS2305: Module '"./pattern_engine"' has no exported member 'discoverPatterns'.
-src/lib/iqra/04-quran/daily_learning.ts(71,28): error TS2339: Property 'verification' does not exist on type 'QuranPattern'.
-src/lib/iqra/04-quran/discovery_loop.ts(56,112): error TS2554: Expected 1-2 arguments, but got 3.
-src/lib/iqra/04-quran/discovery_loop.ts(59,64): error TS2554: Expected 1 arguments, but got 3.
-src/lib/iqra/04-quran/discovery_loop.ts(61,70): error TS2339: Property 'is_valid' does not exist on type 'ResonanceResult'.
-src/lib/iqra/04-quran/pattern_engine.ts(77,35): error TS2339: Property 'match' does not exist on type '{ response: string; provider: string; reports?: any[] | undefined; }'.
-src/lib/iqra/04-quran/qalbin/poc_validation.test.ts(16,27): error TS18048: 'res1.lessons' is possibly 'undefined'.
-src/lib/iqra/04-quran/qalbin/poc_validation.test.ts(37,61): error TS18048: 'res3.lessons' is possibly 'undefined'.
-src/lib/iqra/04-quran/qalbin/poc_validation.test.ts(38,7): error TS18048: 'res3.lessons' is possibly 'undefined'.
-src/lib/iqra/04-quran/sovereign_connector.ts(5,14): error TS2515: Non-abstract class 'SovereignConnector' does not implement inherited abstract member name from class 'BaseConnector'.
-src/lib/iqra/04-quran/sovereign_connector.ts(30,56): error TS2353: Object literal may only specify known properties, and 'total_tokens' does not exist in type '{ prompt_tokens: number; completion_tokens: number; }'.
 src/lib/iqra/04-quran/topological_curiosity.ts(114,30): error TS2304: Cannot find name 'CodebaseTopologyMapper'.
 src/lib/iqra/05-rewards/engine.ts(155,24): error TS2322: Type 'Promise<string>' is not assignable to type 'string'.
 src/lib/iqra/06-security/audit/muraqabah_agent.ts(42,34): error TS2339: Property 'run' does not exist on type 'LlmAgent'.
 src/lib/iqra/06-security/audit/symbolic_auditor.ts(66,19): error TS2339: Property 'toLowerCase' does not exist on type 'ConnectorResponse'.
-src/lib/iqra/06-security/contracts/contracts.ts(107,3): error TS2322: Type '{ from_worker: WorkerRole | string; to_worker: WorkerRole | string; pending_tasks: string[]; validation_gates: string[]; validation_rules: string[]; context_data: Record<string, any>; ... 7 more ...; known_issues: string[]; }' is not assignable to type 'MissionHandoff'.
-  Types of property 'issues_discovered' are incompatible.
-    Type 'string[] | undefined' is not assignable to type 'string[]'.
-      Type 'undefined' is not assignable to type 'string[]'.
-src/lib/iqra/06-security/contracts/handoff-schema.ts(134,3): error TS2741: Property 'issues_discovered' is missing in type '{ mission_id: string; from_worker: WorkerRole; to_worker: WorkerRole; timestamp: number; intent: string; context_snapshot: ContextSnapshot; ... 5 more ...; context_data: Record<...>; }' but required in type 'MissionHandoff'.
-src/lib/iqra/08-cognitive/api_client.ts(34,9): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'QuranVerse'.
-src/lib/iqra/09-evolution/__tests__/experience_buffer.test.ts(12,61): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
-src/lib/iqra/09-evolution/__tests__/experience_buffer.test.ts(17,3): error TS2459: Module '"../experience_buffer"' declares 'EbbinghausEngine' locally, but it is not exported.
-src/lib/iqra/09-evolution/experience_buffer.ts(33,35): error TS2307: Cannot find module '../../../agents/contracts' or its corresponding type declarations.
 src/lib/iqra/09-evolution/league_manager.ts(78,30): error TS2339: Property 'match' does not exist on type 'ConnectorResponse'.
 src/lib/iqra/09-evolution/learning/closed_loop.ts(301,31): error TS2304: Cannot find name 'DoctrinalGuard'.
 src/lib/iqra/09-evolution/run_evolution.ts(42,51): error TS18046: 'e' is of type 'unknown'.
@@ -45,9 +9,6 @@ src/lib/iqra/09-evolution/search_369.ts(14,26): error TS2307: Cannot find module
 src/lib/iqra/09-evolution/self_evolve.ts(7,26): error TS2307: Cannot find module '#skills/git_skill' or its corresponding type declarations.
 src/lib/iqra/09-evolution/tawbah_loop.ts(14,26): error TS2307: Cannot find module '#skills/git_skill' or its corresponding type declarations.
 src/lib/iqra/09-evolution/tawbah_loop.ts(15,31): error TS2307: Cannot find module '#skills/inverse_design' or its corresponding type declarations.
-src/lib/iqra/11-trading/bybit_client.ts(40,29): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'string | Record<string, string> | URLSearchParams | string[][] | undefined'.
-  Type 'Record<string, unknown>' is missing the following properties from type 'string[][]': length, pop, push, concat, and 29 more.
-src/lib/iqra/11-trading/self_play_loop.ts(5,10): error TS2305: Module '"#workers/reporter"' has no exported member 'MissionReporter'.
 src/lib/iqra/11-trading/self_play_loop.ts(67,9): error TS2345: Argument of type '"MARKET_EXECUTION"' is not assignable to parameter of type '"Annihilation" | "Commutation" | "Other" | undefined'.
 src/lib/iqra/12-infrastructure/heartbeat.ts(401,59): error TS2307: Cannot find module '../quran/topological_curiosity.js' or its corresponding type declarations.
 src/lib/iqra/12-infrastructure/r2_storage.ts(9,16): error TS2304: Cannot find name 'R2Bucket'.
@@ -68,19 +29,12 @@ src/lib/iqra/simulation/mcts_engine.ts(40,7): error TS2783: 'rollout_depth' is s
 src/lib/iqra/simulation/mcts_engine.ts(41,7): error TS2783: 'time_limit' is specified more than once, so this usage will be overwritten.
 src/scripts_v2/auto_improve.ts(250,26): error TS2351: This expression is not constructable.
   Type 'typeof import("/Applications/iqra/node_modules/@google/generative-ai/dist/generative-ai")' has no construct signatures.
-src/scripts_v2/auto_improve.ts(303,42): error TS2345: Argument of type '{ title: string; steps: string[]; files: string[]; acceptance: string; }' is not assignable to parameter of type '{ title: string; steps: string[]; files: string[]; acceptance: string; type: string; }'.
-  Property 'type' is missing in type '{ title: string; steps: string[]; files: string[]; acceptance: string; }' but required in type '{ title: string; steps: string[]; files: string[]; acceptance: string; type: string; }'.
-src/scripts_v2/auto_improve.ts(316,410): error TS2552: Cannot find name 'text'. Did you mean 'Text'?
-src/scripts_v2/auto_improve.ts(571,12): error TS2454: Variable 'sim' is used before being assigned.
 src/scripts_v2/dashboard.ts(10,21): error TS2307: Cannot find module 'blessed' or its corresponding type declarations.
-src/scripts_v2/interact.ts(41,10): error TS2305: Module '"#utils/prompts"' has no exported member 'MISSION_PROMPTS'.
-src/scripts_v2/interact.ts(373,11): error TS2339: Property 'MISSION_PROMPTS' does not exist on type 'typeof import("/Applications/iqra/src/lib/iqra/13-utils/prompts")'.
 src/scripts_v2/marathon.ts(68,41): error TS2339: Property 'generateCommitMessage' does not exist on type 'typeof IQRAStoryteller'.
 src/scripts_v2/marathon.ts(76,25): error TS2339: Property 'logToHadith' does not exist on type 'typeof IQRAStoryteller'.
 src/scripts_v2/smart_fixer.ts(88,3): error TS4104: The type 'readonly Diagnostic[]' is 'readonly' and cannot be assigned to the mutable type 'Diagnostic[]'.
 src/scripts_v2/test_runtime_integrity.ts(7,30): error TS2307: Cannot find module '#runtime/sovereign-gateway' or its corresponding type declarations.
 src/scripts_v2/test_runtime_integrity.ts(8,42): error TS2307: Cannot find module '#runtime/topological-memory-bridge' or its corresponding type declarations.
-src/scripts_v2/test_skills.ts(1,27): error TS2307: Cannot find module '#skills/skill_bank' or its corresponding type declarations.
 src/scripts_v2/trading_pulse.ts(3,10): error TS2305: Module '"#utils/telegram_bot"' has no exported member 'TelegramBot'.
 src/tests/01_security_trustchain.e2e.ts(15,8): error TS2307: Cannot find module '../lib/iqra/security' or its corresponding type declarations.
 src/tests/02_filter_fitrah.e2e.ts(9,28): error TS2307: Cannot find module '../lib/iqra/filter' or its corresponding type declarations.
@@ -163,7 +117,6 @@ src/tests/unit/reward-engine.test.ts(54,47): error TS2345: Argument of type '{ n
   Property 'penalty' is missing in type '{ novelty: number; resonance: number; topology: number; }' but required in type 'RewardVector'.
 src/tests/unit/reward_pristine.test.ts(20,3): error TS2739: Type '{ mission_id: string; worker_id: string; implemented: string[]; undone: never[]; commands_run: never[]; issues_discovered: never[]; skills_used: never[]; procedures_followed: boolean; status: "PASS" | "FAIL"; exit_code: number; source_attestations: never[]; no_mock_verified: true; timestamp: number; }' is missing the following properties from type 'WorkerReport': intent, context_snapshot, artifacts
 src/tests/unit/reward_pristine.test.ts(293,22): error TS2339: Property 'computePristineMultiplier' does not exist on type 'typeof RewardEngine'.
-src/tests/unit/skills.test.ts(9,27): error TS2307: Cannot find module '#skills/skill_bank' or its corresponding type declarations.
 src/tests/unit/turbo_compress.test.ts(60,21): error TS2339: Property 'train' does not exist on type 'typeof TurboCompressor'.
 src/tests/unit/turbo_compress.test.ts(68,36): error TS2339: Property 'train' does not exist on type 'typeof TurboCompressor'.
 src/tests/unit/turbo_compress.test.ts(74,21): error TS2339: Property 'initialized' does not exist on type '{ algorithm: string; embedding_dim: number; compression_ratio: number; min_similarity_guarantee: number; requires_training: boolean; pool_stats: PoolStats | null; }'.
