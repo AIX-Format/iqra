@@ -94,6 +94,7 @@ export class ResonanceWorker extends SovereignWorker {
         artifacts: [],
         pending_tasks: ['Deep research into resonance patterns'],
         known_issues: this.report.issues_discovered,
+        issues_discovered: this.report.issues_discovered,
         validation_gates: ['High-fidelity verification'],
         validation_rules: ['High-fidelity verification'],
         context_data: updatedContext

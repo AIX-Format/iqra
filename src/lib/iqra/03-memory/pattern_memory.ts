@@ -205,7 +205,7 @@ export class PatternMemory {
           }),
           IQRA_TIMEOUTS.NETWORK,
           'Qdrant pattern search'
-        );
+        ) as any[];
 
         return (results || []).map((hit: any) => ({
           record: {
@@ -293,7 +293,7 @@ export class PatternMemory {
           qdrant.getCollection(PATTERN_COLLECTION),
           IQRA_TIMEOUTS.NETWORK,
           'Qdrant getCollection'
-        );
+        ) as any;
         return info?.vectors_count ?? 0;
       } catch { /* fall through */ }
     }

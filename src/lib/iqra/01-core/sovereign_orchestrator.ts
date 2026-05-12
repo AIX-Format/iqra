@@ -204,6 +204,9 @@ export class MissionControl {
         report: {
           mission_id: state.metadata.mission_id,
           worker_id: worker.id,
+          intent: `Phase ${phase} execution`,
+          context_snapshot: { resonance_score: 0, novelty_score: 0 },
+          artifacts: [],
           implemented: [],
           undone: [`Phase ${phase} blocked by conscience`],
           commands_run: [],

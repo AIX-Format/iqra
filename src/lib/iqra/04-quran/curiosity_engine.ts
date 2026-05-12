@@ -7,7 +7,7 @@
 
 import { IQRAMemory } from '#memory/memory';
 import { Qalbin_VM } from './qalbin/qalbin_vm';
-import { Modality } from './qalbin/qalbin_node';
+import { Modality, QalbinKind } from './qalbin/qalbin_node';
 import { IQRALogger } from '#infra/logger';
 
 export class CuriosityEngine {
@@ -22,7 +22,7 @@ export class CuriosityEngine {
     // Convert string to topological nodes (Simplified mapping)
     const chars = context.split('').slice(0, 7);
     chars.forEach((char, i) => {
-      const node = vm.spawn(char, Modality.HIKMA);
+      const node = vm.spawn(char as any as QalbinKind, Modality.HIKMA);
       vm.link(core, (i % 3) + 1, node, 1);
     });
 

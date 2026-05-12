@@ -84,10 +84,11 @@ export class ResearchWorker extends SovereignWorker {
           novelty_score: 0,
         },
         artifacts: [],
-        pending_tasks: ['Dastur compliance check'],
+        pending_tasks: ['Validate JSON constraints', 'Check references'],
         known_issues: this.report.issues_discovered,
-        validation_gates: ['Dastur compliance check'],
-        validation_rules: ['HARAM_LIST compliance'],
+        issues_discovered: this.report.issues_discovered,
+        validation_gates: ['Data completeness'],
+        validation_rules: ['All fields must be non-null'],
         context_data: updatedContext
       };
       

@@ -74,7 +74,7 @@ export async function intuitionDiscovery(
   });
 
   try {
-    const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+    const jsonMatch = rawResponse.response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return [];
     return JSON.parse(jsonMatch[0]).patterns ?? [];
   } catch {

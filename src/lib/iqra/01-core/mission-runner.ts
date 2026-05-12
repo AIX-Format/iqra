@@ -38,7 +38,7 @@ import { executeReporter }         from '#workers/reporter'
 import { appendToTrustChain }      from '#security/security';
 import { IQRALogger }              from '#infra/logger';
 import { SoulEngine }              from '#core/soul_engine'
-import { SkillBank }               from '#skills/skill_bank'
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

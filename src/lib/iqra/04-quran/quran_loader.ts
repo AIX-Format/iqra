@@ -57,3 +57,18 @@ export async function ingestQuran(env: any) {
 
   console.log("Quran ingestion complete! ✨");
 }
+
+export async function fetchSurah(surahNumber: number) {
+  // Fetch Arabic and English
+  const arabicRes = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`);
+  const arabicData: any = await arabicRes.json();
+  
+  const englishRes = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/en.asad`);
+  const englishData: any = await englishRes.json();
+
+  if (!arabicData.data || !englishData.data) {
+    throw new Error(`Failed to fetch Surah ${surahNumber}`);
+  }
+
+  return [arabicData.data, englishData.data];
+}

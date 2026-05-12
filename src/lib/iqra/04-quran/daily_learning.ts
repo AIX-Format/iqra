@@ -7,7 +7,7 @@
  */
 
 import { fetchSurah } from './quran_loader';
-import { discoverPatterns, PatternType, QuranPattern } from './pattern_engine';
+import { discover, PatternType, QuranPattern } from './pattern_engine';
 import { IQRAMemory } from '#memory/memory';
 import { SovereignEngine } from '#core/sovereign';
 
@@ -42,7 +42,7 @@ export async function performDailyLearning() {
   const deepSlice = ayahs.slice(0, 5);
   
   for (const patternType of Object.values(PatternType)) {
-    const patterns = await discoverPatterns(deepSlice, patternType as PatternType);
+    const patterns = await discover(deepSlice, patternType as PatternType);
     allPatterns.push(...patterns);
     await new Promise(r => setTimeout(r, 500));
   }
@@ -68,7 +68,7 @@ export async function performDailyLearning() {
 ## 💎 اكتشاف جديد: ${bestPattern.discovery}
 **السورة:** ${surahNumber}
 **التدبر:** ${bestPattern.arabicNote}
-**التوثيق:** ${bestPattern.verification}
+**التوثيق:** ${bestPattern.scientificLink || 'غير متوفر'}
 ---
 `;
     // Note: In Cloudflare, we use R2, but for local/dev we log it

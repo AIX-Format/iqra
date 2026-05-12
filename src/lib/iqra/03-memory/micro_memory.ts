@@ -992,7 +992,9 @@ export class MicroMemory {
           return null;
         }
       })
-      .filter((r): r is SimilarPattern => r !== null)
+      .filter((r) => r !== null) as SimilarPattern[];
+
+    return scored
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK);
 

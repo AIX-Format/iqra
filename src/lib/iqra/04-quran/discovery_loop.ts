@@ -53,12 +53,13 @@ export class TadabburLoop {
       IQRALogger.info(`⚖️ [STAGE 5] Running Final Resonance Proof...`);
       
       // Numerical Seal Verification
-      const numericalRes = NumericalValidator.validate(surah, parseInt(result.reference.split(':')[1] || "1"), ayahText);
+      const ayahNumber = parseInt(result.reference.split(':')[1] || "1");
+      const numericalRes = NumericalValidator.validate(ayahText, { surah, ayah: ayahNumber });
       
       // Topological Verification
-      const topologicalRes = await topologicalDiscovery(surah, result.reference, ayahText);
+      const topologicalRes = await topologicalDiscovery(result.reference);
       
-      const isVerified = shannon.has_quran_signature && numericalRes.is_valid && topologicalRes.resonance > 0.8;
+      const isVerified = shannon.has_quran_signature && numericalRes.isResonant && topologicalRes.resonance > 0.8;
 
       // --- STAGE 6: TA'ALLUM (Learner - Adaptation) ---
       const confidence = this.calculateConfidence(shannon.total_entropy, numericalRes.score, isVerified);
@@ -163,10 +164,10 @@ export class TadabburLoop {
 
 #### [VERIFICATION_TRACE]
 === 🔢 Numerical Validator (Tesla 369 Seal) ===
-- Seal Status: ${numRes.is_valid ? 'LOCKED' : 'UNLOCKED'}
+- Seal Status: ${numRes.isResonant ? 'LOCKED' : 'UNLOCKED'}
 - Score: ${numRes.score.toFixed(3)}
-- Prime Resonance: ${numRes.prime_resonance ? 'YES' : 'NO'}
-- Logic: ${numRes.logic}
+- Tesla Result: ${numRes.teslaResult !== undefined ? numRes.teslaResult : 'N/A'}
+- Patterns: ${numRes.patterns?.join(', ') || 'None'}
 
 === 🕸️ Qalbin_VM Reduction Log ===
 - Initial Nodes: ${topoRes.nodes || 7}
