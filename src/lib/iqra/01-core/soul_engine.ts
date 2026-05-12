@@ -35,11 +35,10 @@ export class SoulEngine {
       // 💓 Pulse369 — ترقية الذاكرة بين الطبقات
       await Pulse369.tick(missionId);
 
-      // Record performance for all skills used/available
+      // Skills are now loaded from the external marketplace (aix-agent-skills)
+      // Performance tracking is handled by the marketplace's performance_ledger.json
       const skills = SkillLoader.listSkills();
-      for (const skill of skills) {
-        await SkillLoader.recordPerformance(skill, success);
-      }
+      IQRALogger.info(`💓 [SOUL_PULSE] ${skills.length} skills available from marketplace`);
 
       // 1. Every 3 pulses: Reflection
       if (counter % this.REFLECTION_PULSE === 0) {

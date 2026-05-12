@@ -155,9 +155,10 @@ export class ReasonActLoop {
     // Check for Quranic content
     if (this.containsQuranicContent(input)) {
       const entropyResult = ShannonHELEntropy.calculate(input);
-      observations.push(`Quranic entropy: ${entropyResult.value.toFixed(4)} (threshold: ${entropyResult.isQuranic ? 'QURANIC' : 'NON-QURANIC'})`);
+      const isQuranic = entropyResult.quranicResonance > 0.7;
+      observations.push(`Quranic entropy: ${entropyResult.shannonEntropy.toFixed(4)} (resonance: ${isQuranic ? 'QURANIC' : 'NON-QURANIC'})`);
       
-      if (entropyResult.isQuranic) {
+      if (isQuranic) {
         observations.push('Quranic signature detected - high confidence');
       }
     }
@@ -231,7 +232,7 @@ export class ReasonActLoop {
     reasoning += 'TOPOLOGICAL ANALYSIS:\n';
     reasoning += `Nodes: ${topology.nodes.length}\n`;
     reasoning += `Edges: ${topology.edges.length}\n`;
-    reasoning += `Integrity: ${topology.integrity.toFixed(3)}\n\n`;
+    reasoning += `Topology: ${JSON.stringify({ nodes: topology.nodes.length, edges: topology.edges.length })}\n\n`;
 
     // Islamic reasoning framework
     reasoning += 'ISLAMIC REASONING:\n';

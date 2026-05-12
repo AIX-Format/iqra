@@ -9,7 +9,7 @@
  */
 
 import { Qalbin_VM } from './qalbin_vm';
-import { Modality } from './qalbin_node';
+import { Modality, QalbinKind } from './qalbin_node';
 
 export interface QuranSeed {
   surah: number;
@@ -37,7 +37,7 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
       // Bismillah: 1 Core + 6 Attributes (7-node fractal)
       const core = vm.spawn('ALIF', Modality.IKHLAS);
       for (let i = 0; i < 6; i++) {
-        const attr = vm.spawn(i % 2 === 0 ? 'RA' : 'MEEM', Modality.RAHMA);
+        const attr = vm.spawn(i % 2 === 0 ? 'RA' : 'MIM', Modality.RAHMA);
         vm.link(core, (i % 2) + 1, attr, 1);
       }
       return core;
@@ -105,7 +105,7 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
       // The Record: 1 Registry + 6 Data Pillars
       const registry = vm.spawn('ALIF', Modality.AMAN);
       for (let i = 0; i < 6; i++) {
-        const pillar = vm.spawn('MEEM', Modality.ADL);
+        const pillar = vm.spawn('MIM', Modality.ADL);
         vm.link(registry, 1, pillar, 1);
       }
       return registry;
@@ -137,7 +137,7 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
       // 1 Nucleus (RAHMA) + 6 Mirror Nodes (Symmetry-Algo)
       const nucleus = vm.spawn('RA', Modality.RAHMA);
       for (let i = 0; i < 6; i++) {
-        const atom = vm.spawn('MEEM', Modality.RAHMA);
+        const atom = vm.spawn('MIM', Modality.RAHMA);
         vm.link(nucleus, 1, atom, 1);
         vm.link(nucleus, 2, atom, 2); // Double Link for Quantum Resonance
       }
@@ -172,7 +172,7 @@ export const QURAN_SEEDS: Record<string, QuranSeed> = {
     teslaNumber: getTesla(67, 1),
     topology: (vm) => {
       // 1 Sovereign + 2 Controllers + 4 Pillars (Turbo-Mulk)
-      const king = vm.spawn('MEEM', Modality.AMAN);
+      const king = vm.spawn('MIM', Modality.AMAN);
       const c1 = vm.spawn('LAM', Modality.ADL);
       const c2 = vm.spawn('LAM', Modality.AMAN);
       vm.link(king, 1, c1, 1);

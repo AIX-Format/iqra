@@ -38,7 +38,7 @@ IQRA operates through seven recursive layers of intelligence, ensuring every act
 - **[⚖️ الميثاق — MĪTHĀQ.md](./src/lib/iqra/00-manifest/MĪTHĀQ.md)** — بروتوكولات الثقة والتعاون
 - **[🧩 الشورى — SHŪRĀ.md](./src/lib/iqra/00-manifest/SHŪRĀ.md)** — آلية اتخاذ القرار بين الوكلاء
 - **[🌀 التطور — METAMORPHOSIS.md](./src/lib/iqra/00-manifest/METAMORPHOSIS.md)** — قوانين التطور الذاتي والتعلم
-- **[🛠️ بنك المهارات — SkillBank](./src/lib/iqra/08-skills/skill_bank.ts)** — إدارة وتطوير مهارات النظام
+- **[🛠️ سوق المهارات — Skills Marketplace](https://github.com/Moeabdelaziz007/aix-agent-skills)** — مستودع المهارات اللامركزي (للوكلاء والبشر)
 
 ### 🔧 Technical Reference
 - **[docs/TOOLS_REFERENCE.md](./docs/TOOLS_REFERENCE.md)** — مرجع الأدوات والقدرات
@@ -133,7 +133,7 @@ Built on **Graded Linear Logic** — every action consumes real resources exactl
 The system learns via **Self-Play Simulations**:
 
 - **MCTS Engine**: Monte Carlo Tree Search for strategic data generation.
-- **Skill Bank**: Autonomous discovery & "Tawbah" (self-healing) of failed skills.
+- **Skills Marketplace**: Decentralized Markdown-based skills in [`aix-agent-skills`](https://github.com/Moeabdelaziz007/aix-agent-skills).
 - **Meta-Evolution**: Auto-rewriting skills via local LLM (qwen2.5).
 
 </td>
@@ -291,13 +291,18 @@ iqra/
 │   ├── 01-core/              # Orchestration & Brain
 │   ├── 02-workers/           # Agent Worker Chain
 │   ├── 03-memory/            # 5-layer Memory Bridge
-│   ├── 08-skills/            # Self-evolving Skill Bank
+│   ├── 08-skills/            # Dynamic Skill Loader (loads from external repo)
 │   ├── simulation/           # MCTS Self-play Engine
 │   └── rewards/              # Reward Engine + Ledger
 │
+├── aix-agent-skills/         # 🆕 Decentralized Skills Marketplace (separate repo)
+│   ├── skills/               # Markdown-based skill definitions
+│   ├── skills.json           # Skill registry & metadata
+│   └── antigravity-jules.md  # Shared AI Agent Task Board
+│
 ├── iqra-core/                # State, Identity, & Knowledge
 │   ├── identity/             # Sovereign DID & Cards
-│   └── skills/               # Evolving Skill Docs (Markdown)
+│   └── skills/               # Legacy Skill Docs (Markdown)
 │
 ├── tests/                    # Unit, Integration, E2E
 └── src/app/                  # Next.js UI Dashboard

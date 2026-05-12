@@ -135,7 +135,7 @@ export class ForbiddenPatternsValidator {
     riskLevel: 'low' | 'medium' | 'high' | 'critical';
   } {
     const violations: ForbiddenPattern[] = [];
-    let maxSeverity: 'low' = 'low';
+    let maxSeverity: ForbiddenSeverity = 'low';
 
     // Check each pattern
     for (const pattern of this.PATTERNS) {
