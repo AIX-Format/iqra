@@ -9,6 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { IQRALogger } from '../12-infrastructure/logger';
 
 export enum TopologicalState {
   RECEPTION = 1,  // الاستقبال
@@ -78,7 +79,7 @@ export class IQRATopology {
    */
   async handleAnomalousCurvature(currentCurvature: number, totalCycles: number) {
     if (currentCurvature > 0.7) {
-      console.log("⚠️ [QUANTUM_BACKTRACK] Critical curvature detected. Initiating backtracking...");
+      IQRALogger.warn('⚠️ [QUANTUM_BACKTRACK] Critical curvature detected. Initiating backtracking...');
       const lastStable = this.snapshots.get(totalCycles - 1) || "FITRAH";
       return this.revertToState(lastStable);
     }
@@ -90,7 +91,7 @@ export class IQRATopology {
   }
 
   private async revertToState(stateHash: string) {
-    console.log(`🌀 Reverting to state: ${stateHash}`);
+    IQRALogger.info(`🌀 Reverting to state: ${stateHash}`);
     // Logic to restore files from git or internal cache
     return true;
   }

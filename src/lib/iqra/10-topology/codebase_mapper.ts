@@ -20,7 +20,7 @@ export interface CodeTopology {
 }
 
 export class CodebaseTopologyMapper {
-  private static readonly ROOT = path.join(process.cwd(), 'lib', 'iqra');
+  private static readonly ROOT = path.join(process.cwd(), 'src', 'lib', 'iqra');
 
   /**
    * Scans the /lib/iqra directory and builds a topology graph.

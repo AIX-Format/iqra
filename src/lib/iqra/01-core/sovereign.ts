@@ -330,7 +330,7 @@ export class SovereignEngine {
   private static async runDeepPulse() {
     IQRALogger.info('🌀 [PULSE] Deep topological analysis...');
     // Analyze core files for structural coherence
-    const coreFiles = ['lib/iqra/memory.ts', 'lib/iqra/sovereign.ts'];
+    const coreFiles = ['src/lib/iqra/03-memory/memory.ts', 'src/lib/iqra/01-core/sovereign.ts'];
     for (const file of coreFiles) {
       const content = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
       const analysis = await TopologicalAnalyzer.analyze(content, content.split('\n'));

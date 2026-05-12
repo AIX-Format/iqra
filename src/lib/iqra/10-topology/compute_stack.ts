@@ -31,7 +31,6 @@ export type ComputeProvider =
   | 'cerebras_lpu'
   | 'gemini_gpu'
   | 'ollama_cpu'
-  | 'qiskit_quantum'
   | 'qiskit_quantum';
 
 export interface ComputeTask {
@@ -61,10 +60,11 @@ const _budget = {
 
 function _checkBudget(provider: 'groq' | 'cerebras' | 'gemini', tokens: number): boolean {
   const b = _budget[provider];
-  const now = new Date();
-  if (now.getHours() === 0 && now.getHours() !== b.reset_hour) {
+  const today = new Date().toDateString();
+  // Reset daily budget when the date changes
+  if ((b as any)._lastResetDate !== today) {
     b.used = 0;
-    b.reset_hour = 0;
+    (b as any)._lastResetDate = today;
   }
   return b.used + tokens <= b.limit;
 }
@@ -237,44 +237,6 @@ export class ComputeStack {
     };
   }
 
-  /**
-   * Together.ai — 60 RPM مجاناً، Llama 3.3 70B Turbo Free
-   */
-  private static async _callTogether(
-    prompt: string,
-    system: string | undefined,
-    start: number
-  ): Promise<ComputeResult> {
-    const messages: any[] = [];
-    if (system) messages.push({ role: 'system', content: system });
-    messages.push({ role: 'user', content: prompt });
-
-    const res = await fetch('https://api.together.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.TOGETHER_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
-        messages,
-        max_tokens: 1024,
-        temperature: 0.3,
-      }),
-    });
-
-    const data = await res.json() as any;
-    const content = data.choices?.[0]?.message?.content ?? '';
-    const tokens = data.usage?.total_tokens ?? 0;
-
-    return {
-      provider: 'gemini_gpu', // نُعيد استخدام النوع
-      model: 'llama-3.3-70b-turbo-free',
-      response: content,
-      tokens_used: tokens,
-      latency_ms: Date.now() - start,
-    };
-  }
 
   private static async _callGemini(
     prompt: string,

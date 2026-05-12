@@ -37,7 +37,7 @@ export class MissionControl {
 
   private loadModels() {
     if (this.modelsConfig) return this.modelsConfig;
-    const configPath = path.join(process.cwd(), 'lib/iqra/evolution/models.json');
+    const configPath = path.join(process.cwd(), 'src/lib/iqra/09-evolution/models.json');
     if (fs.existsSync(configPath)) {
       this.modelsConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
