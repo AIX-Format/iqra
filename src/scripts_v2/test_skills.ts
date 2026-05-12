@@ -1,6 +1,5 @@
-
-import { SkillBank } from '../s#skills/skill_bank';
-import { IQRALogger } from '../s#infra/logger';
+import { SkillBank } from '#skills/skill_bank';
+import { IQRALogger } from '#infra/logger';
 
 async function testSkills() {
   console.log('🧪 Starting SkillBank Integrity Test...');

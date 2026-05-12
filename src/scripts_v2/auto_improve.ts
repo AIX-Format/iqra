@@ -14,7 +14,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { appendToTrustChain } from '#security/security';
 import { IQRAFilter } from '#security/filter';
-import { IQRA_SOUL } from '../lib/iqra/prompts';
+import { IQRA_SOUL } from '#utils/prompts';
 
 const ROOT = path.join(process.cwd());
 const PLAN_PATH = path.join(ROOT, 'PLAN.md');

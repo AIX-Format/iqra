@@ -4,7 +4,7 @@
  * Runs the sovereign pulse and self-evolution loop.
  */
 
-import { SovereignEngine } from '../lib/iqra/sovereign';
+import { SovereignEngine } from '#core/sovereign';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

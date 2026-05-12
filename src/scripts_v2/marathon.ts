@@ -1,6 +1,6 @@
 import { AgentCore } from '#core/core';
 import { IQRAFilter } from '#security/filter';
-import { IQRAExecutionLoop } from '../lib/iqra/loop';
+import { IQRAExecutionLoop } from '#core/loop';
 import { IQRATopology } from '#topology/topology';
 import { IQRAStoryteller } from '#utils/storyteller';
 import { execSync } from 'child_process';
