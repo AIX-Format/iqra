@@ -6,10 +6,13 @@
  */
 
 export interface QuranVerse {
+  id?: string;
   surah: number;
   ayah: number;
   text: string;
-  surah_name: string;
+  surah_name?: string;
+  translation?: string;
+  tafsir?: string;
   themes: string[];
 }
 

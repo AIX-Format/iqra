@@ -9,15 +9,15 @@
  * لا Mock، لا Fake — اختبارات حقيقية فقط
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
   ExperienceBuffer,
-  EbbinghausEngine,
   type Experience,
   type HandoffResult,
 } from '../experience_buffer';
+import { EbbinghausEngine } from '#memory/micro_memory';
 
 const TEST_BUFFER_PATH = path.join(process.cwd(), '.iqra', 'experience_buffer.json');
 const BACKUP_PATH = TEST_BUFFER_PATH + '.backup';

@@ -19,35 +19,93 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "#manifest/*": ["./src/lib/iqra/00-manifest/*"],
-      "#01-core/*": ["./src/lib/iqra/01-core/*"],
-      "#core/*": ["./src/lib/iqra/01-core/*"],
-      "#iqra-core/*": ["./src/lib/iqra/01-core/*"],
-      "#errors/*": ["./src/lib/iqra/01-core/*"],
-      "#orchestrator/*": ["./src/lib/iqra/01-core/*"],
-      "#workers/*": ["./src/lib/iqra/02-workers/*"],
-      "#03-memory/*": ["./src/lib/iqra/03-memory/*"],
-      "#memory/*": ["./src/lib/iqra/03-memory/*"],
-      "#quran/*": ["./src/lib/iqra/04-quran/*"],
-      "#rewards/*": ["./src/lib/iqra/05-rewards/*"],
-      "#06-security/*": ["./src/lib/iqra/06-security/*"],
-      "#security/*": ["./src/lib/iqra/06-security/*"],
-      "#llm/*": ["./src/lib/iqra/07-llm/*"],
-      "#skills/*": ["./src/lib/iqra/08-skills/*"],
-      "#cognitive/*": ["./src/lib/iqra/08-cognitive/*"],
-      "#evolution/*": ["./src/lib/iqra/09-evolution/*"],
-      "#topology/*": ["./src/lib/iqra/10-topology/*"],
-      "#trading/*": ["./src/lib/iqra/11-trading/*"],
-      "#infra/*": ["./src/lib/iqra/12-infrastructure/*"],
-      "#utils/*": ["./src/lib/iqra/13-utils/*"],
-      "#agents/*": ["./src/lib/iqra/01-core/agents/*"],
-      "#connectors/*": ["./src/connectors/*"],
-      "#scripts/*": ["./src/scripts_v2/*"],
-      "#tests/*": ["./src/tests/*"],
-      "#services/*": ["./src/services/*"],
-      "#schema/*": ["./src/schema/*"],
-      "#sovereign_orchestrator": ["./src/lib/iqra/01-core/sovereign_orchestrator.ts"],
-      "@/*": ["./src/*"]
+      "#manifest/*": [
+        "./src/lib/iqra/00-manifest/*"
+      ],
+      "#01-core/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#core/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#iqra-core/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#errors/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#orchestrator/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#workers/*": [
+        "./src/lib/iqra/02-workers/*"
+      ],
+      "#03-memory/*": [
+        "./src/lib/iqra/03-memory/*"
+      ],
+      "#memory/*": [
+        "./src/lib/iqra/03-memory/*"
+      ],
+      "#quran/*": [
+        "./src/lib/iqra/04-quran/*"
+      ],
+      "#rewards/*": [
+        "./src/lib/iqra/05-rewards/*"
+      ],
+      "#06-security/*": [
+        "./src/lib/iqra/06-security/*"
+      ],
+      "#security/*": [
+        "./src/lib/iqra/06-security/*"
+      ],
+      "#llm/*": [
+        "./src/lib/iqra/07-llm/*"
+      ],
+      "#skills/*": [
+        "./src/lib/iqra/08-skills/*"
+      ],
+      "#cognitive/*": [
+        "./src/lib/iqra/08-cognitive/*"
+      ],
+      "#evolution/*": [
+        "./src/lib/iqra/09-evolution/*"
+      ],
+      "#topology/*": [
+        "./src/lib/iqra/10-topology/*"
+      ],
+      "#trading/*": [
+        "./src/lib/iqra/11-trading/*"
+      ],
+      "#infra/*": [
+        "./src/lib/iqra/12-infrastructure/*"
+      ],
+      "#utils/*": [
+        "./src/lib/iqra/13-utils/*"
+      ],
+      "#agents/*": [
+        "./src/lib/iqra/01-core/agents/*"
+      ],
+      "#connectors/*": [
+        "./src/connectors/*"
+      ],
+      "#scripts/*": [
+        "./src/scripts_v2/*"
+      ],
+      "#tests/*": [
+        "./src/tests/*"
+      ],
+      "#services/*": [
+        "./src/services/*"
+      ],
+      "#schema/*": [
+        "./src/schema/*"
+      ],
+      "#sovereign_orchestrator": [
+        "./src/lib/iqra/01-core/sovereign_orchestrator.ts"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
     },
     "forceConsistentCasingInFileNames": true,
     "plugins": [
@@ -57,9 +115,10 @@
     ]
   },
   "include": [
+    "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "next-env.d.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
