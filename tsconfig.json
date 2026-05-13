@@ -86,6 +86,9 @@
       "#utils/*": [
         "./src/lib/iqra/13-utils/*"
       ],
+      "#aix/*": [
+        "./src/lib/iqra/14-aix/*"
+      ],
       "#agents/*": [
         "./src/lib/iqra/01-core/agents/*"
       ],
