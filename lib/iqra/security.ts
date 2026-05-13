@@ -268,7 +268,7 @@ async function triggerHumanIntervention(errorType: string, fullError: string) {
   const content = `
 ${AL_FATIHAH_HEADER}
 
-// نداء للمساعدة البشرية | ASK_HUMAN.md
+# نداء للمساعدة البشرية | ASK_HUMAN.md
 > "عجزت، والأمر لله"
 > "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ" — النحل: 43
 
