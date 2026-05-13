@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           # Pinned to the version declared in src/services/go-engine/go.mod.
           # Bumping the floor here MUST go hand-in-hand with bumping go.mod.
