@@ -28,6 +28,10 @@ const SKIP_PREFIXES = ['.iqra/memory'];
 // نمط الروابط في markdown
 const INLINE_LINK = /(?<!\!)\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
 const IMAGE_LINK = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+// reference-style:  [text][ref] أو ![alt][ref]
+const REF_USE = /(!?)\[([^\]]*)\]\[([^\]]+)\]/g;
+// تعريف المرجع:  [ref]: ./target.md "optional title"
+const REF_DEF = /^\s*\[([^\]]+)\]:\s*(\S+)(?:\s+.+)?$/;
 
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
@@ -71,33 +75,73 @@ function isAnchor(url: string): boolean {
 
 type Broken = { file: string; line: number; target: string };
 
+function resolveLink(target: string, fileDir: string): string {
+  // 🤖 NOTE: المسارات التي تبدأ بـ '/' في markdown نسبية لجذر المستودع
+  // (process.cwd() في الـ workflow)، ليس filesystem root.
+  if (target.startsWith('/')) {
+    return path.join(process.cwd(), target);
+  }
+  return path.resolve(fileDir, target);
+}
+
 function checkFile(file: string): Broken[] {
   const content = fs.readFileSync(file, 'utf-8');
   const lines = content.split('\n');
   const fileDir = path.dirname(file);
   const broken: Broken[] = [];
 
+  // 🤖 NOTE: نجمع تعريفات [ref]: target أولاً ليُمكن للروابط reference-style
+  // الإشارة إليها لاحقاً في نفس الملف.
+  const refDefs = new Map<string, string>();
+  for (const line of lines) {
+    const m = line.match(REF_DEF);
+    if (m) refDefs.set(m[1].toLowerCase(), m[2]);
+  }
+
+  function checkTarget(rawTarget: string, lineNum: number, displayed: string): void {
+    let target: string;
+    try {
+      target = decodeURIComponent(rawTarget);
+    } catch {
+      target = rawTarget; // malformed URI escape — افحص كما هو
+    }
+    if (isExternal(target) || isAnchor(target)) return;
+
+    const [pathOnly] = target.split('#');
+    if (!pathOnly) return;
+
+    const resolved = resolveLink(pathOnly, fileDir);
+    if (!fs.existsSync(resolved)) {
+      broken.push({ file, line: lineNum, target: displayed });
+    }
+  }
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // inline + image
     const patterns = [INLINE_LINK, IMAGE_LINK];
     for (const pattern of patterns) {
       pattern.lastIndex = 0;
       let m: RegExpExecArray | null;
       while ((m = pattern.exec(line)) !== null) {
-        const target = decodeURIComponent(m[2]);
-        if (isExternal(target) || isAnchor(target)) continue;
-
-        // تنظيف الـ anchor من المسار
-        const [pathOnly] = target.split('#');
-        if (!pathOnly) continue;
-
-        // المسار النسبي من مجلد الملف الحالي
-        const resolved = path.resolve(fileDir, pathOnly);
-
-        if (!fs.existsSync(resolved)) {
-          broken.push({ file, line: i + 1, target });
-        }
+        const rawTarget = m[2];
+        checkTarget(rawTarget, i + 1, rawTarget);
       }
+    }
+
+    // reference-style: [text][ref] أو ![alt][ref]
+    REF_USE.lastIndex = 0;
+    let rm: RegExpExecArray | null;
+    while ((rm = REF_USE.exec(line)) !== null) {
+      const refKey = rm[3].toLowerCase();
+      const def = refDefs.get(refKey);
+      if (def === undefined) {
+        // مرجع غير مُعرَّف — كسر
+        broken.push({ file, line: i + 1, target: `[ref:${rm[3]}] (تعريف مفقود)` });
+        continue;
+      }
+      checkTarget(def, i + 1, `[${rm[3]}] → ${def}`);
     }
   }
 

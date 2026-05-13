@@ -20,7 +20,34 @@ const OUTPUT = '.iqra/performance/license-report.md';
 const CYCLE_LENGTH = 30;
 
 const LICENSE_VARIANTS = ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'COPYING'];
-const KNOWN_LICENSES = ['MIT', 'Apache', 'GPL', 'BSD', 'ISC', 'MPL', 'Unlicense'];
+
+// 🤖 NOTE: نستخدم signature أنماط مميزة (sentence-anchored) لا مجرد substring.
+// السابق كان يطابق "MIT" داخل "LIMITATIONS" أو "PERMITTED" فيُسيء التصنيف.
+// كل license لها regex مميز مأخوذ من نص الترخيص الرسمي الفريد.
+const LICENSE_SIGNATURES: Array<{ name: string; spdx: string; pattern: RegExp }> = [
+  // MIT: السطر "MIT License" أو "Permission is hereby granted, free of charge"
+  { name: 'MIT', spdx: 'MIT', pattern: /\bMIT License\b|\bPermission is hereby granted, free of charge\b/i },
+  // Apache 2.0
+  { name: 'Apache-2.0', spdx: 'Apache-2.0', pattern: /Apache License,?\s+Version\s+2\.0/i },
+  // GPLv3
+  { name: 'GPL-3.0', spdx: 'GPL-3.0', pattern: /GNU GENERAL PUBLIC LICENSE\s+Version\s+3/i },
+  // GPLv2
+  { name: 'GPL-2.0', spdx: 'GPL-2.0', pattern: /GNU GENERAL PUBLIC LICENSE\s+Version\s+2/i },
+  // LGPL
+  { name: 'LGPL', spdx: 'LGPL', pattern: /GNU LESSER GENERAL PUBLIC LICENSE/i },
+  // AGPL
+  { name: 'AGPL-3.0', spdx: 'AGPL-3.0', pattern: /GNU AFFERO GENERAL PUBLIC LICENSE/i },
+  // BSD-3-Clause
+  { name: 'BSD-3-Clause', spdx: 'BSD-3-Clause', pattern: /BSD 3-Clause|Redistributions of source code must retain.*neither the name of/is },
+  // BSD-2-Clause
+  { name: 'BSD-2-Clause', spdx: 'BSD-2-Clause', pattern: /BSD 2-Clause|Redistribution and use in source and binary forms/i },
+  // ISC
+  { name: 'ISC', spdx: 'ISC', pattern: /ISC License\b|Permission to use, copy, modify, and\/or distribute/i },
+  // MPL 2.0
+  { name: 'MPL-2.0', spdx: 'MPL-2.0', pattern: /Mozilla Public License Version 2\.0/i },
+  // Unlicense
+  { name: 'Unlicense', spdx: 'Unlicense', pattern: /This is free and unencumbered software released into the public domain/i },
+];
 
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
@@ -35,12 +62,24 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
-function detectLicenseType(content: string): string {
-  const upper = content.toUpperCase();
-  for (const license of KNOWN_LICENSES) {
-    if (upper.includes(license.toUpperCase())) return license;
+function detectLicenseType(content: string): { name: string; spdx: string } {
+  for (const sig of LICENSE_SIGNATURES) {
+    if (sig.pattern.test(content)) return { name: sig.name, spdx: sig.spdx };
   }
-  return 'unknown';
+  return { name: 'unknown', spdx: 'unknown' };
+}
+
+// 🤖 NOTE: مقارنة pkg.license بالـ SPDX المكتشف. نتسامح مع variants شائعة
+// (MIT vs MIT-0, Apache-2.0 vs Apache 2.0, إلخ).
+function licensesMatch(declared: string, detectedSpdx: string): boolean {
+  if (detectedSpdx === 'unknown') return false;
+  const norm = (s: string) => s.toLowerCase().replace(/[\s_.]+/g, '-').replace(/-+/g, '-');
+  const d = norm(declared);
+  const det = norm(detectedSpdx);
+  if (d === det) return true;
+  // تطابق partial: MIT vs MIT-0، Apache-2.0 vs Apache
+  if (d.startsWith(det) || det.startsWith(d)) return true;
+  return false;
 }
 
 function checkLicense(): void {
@@ -60,32 +99,60 @@ function checkLicense(): void {
     console.warn(`⚠️ لا يوجد ملف ترخيص — راجع ${OUTPUT}`);
   } else {
     report += `## ✅ ملف ترخيص موجود\n\n`;
+    const detected: Array<{ file: string; name: string; spdx: string }> = [];
     for (const file of foundFiles) {
       const content = fs.readFileSync(file, 'utf-8');
-      const type = detectLicenseType(content);
+      const { name, spdx } = detectLicenseType(content);
       const size = content.length;
-      report += `- \`${file}\` — نوع: **${type}** (${size} حرف)\n`;
+      report += `- \`${file}\` — نوع: **${name}** (${size} حرف)\n`;
+      detected.push({ file, name, spdx });
     }
     report += `\n`;
 
-    // فحص package.json
+    // فحص package.json + مقارنة
+    let pkgLicense: string | undefined;
+    let mismatch = false;
     if (fs.existsSync('package.json')) {
       try {
         const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
-        if (pkg.license) {
-          report += `## 📦 package.json\n\n`;
-          report += `- \`license\`: **${pkg.license}**\n`;
+        pkgLicense = typeof pkg.license === 'string' ? pkg.license : undefined;
+        report += `## 📦 package.json\n\n`;
+        if (pkgLicense) {
+          report += `- \`license\`: **${pkgLicense}**\n\n`;
+
+          // 🤖 NOTE: مقارنة pkg.license بالـ SPDX المكتشف من الملف.
+          // إذا اختلفا (MIT في package.json + Apache في LICENSE) — تناقض خطير.
+          const primary = detected.find((d) => d.spdx !== 'unknown');
+          if (primary) {
+            if (licensesMatch(pkgLicense, primary.spdx)) {
+              report += `✅ يطابق محتوى \`${primary.file}\` (${primary.spdx}).\n`;
+            } else {
+              mismatch = true;
+              report += `### ❌ تناقض ترخيص\n\n`;
+              report += `\`package.json\` يعلن \`${pkgLicense}\` لكن \`${primary.file}\` يحتوي **${primary.spdx}**.\n`;
+              report += `هذا التناقض قد يضلّل المستهلكين أو يكسر فحوص الـ compliance.\n`;
+              report += `**اختر واحداً**:\n`;
+              report += `- إن كان \`${pkgLicense}\` هو المقصود → استبدل محتوى \`${primary.file}\` بنص ${pkgLicense} الرسمي.\n`;
+              report += `- إن كان \`${primary.spdx}\` هو المقصود → عدّل \`package.json\` ليصبح \`"license": "${primary.spdx}"\`.\n`;
+            }
+          } else {
+            report += `⚠️ لم يُكشَف نوع الترخيص من الملف، فلا يمكن التحقق من المطابقة.\n`;
+          }
         } else {
-          report += `## ⚠️ package.json\n\n`;
-          report += `- حقل \`license\` مفقود. أضفه ليطابق LICENSE.\n`;
+          report += `⚠️ حقل \`license\` مفقود في \`package.json\`. أضفه ليطابق محتوى \`LICENSE\`.\n`;
+          mismatch = true;
         }
       } catch {
         // ignore
       }
     }
 
-    appendPulse('license-ok', { files: foundFiles });
-    console.log(`📜 ترخيص موجود (${foundFiles.length} ملف)`);
+    appendPulse('license-ok', { files: foundFiles, mismatch });
+    if (mismatch) {
+      console.warn(`⚠️ تناقض ترخيص — راجع ${OUTPUT}`);
+    } else {
+      console.log(`📜 ترخيص موجود (${foundFiles.length} ملف)`);
+    }
   }
 
   fs.writeFileSync(OUTPUT, report);
