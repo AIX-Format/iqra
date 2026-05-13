@@ -394,54 +394,77 @@ iqra/
 
 ## 🤝 Built by 1 Human + 7 AI Agents
 
-**EN ·** IQRA is the **L2 Runtime** of the [Sovereign AI Stack](https://github.com/Moeabdelaziz007#07-architects--ai-collaborators--المعماريون-والمتعاونون-الذكيون): 5 sovereign projects engineered by 1 human and a team of 12 AI agents in total. This runtime alone carries the fingerprints of **7 of those 12 agents** (derived from commit history, `Co-authored-by` trailers, and review attributions).
+**EN ·** IQRA is the **L2 Runtime** of the [Sovereign AI Stack](https://github.com/Moeabdelaziz007#07-architects--ai-collaborators--المعماريون-والمتعاونون-الذكيون): 5 sovereign projects engineered by 1 human and a team of 12 AI agents in total. This runtime alone carries the fingerprints of **7 of those 12 agents**: 3 coding, 3 review/debug, and 1 runtime/voice integration (derived from commit history, `Co-authored-by` trailers, and review attributions).
 
-**AR ·** IQRA هو **L2 Runtime** في [المنظومة السيادية](https://github.com/Moeabdelaziz007#07-architects--ai-collaborators--المعماريون-والمتعاونون-الذكيون): 5 مشاريع سيادية مهندَسة بإنسان واحد وفريق من 12 وكيلاً ذكياً. الـ Runtime ده لوحده عليه بصمات **7 من الـ 12** (مستخرجة من history الـ commits، trailers الـ `Co-authored-by`، ومراجعات).
+**AR ·** IQRA هو **L2 Runtime** في [المنظومة السيادية](https://github.com/Moeabdelaziz007#07-architects--ai-collaborators--المعماريون-والمتعاونون-الذكيون): 5 مشاريع سيادية مهندَسة بإنسان واحد وفريق من 12 وكيلاً ذكياً. الـ Runtime ده لوحده عليه بصمات **7 من الـ 12**: 3 وكلاء بناء، 3 وكلاء مراجعة وتنقيح، ووكيل واحد للتشغيل والصوت.
 
+### 🏛️ Architect
 <div align="center">
 <table>
 <tr>
-<td align="center" width="160" valign="top">
+<td align="center" width="200" valign="top">
   <a href="https://github.com/Moeabdelaziz007"><img src="https://github.com/Moeabdelaziz007.png" width="80" style="border-radius:50%;"/></a>
   <br/><br/><b>Mohamed Abdelaziz</b><br/>
   <sub>🏛️ Sovereign Architect</sub>
 </td>
-<td align="center" width="160" valign="top">
+</tr>
+</table>
+</div>
+
+### 🔨 Coding Agents (3)
+<div align="center">
+<table>
+<tr>
+<td align="center" width="200" valign="top">
   <a href="https://blacksmith.sh"><img src="https://img.shields.io/badge/AI-Codesmith-ff6b35?style=for-the-badge&logo=githubactions&logoColor=white" height="36"/></a>
   <br/><br/><b>Codesmith</b><br/>
-  <sub>🔨 Blacksmith · CI · Autofix</sub>
+  <sub>Blacksmith · CI · Autofix</sub>
 </td>
-<td align="center" width="160" valign="top">
-  <a href="https://coderabbit.ai"><img src="https://img.shields.io/badge/AI-CodeRabbit-7c3aed?style=for-the-badge&logo=githubactions&logoColor=white" height="36"/></a>
-  <br/><br/><b>CodeRabbit</b><br/>
-  <sub>🔍 PR Review · Quality gate</sub>
-</td>
-<td align="center" width="160" valign="top">
+<td align="center" width="200" valign="top">
   <a href="https://jules.google"><img src="https://img.shields.io/badge/AI-Jules-10b981?style=for-the-badge&logo=googlecloud&logoColor=white" height="36"/></a>
   <br/><br/><b>Jules</b><br/>
-  <sub>🔁 Google Antigravity · Async</sub>
+  <sub>Google Antigravity · Async builder</sub>
 </td>
-</tr>
-<tr>
-<td align="center" width="160" valign="top">
-  <a href="https://developers.google.com/gemini-code-assist"><img src="https://img.shields.io/badge/AI-Gemini_Code_Assist-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" height="36"/></a>
-  <br/><br/><b>Gemini Code Assist</b><br/>
-  <sub>🔬 Stream review · Embeddings</sub>
-</td>
-<td align="center" width="160" valign="top">
-  <a href="https://openai.com/codex"><img src="https://img.shields.io/badge/AI-Codex-10a37f?style=for-the-badge&logo=openai&logoColor=white" height="36"/></a>
-  <br/><br/><b>Codex</b><br/>
-  <sub>🧪 OpenAI · P1/P2 findings</sub>
-</td>
-<td align="center" width="160" valign="top">
+<td align="center" width="200" valign="top">
   <a href="https://cursor.sh"><img src="https://img.shields.io/badge/AI-Cursor-0ea5e9?style=for-the-badge&logo=cursor&logoColor=white" height="36"/></a>
   <br/><br/><b>Cursor</b><br/>
-  <sub>💻 Inline completion · Edits</sub>
+  <sub>Anysphere · Inline edits</sub>
 </td>
-<td align="center" width="160" valign="top">
+</tr>
+</table>
+</div>
+
+### 🔍 Review &amp; Debug Agents (3)
+<div align="center">
+<table>
+<tr>
+<td align="center" width="200" valign="top">
+  <a href="https://coderabbit.ai"><img src="https://img.shields.io/badge/AI-CodeRabbit-7c3aed?style=for-the-badge&logo=githubactions&logoColor=white" height="36"/></a>
+  <br/><br/><b>CodeRabbit</b><br/>
+  <sub>PR Review · Quality gate</sub>
+</td>
+<td align="center" width="200" valign="top">
+  <a href="https://openai.com/codex"><img src="https://img.shields.io/badge/AI-Codex-10a37f?style=for-the-badge&logo=openai&logoColor=white" height="36"/></a>
+  <br/><br/><b>Codex</b><br/>
+  <sub>OpenAI · P1/P2 findings · Debug</sub>
+</td>
+<td align="center" width="200" valign="top">
+  <a href="https://developers.google.com/gemini-code-assist"><img src="https://img.shields.io/badge/AI-Gemini_Code_Assist-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" height="36"/></a>
+  <br/><br/><b>Gemini Code Assist</b><br/>
+  <sub>Stream review · Embeddings</sub>
+</td>
+</tr>
+</table>
+</div>
+
+### 🛰️ Runtime &amp; Voice Integration (1)
+<div align="center">
+<table>
+<tr>
+<td align="center" width="200" valign="top">
   <a href="https://x.ai"><img src="https://img.shields.io/badge/AI-Grok-000000?style=for-the-badge&logo=x&logoColor=white" height="36"/></a>
   <br/><br/><b>Grok</b><br/>
-  <sub>🛰️ xAI · Voice · Realtime</sub>
+  <sub>xAI · IQRA Voice · Realtime</sub>
 </td>
 </tr>
 </table>
