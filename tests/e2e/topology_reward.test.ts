@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runMission } from '#01-core/mission-runner';
+import { runMission } from '#core/mission-runner';
 import fs from 'fs';
 import path from 'path';
 

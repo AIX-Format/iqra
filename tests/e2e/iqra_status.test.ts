@@ -1,4 +1,4 @@
-import { IQRACommands } from '#13-utils/commands';
+import { IQRACommands } from '#utils/commands';
 
 /**
  * IQRA E2E Test - Status Verification

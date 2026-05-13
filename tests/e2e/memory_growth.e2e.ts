@@ -8,9 +8,9 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
-import { runMission } from '#01-core/mission-runner.js';
+import { runMission } from '#core/mission-runner.js';
 import { RewardLedger } from '../../ledger/reward-ledger.ts';
-import { IQRAMemory } from '#03-memory/memory.js';
+import { IQRAMemory } from '#memory/memory.js';
 import { PatternMemory } from '#memory/pattern_memory.ts';
 
 function writeMission(id: string, verse: string, field: string): string {

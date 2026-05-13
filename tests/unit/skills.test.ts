@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SkillBank } from '#08-skills/skill_bank.js';
+import { SkillBank } from '#skills/skill_bank.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -143,7 +143,7 @@ describe('IQRA Skills — المهارات', () => {
     });
 
     it('damir_check: رفض نية الكذب', async () => {
-      const { DamirConscience } = await import('../../lib/iqra/damir_conscience.ts');
+      const { DamirConscience } = await import('../../lib/iqra/06-security/damir_conscience.ts');
       const damir = new DamirConscience();
       const verdict = damir.check({
         id: 'skill_test',

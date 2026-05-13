@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { MissionControl } from '#sovereign_orchestrator';
+import { MissionControl } from '#core/sovereign_orchestrator';
 
 describe('MissionControl (Unit)', () => {
   it('should initialize correctly', () => {

@@ -97,6 +97,23 @@ export interface RewardEntry {
 
   /** هل تم اكتشاف شذوذ؟ */
   anomaly_detected?: boolean;
+
+  // ── Hash Chain (PR #23 stabilization) ──────────────────────────────────────
+
+  /**
+   * SHA-256 hex digest of the previous entry. `null` only on the first
+   * entry in the ledger; every subsequent entry must reference its
+   * predecessor's `entry_hash`. Stored so the chain can be verified
+   * offline without replaying the original computation.
+   */
+  prev_hash?: string | null;
+
+  /**
+   * SHA-256 hex digest of this entry's content (with prev_hash mixed
+   * in). 64 lowercase hex chars. Empty string in the in-memory entry
+   * before append; populated by `RewardLedger.append`.
+   */
+  entry_hash?: string;
 }
 
 // ── PristinePathResult ────────────────────────────────────────────────────────

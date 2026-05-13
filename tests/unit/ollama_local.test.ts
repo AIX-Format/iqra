@@ -70,7 +70,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
   describe('Tool Execution — تنفيذ الأدوات مباشرة', () => {
     it('get_verse(1,1) يُرجع البسملة', async () => {
       // نستدعي الأداة مباشرة بدون LLM
-      const { executeIQRATool } = await import('../../lib/iqra/llm/ollama.ts').then(
+      const { executeIQRATool } = await import('../../lib/iqra/07-llm/ollama.ts').then(
         m => ({ executeIQRATool: (m as any).executeIQRATool })
       ).catch(() => ({ executeIQRATool: null }));
 
@@ -121,7 +121,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
     });
 
     it('damir_check يرفض نية "كذب"', async () => {
-      const { DamirConscience } = await import('../../lib/iqra/damir_conscience.ts');
+      const { DamirConscience } = await import('../../lib/iqra/06-security/damir_conscience.ts');
       const damir = new DamirConscience();
       const verdict = damir.check({
         id: 'test_tool',
@@ -132,7 +132,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
     });
 
     it('damir_check يقبل نية سليمة', async () => {
-      const { DamirConscience } = await import('../../lib/iqra/damir_conscience.ts');
+      const { DamirConscience } = await import('../../lib/iqra/06-security/damir_conscience.ts');
       const damir = new DamirConscience();
       const verdict = damir.check({
         id: 'test_tool_good',
@@ -143,7 +143,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
     });
 
     it('compute_shannon_hel يحسب إنتروبي صحيح', async () => {
-      const { MicroMemory } = await import('../../lib/iqra/memory/micro_memory.ts');
+      const { MicroMemory } = await import('../../lib/iqra/03-memory/micro_memory.ts');
       const hel = MicroMemory.computeShannonHEL('بسم الله الرحمن الرحيم');
       expect(hel).toBeGreaterThan(0);
       expect(hel).toBeLessThan(5);
@@ -220,7 +220,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
 
   describe('isLocalMode() — وضع التشغيل', () => {
     it('يُرجع false بدون IQRA_LLM_LOCAL', async () => {
-      const { isLocalMode } = await import('../../lib/iqra/llm/ollama.ts');
+      const { isLocalMode } = await import('../../lib/iqra/07-llm/ollama.ts');
       const original = process.env.IQRA_LLM_LOCAL;
       delete process.env.IQRA_LLM_LOCAL;
       expect(isLocalMode()).toBe(false);
@@ -228,7 +228,7 @@ describe('Gemma4Local — النموذج المحلي', () => {
     });
 
     it('يُرجع true مع IQRA_LLM_LOCAL=true', async () => {
-      const { isLocalMode } = await import('../../lib/iqra/llm/ollama.ts');
+      const { isLocalMode } = await import('../../lib/iqra/07-llm/ollama.ts');
       process.env.IQRA_LLM_LOCAL = 'true';
       expect(isLocalMode()).toBe(true);
       delete process.env.IQRA_LLM_LOCAL;

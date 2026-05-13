@@ -1,6 +1,6 @@
 import { it, expect, describe, vi, beforeEach } from 'vitest';
 import { CuriosityEngine } from '#quran/curiosity.ts';
-import { IQRAMemory } from '#03-memory/memory.js';
+import { IQRAMemory } from '#memory/memory.js';
 import * as groqModule from '#llm/groq.ts';
 
 describe('Resonance Cycle E2E', () => {
