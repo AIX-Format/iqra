@@ -14,7 +14,7 @@
 import { iqraThink } from '../../lib/iqra/01-core/brain';
 import { SovereignCognitiveOrchestrator } from '../../lib/iqra/08-cognitive/engine';
 import { IQRAMemory } from '../../lib/iqra/03-memory/memory';
-import { IQRALogger } from '../../lib/iqra/02-infra/logger';
+import { IQRALogger } from '#infra/logger';
 import { RewardEngine } from '../../lib/iqra/05-rewards/engine';
 
 describe('Sovereign Intelligence Integration (E2E)', () => {

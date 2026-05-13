@@ -42,7 +42,7 @@ let HttpError: any = null;
 async function loadGrammy() {
   if (Bot) return true;
   try {
-    const grammy = await import('grammy');
+    const grammy = await import('grammy' as any);
     Bot = grammy.Bot;
     GrammyError = grammy.GrammyError;
     HttpError = grammy.HttpError;

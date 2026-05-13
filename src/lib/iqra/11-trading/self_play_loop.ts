@@ -64,7 +64,7 @@ export class SelfPlayLoop {
         resonance.score,
         [symbol, side],
         0, // H1 Proxy
-        'MARKET_EXECUTION',
+        'Other', // RewardEngine enum doesn't yet model 'MARKET_EXECUTION'; logged with metadata below.
         0 // Tesla Sum
       );
     } else if (!isCompliant) {

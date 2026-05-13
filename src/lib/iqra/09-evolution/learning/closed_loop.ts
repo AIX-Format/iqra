@@ -17,6 +17,7 @@ import crypto from 'crypto';
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
 import { IQRAMemory } from '#memory/memory';
+import { DoctrinalGuard } from '#security/doctrinal_guard';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

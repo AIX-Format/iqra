@@ -1,6 +1,6 @@
 import { SelfPlayLoop } from '#trading/self_play_loop';
 import { MemoryGovernor } from '#infra/memory_governor';
-import { TelegramBot } from '#utils/telegram_bot';
+import { IQRATelegramBot as TelegramBot } from '#utils/telegram_bot';
 import { IQRALogger } from '#infra/logger';
 
 /**
@@ -67,12 +67,11 @@ class TradingPulse {
     try {
       await this.loop.runStep(symbol);
       
-      if (this.telegram) {
-        await this.telegram.sendMessage(
-          process.env.TELEGRAM_CHAT_ID || '',
-          `🌀 *IQRA Sovereign Pulse*\nSymbol: ${symbol}\nCycle: 369s\nStatus: Executed\nIntegrity: PASS`
-        );
-      }
+      // IQRATelegramBot exposes sendMessage as a static method bound to the
+      // singleton chat configured via init(); chat id is encoded there.
+      await TelegramBot.sendMessage(
+        `🌀 *IQRA Sovereign Pulse*\nSymbol: ${symbol}\nCycle: 369s\nStatus: Executed\nIntegrity: PASS`,
+      );
     } catch (error) {
       console.error('❌ [PULSE_ERROR] Cycle failed:', error);
       IQRALogger.error('❌ [PULSE_ERROR] Cycle failed:', error);

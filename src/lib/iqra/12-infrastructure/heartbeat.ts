@@ -398,8 +398,8 @@ export class HeartbeatSystem {
 
     try {
       // استيراد محرك الأنماط (lazy — لتجنب circular deps)
-      const { TopologicalCuriosityEngine } = await import('../quran/topological_curiosity.js')
-        .catch(() => ({ TopologicalCuriosityEngine: null }));
+      const { TopologicalCuriosityEngine } = await import('#quran/topological_curiosity')
+        .catch(() => ({ TopologicalCuriosityEngine: null as any }));
 
       if (TopologicalCuriosityEngine) {
         const result = await (TopologicalCuriosityEngine as any).runDiscoveryCycle?.();

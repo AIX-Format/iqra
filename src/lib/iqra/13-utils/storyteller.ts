@@ -95,4 +95,43 @@ export class IQRAStoryteller {
       return '🌙 IQRA Update: Evolution continues.';
     }
   }
+
+  // ── Static convenience surface used by marathon.ts and similar scripts ─────
+
+  /**
+   * Static factory wrapping the instance `generateCommitMessage` for
+   * synchronous callers. Accepts either a `WorkerReport[]` or a
+   * (breakthrough, note) tuple and produces a deterministic fallback
+   * when the live brain is unavailable. Never throws.
+   */
+  static generateCommitMessage(
+    breakthroughOrReports: string | WorkerReport[],
+    note: string = '',
+  ): string {
+    const breakthrough = Array.isArray(breakthroughOrReports)
+      ? breakthroughOrReports.map((r) => r.implemented?.join(', ') ?? r.worker_id).join(' | ')
+      : breakthroughOrReports;
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    return `🌙 ${breakthrough}\n\n${note}\n\nReference: ${stamp}`.trim();
+  }
+
+  /**
+   * Append a hadith-style record to HADITH.md. Used by long-running
+   * marathons to leave a human-readable trail next to TrustChain.
+   * Idempotent and safe when the file does not yet exist.
+   */
+  static logToHadith(hash: string, summary: string): void {
+    try {
+      const file = path.join(process.cwd(), 'HADITH.md');
+      const line = `- \`${hash}\` ${new Date().toISOString()} — ${summary}\n`;
+      if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, `# IQRA Hadith Trail\n\n${line}`);
+      } else {
+        fs.appendFileSync(file, line);
+      }
+    } catch (e) {
+      IQRALogger.warn(`⚠️ [STORYTELLER] logToHadith failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
 }

@@ -7,40 +7,34 @@
  * for Truth, Justice, and compliance with the Supreme Constitution.
  */
 
-import { LlmAgent } from '@google/adk';
 import { SovereignIdentity } from '#security/sovereign_identity';
 import { IQRALogger } from '#infra/logger';
-import { IQRAMemory } from '#memory/memory';
+import { ConnectorFactory } from '#connectors/index';
 
 export class MuraqabahAgent {
-  private static _agent: LlmAgent | null = null;
-
-  static async getAgent() {
-    if (this._agent) return this._agent;
-
-    const instruction = await SovereignIdentity.getIntegratedSoul(
+  private static async getInstruction(): Promise<string> {
+    return await SovereignIdentity.getIntegratedSoul(
       'muraqabah-auditor',
       'Auditing system integrity for Truth and Justice',
       'iqra-auditor' // Assuming this persona exists or will be added
     );
-
-    this._agent = new LlmAgent({
-      name: 'muraqabah-auditor',
-      model: 'gemini-2.0-flash-exp',
-      instruction: async () => `${instruction}\n\nYour task is to review the following input. If it contains falsehood, injustice, or violates the Supreme Constitution, reply with [BLOCKED] followed by the reason. If it is clean, reply with [VERIFIED].`
-    });
-
-    return this._agent;
   }
 
   /**
-   * 🛡️ Perform a sovereign audit on any text content
+   * 🛡️ Perform a sovereign audit on any text content.
+   *
+   * Implementation note: previously used @google/adk LlmAgent, but ADK's
+   * agent API runs as an AsyncGenerator (`runAsync`) and does not expose a
+   * synchronous `run`. The ConnectorFactory path is simpler, deterministic,
+   * and stays inside our existing observability surface.
    */
   static async audit(content: string): Promise<{ isVerified: boolean; reason?: string }> {
     try {
-      const agent = await this.getAgent();
-      const result = await agent.run(content);
-      const text = result.text.trim();
+      const instruction = await this.getInstruction();
+      const connector = ConnectorFactory.getConnector('google');
+      const prompt = `${instruction}\n\nYour task is to review the following input. If it contains falsehood, injustice, or violates the Supreme Constitution, reply with [BLOCKED] followed by the reason. If it is clean, reply with [VERIFIED].\n\nINPUT:\n${content}`;
+      const result = await connector.generate(prompt);
+      const text = result.content.trim();
 
       if (text.startsWith('[BLOCKED]')) {
         const reason = text.replace('[BLOCKED]', '').trim();

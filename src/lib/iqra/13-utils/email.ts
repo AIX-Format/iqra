@@ -32,7 +32,7 @@ export async function iqraSend({
 }) {
   const { data, error } = await resend.emails.send({
     from: IQRA_IDENTITY.from,
-    replyTo: IQRA_IDENTITY.replyTo,
+    reply_to: IQRA_IDENTITY.replyTo,
     to: Array.isArray(to) ? to : [to],
     subject,
     html,

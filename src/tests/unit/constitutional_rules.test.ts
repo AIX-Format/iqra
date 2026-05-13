@@ -20,7 +20,7 @@ import yaml from 'js-yaml';
 
 // ── Imports from modified files [read] ───────────────────────────────────────
 import { parseMissionScope } from '#01-core/mission-context';
-import { makeWorkerReport } from '../../agents/contracts';
+import { makeWorkerReport } from '#agents/contracts';
 
 // ── Helper: write a temp mission YAML ────────────────────────────────────────
 function writeTempMission(content: Record<string, any>): string {

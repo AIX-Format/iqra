@@ -82,7 +82,7 @@ async function huntErrors(): Promise<ts.Diagnostic[]> {
     options: parsedConfig.options
   });
   
-  const diagnostics = ts.getPreEmitDiagnostics(program);
+  const diagnostics: ts.Diagnostic[] = [...ts.getPreEmitDiagnostics(program)];
   
   console.log(`🎯 Found ${diagnostics.length} errors`);
   return diagnostics;

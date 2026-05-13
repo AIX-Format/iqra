@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import {
   callGroqForResonance,
   callGroqForTruthValidation,
-} from '../lib/iqra/llm/groq';
+} from '#llm/groq';
 
 // ── Real Ayahs for testing ────────────────────────────────────────────────────
 const AYAH_AAD = 'أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِعَادٍ إِرَمَ ذَاتِ الْعِمَادِ الَّتِي لَمْ يُخْلَقْ مِثْلُهَا فِي الْبِلَادِ';
