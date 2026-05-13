@@ -98,7 +98,13 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # patterns محمية
-          PROTECTED='^(IQRA_SUPREME\.md|AGENTS\.md|\.husky/pre-commit|tsconfig\.json|\.github/CODEOWNERS|src/lib/iqra/00-manifest/|iqra-core/(DAST|MITHAQ|MURAQABAH|FITRAH|RULES|POWERS|WISDOM_7|TAWBAH))'
+          # 🤖 NOTE: الـ manifest files تستخدم Arabic transliteration مع diacritics:
+          #   DASTŪR.md (ليس DASTUR.md)، MĪTHĀQ.md، MURĀQABAH.md.
+          # نقبل الـ ASCII fallback أيضاً (DASTUR.md) إن أُنشئ كـ alias.
+          # نستخدم alternation (Ū|U) بدل character class [ŪU] لأن grep -E
+          # يطابق character classes بـ بايت لا بـ codepoint، فـ [ŪU] يخفق
+          # على multi-byte UTF-8. الـ .md anchor يمنع false positives.
+          PROTECTED='^(IQRA_SUPREME\.md|AGENTS\.md|\.husky/pre-commit|tsconfig\.json|\.github/CODEOWNERS|src/lib/iqra/00-manifest/|iqra-core/(DAST(Ū|U)R|M(Ī|I)TH(Ā|A)Q|MUR(Ā|A)QABAH|FITRAH|RULES|POWERS|WISDOM_7|TAWBAH)\.md)'
 
           # 🤖 NOTE: نُميّز بين modification لملف سيادي *موجود* (يحتاج إذن)
           # و *creation* لملف جديد (يُسمَح: هكذا نبني الحوكمة أول مرة).
