@@ -11,6 +11,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as readline from 'readline';
 
 const PULSES = '.iqra/pulses.jsonl';
 const CYCLE_FILE = '.iqra/cycle.txt';
@@ -38,7 +39,23 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
-function generateStats(): void {
+/**
+ * عدّ الأسطر تدفقياً بـ readline — لا يحمّل الملف بالكامل في الذاكرة.
+ * 🤖 NOTE: يحمي من ملفات ضخمة (lock files, logs, db dumps) بدون تأثير على الذاكرة.
+ */
+async function countLines(file: string): Promise<number> {
+  return new Promise((resolve) => {
+    let count = 0;
+    const stream = fs.createReadStream(file);
+    const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+    rl.on('line', () => count++);
+    rl.on('close', () => resolve(count));
+    rl.on('error', () => resolve(0));
+    stream.on('error', () => resolve(0));
+  });
+}
+
+async function generateStats(): Promise<void> {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 
   const byExt: Record<string, { files: number; lines: number }> = {};
@@ -47,7 +64,7 @@ function generateStats(): void {
 
   for (const file of walk('.')) {
     const ext = path.extname(file);
-    const lines = fs.readFileSync(file, 'utf-8').split('\n').length;
+    const lines = await countLines(file);
     byExt[ext] = byExt[ext] || { files: 0, lines: 0 };
     byExt[ext].files++;
     byExt[ext].lines += lines;
@@ -71,4 +88,7 @@ function generateStats(): void {
   console.log(`📐 ${OUTPUT} — ${totalFiles} ملف, ${totalLines} سطر`);
 }
 
-generateStats();
+generateStats().catch((err) => {
+  console.error('❌ فشل توليد الإحصائيات:', err);
+  process.exit(1);
+});

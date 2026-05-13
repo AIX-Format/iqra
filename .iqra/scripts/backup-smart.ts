@@ -14,12 +14,15 @@
  *     لأن zero-dependency قرار سيادي.
  *   - .seal ملف SHA-256 — يستخدم للتحقق من سلامة الأرشيف لاحقاً.
  *   - النسخ في .iqra/memory/ مستثناة من git (محلية فقط).
+ *   - الضغط والهاش يعملان تدفقياً (streams) لتجنّب OOM مع نمو المستودع.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as zlib from 'zlib';
 import * as crypto from 'crypto';
+import { pipeline } from 'stream/promises';
+import { Readable } from 'stream';
 
 const IQRA_BACKUP = '.iqra/memory/backups';
 const PULSES = '.iqra/pulses.jsonl';
@@ -56,6 +59,54 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
+/**
+ * مولّد تدفقي ينتج (header + content) لكل ملف داخل soulDir.
+ * نقرأ كل ملف عبر createReadStream لتجنّب تحميله بالكامل في الذاكرة.
+ */
+async function* streamSoulFiles(soulDir: string): AsyncGenerator<Buffer> {
+  for (const memory of walkSync(soulDir)) {
+    let size: number;
+    try {
+      size = fs.statSync(memory).size;
+    } catch {
+      continue; // ملف اختفى بين walk و stat
+    }
+    const relative = path.relative(soulDir, memory);
+    yield Buffer.from(`🧠 ${relative}\0${size}\0`);
+
+    const rs = fs.createReadStream(memory);
+    try {
+      for await (const chunk of rs) {
+        yield chunk as Buffer;
+      }
+    } finally {
+      rs.destroy();
+    }
+  }
+}
+
+/**
+ * يضغط ويختم في تمريرة واحدة: input → gzip → [tee → sha256] → file.
+ * الهاش يُحسَب تدفقياً على البايتات المضغوطة الخارجة.
+ */
+async function compressAndSeal(
+  source: AsyncIterable<Buffer>,
+  outPath: string
+): Promise<{ hash: string; bytes: number }> {
+  const hasher = crypto.createHash('sha256');
+  const gzip = zlib.createGzip();
+  const out = fs.createWriteStream(outPath);
+  let bytes = 0;
+
+  gzip.on('data', (chunk: Buffer) => {
+    hasher.update(chunk);
+    bytes += chunk.length;
+  });
+
+  await pipeline(Readable.from(source), gzip, out);
+  return { hash: hasher.digest('hex'), bytes };
+}
+
 async function iqraBackup(): Promise<void> {
   fs.mkdirSync(IQRA_BACKUP, { recursive: true });
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
@@ -70,47 +121,56 @@ async function iqraBackup(): Promise<void> {
       continue;
     }
 
+    // فحص أن المجلد غير فارغ (تجنّب إنشاء أرشيف فارغ)
+    let hasFiles = false;
+    for (const _ of walkSync(soulDir)) {
+      hasFiles = true;
+      break;
+    }
+    if (!hasFiles) continue;
+
     const memoryPath = path.join(
       IQRA_BACKUP,
       `${soulDir.replace(/\//g, '_')}_cycle_${cycle}_${stamp}.tar.gz`
     );
 
-    // تجميع المحتوى في buffer واحد (header + content لكل ملف)
-    const chunks: Buffer[] = [];
-    let fileCount = 0;
-
-    for (const memory of walkSync(soulDir)) {
-      const relative = path.relative(soulDir, memory);
-      const content = fs.readFileSync(memory);
-      const header = Buffer.from(`🧠 ${relative}\0${content.length}\0`);
-      chunks.push(header);
-      chunks.push(content);
-      fileCount++;
+    try {
+      const { hash, bytes } = await compressAndSeal(streamSoulFiles(soulDir), memoryPath);
+      fs.writeFileSync(`${memoryPath}.seal`, hash);
+      archived.push(memoryPath);
+      console.log(`📦 ${path.basename(memoryPath)} — ${(bytes / 1024).toFixed(1)}KB`);
+    } catch (err) {
+      console.error(`❌ فشل أرشفة ${soulDir}:`, err instanceof Error ? err.message : err);
+      // نظافة الأرشيف الفاسد
+      try { fs.unlinkSync(memoryPath); } catch { /* ignore */ }
     }
-
-    if (fileCount === 0) continue;
-
-    const raw = Buffer.concat(chunks);
-    const compressed = zlib.gzipSync(raw);
-    fs.writeFileSync(memoryPath, compressed);
-
-    // ختم بـ SHA-256
-    const hash = crypto.createHash('sha256').update(compressed).digest('hex');
-    fs.writeFileSync(`${memoryPath}.seal`, hash);
-
-    archived.push(memoryPath);
-    console.log(`📦 ${path.basename(memoryPath)} — ${fileCount} ملف, ${(compressed.length / 1024).toFixed(1)}KB`);
   }
 
-  // تنظيف الذكريات القديمة
+  // تنظيف الذكريات القديمة — يتسامح مع الملفات التي تختفي أثناء التنظيف
   const nowMs = Date.now();
   let cleaned = 0;
-  for (const memory of fs.readdirSync(IQRA_BACKUP)) {
+  let memoryEntries: string[] = [];
+  try {
+    memoryEntries = fs.readdirSync(IQRA_BACKUP);
+  } catch {
+    memoryEntries = [];
+  }
+
+  for (const memory of memoryEntries) {
     const memoryPath = path.join(IQRA_BACKUP, memory);
-    const stats = fs.statSync(memoryPath);
+    let stats: fs.Stats;
+    try {
+      stats = fs.statSync(memoryPath);
+    } catch {
+      continue; // ملف اختفى بين readdir و stat (race condition)
+    }
     if (nowMs - stats.mtimeMs > MEMORY_RETENTION_DAYS * 86400000) {
-      fs.unlinkSync(memoryPath);
-      cleaned++;
+      try {
+        fs.unlinkSync(memoryPath);
+        cleaned++;
+      } catch {
+        // قد يكون حُذف بالفعل من عملية أخرى
+      }
     }
   }
 

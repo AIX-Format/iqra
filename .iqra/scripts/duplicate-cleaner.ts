@@ -14,6 +14,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { pipeline } from 'stream/promises';
 
 const PULSES = '.iqra/pulses.jsonl';
 const CYCLE_FILE = '.iqra/cycle.txt';
@@ -40,15 +41,30 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
-function findDuplicates(): void {
+/**
+ * يحسب SHA-256 تدفقياً بدون تحميل الملف كاملاً في الذاكرة.
+ * 🤖 NOTE: هذا حماية من ملفات .md الضخمة (لقطات، logs، إلخ).
+ */
+async function streamHash(file: string): Promise<string | null> {
+  const hasher = crypto.createHash('sha256');
+  try {
+    const rs = fs.createReadStream(file);
+    await pipeline(rs, hasher);
+    return hasher.digest('hex');
+  } catch {
+    return null; // ملف اختفى أو غير قابل للقراءة
+  }
+}
+
+async function findDuplicates(): Promise<void> {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 
   const hashes: Record<string, string[]> = {};
   let scanned = 0;
 
   for (const file of walkMd('.')) {
-    const content = fs.readFileSync(file);
-    const hash = crypto.createHash('sha256').update(content).digest('hex');
+    const hash = await streamHash(file);
+    if (!hash) continue;
     hashes[hash] = hashes[hash] || [];
     hashes[hash].push(file);
     scanned++;
@@ -79,4 +95,7 @@ function findDuplicates(): void {
   console.log(`🔍 ${OUTPUT} — ${dupes.length} مجموعة تكرار من ${scanned} ملف`);
 }
 
-findDuplicates();
+findDuplicates().catch((err) => {
+  console.error('❌ فشل كشف التكرارات:', err);
+  process.exit(1);
+});

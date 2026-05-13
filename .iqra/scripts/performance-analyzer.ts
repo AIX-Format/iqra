@@ -54,7 +54,12 @@ function analyzeIqraPerformance(): void {
 
   for (const file of walk('.')) {
     const ext = path.extname(file);
-    const size = fs.statSync(file).size;
+    let size: number;
+    try {
+      size = fs.statSync(file).size;
+    } catch {
+      continue; // الملف اختفى بين walk و stat (race condition)
+    }
     totalSize += size;
     totalFiles++;
     byExt[ext] = byExt[ext] || { count: 0, bytes: 0 };
