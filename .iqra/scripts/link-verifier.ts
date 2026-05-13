@@ -33,8 +33,12 @@ const SKIP_PREFIXES = ['.iqra/memory'];
 // regex مع تكرار محدود.
 // pattern: <...> أو سلسلة غير-)/whitespace قد تحوي () متوازنة على مستوى واحد.
 const DEST_PATTERN = '(?:<[^>]+>|(?:\\([^)]*\\)|[^)\\s])+)';
-const INLINE_LINK = new RegExp(`(?<!\\!)\\[([^\\]]*)\\]\\((${DEST_PATTERN})(?:\\s+"[^"]*")?\\)`, 'g');
-const IMAGE_LINK = new RegExp(`!\\[([^\\]]*)\\]\\((${DEST_PATTERN})(?:\\s+"[^"]*")?\\)`, 'g');
+// 🤖 NOTE: CommonMark يدعم 3 صيغ للـ title:
+//   "double"   'single'   (paren)
+// السابق كان يقبل "double" فقط، فروابط بـ 'title' أو (title) تُفقَد كلياً.
+const TITLE_PATTERN = '(?:\\s+(?:"[^"]*"|\'[^\']*\'|\\([^)]*\\)))?';
+const INLINE_LINK = new RegExp(`(?<!\\!)\\[([^\\]]*)\\]\\((${DEST_PATTERN})${TITLE_PATTERN}\\)`, 'g');
+const IMAGE_LINK = new RegExp(`!\\[([^\\]]*)\\]\\((${DEST_PATTERN})${TITLE_PATTERN}\\)`, 'g');
 
 function stripPointyBrackets(target: string): string {
   // <path/to/file.md> → path/to/file.md
