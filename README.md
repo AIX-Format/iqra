@@ -395,7 +395,7 @@ iqra/
 <br/>
 
 <img src="https://img.shields.io/badge/Made%20with-TypeScript-blue?style=flat-square"/>
-<img src="https://img.shields.io/badge/License-MIT-green?style=flat-square"/>
+<img src="https://img.shields.io/badge/License-Apache_2.0-green?style=flat-square"/>
 <img src="https://img.shields.io/github/stars/Moeabdelaziz007/iqra?style=flat-square"/>
 
 <br/><br/>
