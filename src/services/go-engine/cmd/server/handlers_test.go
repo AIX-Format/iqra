@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"iqra/engine/pkg/engine"
 	"testing"
 )
 
@@ -56,7 +58,9 @@ func TestEvolveHandler_RespondsImmediately(t *testing.T) {
 		t.Fatalf("status: %d", w.Code)
 	}
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Status != "accepted" {
 		t.Errorf("Status: got %q want accepted", resp.Status)
 	}
@@ -99,7 +103,9 @@ func TestShannonHandler(t *testing.T) {
 		t.Fatalf("status: %d body: %s", w.Code, w.Body.String())
 	}
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Status != "success" {
 		t.Errorf("Status: %q", resp.Status)
 	}
@@ -161,8 +167,8 @@ func TestHomologyHandler(t *testing.T) {
 }
 
 func TestBatchAnalysisHandler_HappyPath(t *testing.T) {
-	body := mustMarshal(t, BatchAnalysisRequest{
-		Surahs: []SurahData{
+	body := mustMarshal(t, engine.BatchAnalysisRequest{
+		Surahs: []engine.SurahData{
 			{Number: 1, Name: "Fatihah", Verses: []string{"بسم الله"}},
 		},
 		EnableShannon: true,
@@ -179,13 +185,13 @@ func TestBatchAnalysisHandler_HappyPath(t *testing.T) {
 }
 
 func TestFormatBatchResponse(t *testing.T) {
-	resp := BatchAnalysisResponse{
+	resp := engine.BatchAnalysisResponse{
 		TotalSurahs: 1,
-		Results:     []ParallelResult{{SurahNumber: 1, TotalVerses: 7}},
+		Results:     []engine.ParallelResult{{SurahNumber: 1, TotalVerses: 7}},
 	}
-	out := FormatBatchResponse(resp)
+	out := engine.FormatBatchResponse(resp)
 	if !strings.Contains(out, `"total_surahs": 1`) {
-		t.Errorf("FormatBatchResponse output missing total_surahs:\n%s", out)
+		t.Errorf("engine.FormatBatchResponse output missing total_surahs:\n%s", out)
 	}
 }
 

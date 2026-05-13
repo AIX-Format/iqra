@@ -2,7 +2,7 @@
 // TurboQuant — Extreme Compression for Embeddings
 // ICLR 2026 — 6x compression without accuracy loss
 
-package main
+package engine
 
 import (
 	"math"
@@ -18,11 +18,31 @@ type TurboQuantResult struct {
 	ReconstructionError float64   `json:"reconstruction_error"`
 }
 
+// MaxQuantBits is the upper bound on the bits parameter accepted by
+// TurboQuantCompress. The Compressed field of TurboQuantResult is
+// []int8, whose byte layout addresses exactly 2^8 = 256 codebook
+// levels via the uint8 reinterpret-cast used in DecompressTurboQuant.
+// Allowing bits > 8 would silently truncate any codebook index >= 256
+// to its low 8 bits during the int8 cast, producing data corruption on
+// decompress with no error surface. To go beyond 8 bits, both
+// TurboQuantResult.Compressed and the matching decompression path
+// would need to widen first.
+const MaxQuantBits = 8
+
 // TurboQuantCompress compresses embeddings using quantization
-// Implements TurboQuant algorithm from ICLR 2026
+// Implements TurboQuant algorithm from ICLR 2026.
+//
+// bits is clamped to (0, MaxQuantBits]. A non-positive bits defaults to
+// MaxQuantBits (8); a bits > MaxQuantBits is clamped down to MaxQuantBits.
+// The clamp is deliberate rather than an error return because the JSON
+// API contract has no error channel here; callers that need >8-bit
+// fidelity should grow the schema (see MaxQuantBits doc).
 func TurboQuantCompress(embedding []float64, bits int) TurboQuantResult {
 	if bits <= 0 {
-		bits = 8 // Default: 8-bit quantization
+		bits = MaxQuantBits // Default: 8-bit quantization
+	}
+	if bits > MaxQuantBits {
+		bits = MaxQuantBits
 	}
 
 	// 1. Calculate min/max for normalization
