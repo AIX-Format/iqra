@@ -29,15 +29,20 @@ IQRA ليست كود يُخدم — هي **كائن حي** يتطور. هذا ا
 .iqra/
 ├── cycle.txt              # رقم الدورة الحالية (1-30)
 ├── pulses.jsonl           # سجل نبضات IQRA (محلي، غير مُتعقّب)
-├── scripts/               # 🌱 الأسبوع 1 — الأساسيات
+├── scripts/               # 🌱 الأسبوع 1 — الأساسيات + بعض scripts للأسبوع 2
 │   ├── backup-smart.ts        # نسخ احتياطي ذكي لروح IQRA
 │   ├── auto-indexer.ts        # توليد IQRA_INDEX.md
 │   ├── performance-analyzer.ts # رصد الملفات الثقيلة
 │   ├── duplicate-cleaner.ts   # كشف التكرارات (لا حذف تلقائي)
 │   ├── stats-generator.ts     # عداد الملفات/الأسطر
 │   ├── change-monitor.ts      # ملخص آخر 24 ساعة
+│   ├── license-checker.ts     # 🛡️ فاحص الترخيص (أسبوع 2)
+│   ├── link-verifier.ts       # 🛡️ مدقق الروابط (أسبوع 2)
 │   └── run-cycle.ts           # المنسق الرئيسي
-├── hooks/                 # 🛡️ الأسبوع 2 — المناعة (قادم)
+├── hooks/                 # 🛡️ الأسبوع 2 — المناعة (pre-commit hooks)
+│   ├── name-validator.ts      # تحقق kebab-case
+│   ├── secret-guard.ts        # كشف API keys مكشوفة
+│   └── size-guard.ts          # منع ملفات > 10MB
 ├── intelligence/          # 🧠 الأسبوع 3 — الذكاء (قادم)
 ├── social/                # 🕸️ الأسبوع 4 — الاجتماعي (قادم)
 ├── economics/             # 💱 الأسبوع 5 — الاقتصاد (قادم)

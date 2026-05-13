@@ -39,18 +39,29 @@ const PULSES = '.iqra/pulses.jsonl';
 const CYCLE_FILE = '.iqra/cycle.txt';
 const CYCLE_LENGTH = 30;
 
-type Script = { name: string; path: string };
+type Script = { name: string; path: string; args?: string[] };
 
 // الخريطة الدورية — كل دورة تطلق سكريبت أو أكثر.
 // الدورات غير المُعرّفة تُعتبر "صمت" (no-op) حتى تكتمل الأسابيع التالية.
 const CYCLE_MAP: Record<number, Script[]> = {
+  // 🌱 الأسبوع 1 — الأساسيات (Foundations)
   1: [{ name: 'backup-smart', path: '.iqra/scripts/backup-smart.ts' }],
   2: [{ name: 'auto-indexer', path: '.iqra/scripts/auto-indexer.ts' }],
   3: [{ name: 'performance-analyzer', path: '.iqra/scripts/performance-analyzer.ts' }],
   4: [{ name: 'duplicate-cleaner', path: '.iqra/scripts/duplicate-cleaner.ts' }],
   5: [{ name: 'stats-generator', path: '.iqra/scripts/stats-generator.ts' }],
   6: [{ name: 'change-monitor', path: '.iqra/scripts/change-monitor.ts' }],
-  // دورات 7-30 ستُعبّأ في الأسابيع التالية.
+
+  // 🛡️ الأسبوع 2 — الجهاز المناعي (Immune System)
+  // hooks/*.ts تعمل pre-commit محلياً على staged. في الدورة نمررها --all
+  // لفحص المستودع بأكمله. الفشل لا يكسر الدورة — يُسجَّل فقط.
+  7: [{ name: 'license-checker', path: '.iqra/scripts/license-checker.ts' }],
+  8: [{ name: 'name-validator', path: '.iqra/hooks/name-validator.ts', args: ['--all'] }],
+  9: [{ name: 'secret-guard', path: '.iqra/hooks/secret-guard.ts', args: ['--all'] }],
+  10: [{ name: 'link-verifier', path: '.iqra/scripts/link-verifier.ts' }],
+  11: [{ name: 'size-guard', path: '.iqra/hooks/size-guard.ts', args: ['--all'] }],
+
+  // دورات 12-30 ستُعبّأ في الأسابيع 3-5.
 };
 
 /**
@@ -113,12 +124,16 @@ function appendPulse(
  * @returns `true` if the script completed successfully, `false` if execution failed
  */
 function runScript(script: Script): boolean {
-  console.log(`\n▶️  ${script.name} (${script.path})`);
+  const args = script.args ?? [];
+  // عرض الـ command للسجل فقط — التنفيذ الفعلي عبر execFileSync بـ array.
+  const cmdDisplay = `npx tsx ${script.path}${args.length ? ' ' + args.join(' ') : ''}`;
+  console.log(`\n▶️  ${script.name} (${cmdDisplay})`);
   try {
     // 🤖 NOTE: execFileSync بدل execSync لتجنّب shell interpolation
     // (يمنع command injection لو دخل path غير مأمون مستقبلاً)،
     // و timeout يمنع هَنْج workflow كامل لو علق سكريبت.
-    execFileSync('npx', ['tsx', script.path], {
+    // الـ args تُمرّر كـ array — آمنة من spaces و special chars بدون quoting.
+    execFileSync('npx', ['tsx', script.path, ...args], {
       stdio: 'inherit',
       timeout: SCRIPT_TIMEOUT_MS,
     });
