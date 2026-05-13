@@ -62,7 +62,7 @@ func TestCalculateTone_ResonancePowerNonNegative(t *testing.T) {
 	}
 	for _, in := range cases {
 		got := CalculateTone(in)
-		if got.ResonancePower < 0 || math.IsNaN(got.ResonancePower) {
+		if got.ResonancePower < 0 || math.IsNaN(got.ResonancePower) || math.IsInf(got.ResonancePower, 0) {
 			t.Errorf("resonancePower must be non-negative finite for %q: %v", in, got.ResonancePower)
 		}
 	}
