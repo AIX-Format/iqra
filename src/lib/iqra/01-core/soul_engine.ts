@@ -4,7 +4,7 @@
 
 import { IQRAMemory } from '#memory/memory';
 import { SovereignEvolution } from '../09-evolution/evolution'
-import { SkillLoader } from '../08-skills/loader'
+import { SkillLoader } from '../08-cognitive/skills/loader'
 import { IQRALogger } from '#infra/logger';
 import { appendToTrustChain } from '#security/security';
 import { Pulse369 } from '#memory/pulse_369'

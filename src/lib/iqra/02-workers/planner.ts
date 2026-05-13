@@ -13,7 +13,7 @@ import yaml from 'js-yaml';
 import { MissionContext, HandoffResult } from '../01-core/mission-context'
 import { appendToTrustChain } from '#security/security';
 import { IQRALogger } from '#infra/logger';
-import { SkillLoader } from '../08-skills/loader'
+import { SkillLoader } from '../08-cognitive/skills/loader'
 
 export interface PlanStep {
   id: string;
