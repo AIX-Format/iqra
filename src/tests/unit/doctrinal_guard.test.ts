@@ -208,7 +208,7 @@ describe('DoctrinalGuard.verify — NUMERICAL_HALLUCINATION failures', () => {
         claim: `Verse ${REF_WATER}: there are ${n} known categories.`,
         domain: 'scientific',
       });
-      expect(result.check).toBe('PASS', `Number ${n} should be in allow-list`);
+      expect(result.check, `Number ${n} should be in allow-list`).toBe('PASS');
     }
   });
 

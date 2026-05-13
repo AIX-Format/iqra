@@ -172,13 +172,43 @@ export class ToolsRegistry {
         ayah: z.number().int().min(1).max(286),
       }),
       handler: async ({ surah, ayah }) => {
-        const QuranLoader = await import('#quran/quran_loader');
-        const verses = await (QuranLoader.fetchSurah as any)?.(surah);
-        if (Array.isArray(verses)) {
-          const match = verses.find((v: any) => v?.ayah === ayah || v?.numberInSurah === ayah);
-          if (match) return match;
+        // `fetchSurah` returns `[arabicSurah, englishSurah]`, where each
+        // surah is `{ number, name, ayahs: [{ numberInSurah, text, ... }] }`.
+        // We must unwrap the surah objects and look up the ayah row by
+        // `numberInSurah`. Bubbling a network error from `fetchSurah`
+        // would also fail the whole tool call, so we wrap the fetch in
+        // a guarded try/catch and surface a structured `error` field
+        // instead — callers can branch on it without exception handling.
+        try {
+          const QuranLoader = await import('#quran/quran_loader');
+          const result = await QuranLoader.fetchSurah(surah);
+          if (!Array.isArray(result) || result.length === 0) {
+            return { surah, ayah, error: 'EMPTY_SURAH_RESPONSE' };
+          }
+          const findAyah = (s: any) =>
+            Array.isArray(s?.ayahs)
+              ? s.ayahs.find((a: any) => a?.numberInSurah === ayah || a?.ayah === ayah)
+              : null;
+          const arabic = findAyah(result[0]);
+          const english = result.length > 1 ? findAyah(result[1]) : null;
+          if (!arabic && !english) {
+            return { surah, ayah, error: 'AYAH_NOT_FOUND' };
+          }
+          return {
+            surah,
+            ayah,
+            reference: `${surah}:${ayah}`,
+            arabic: arabic?.text ?? null,
+            english: english?.text ?? null,
+            juz: arabic?.juz ?? null,
+            page: arabic?.page ?? null,
+            hizbQuarter: arabic?.hizbQuarter ?? null,
+            sajda: arabic?.sajda ?? null,
+          };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          return { surah, ayah, error: 'FETCH_FAILED', detail: msg };
         }
-        return { surah, ayah };
       },
     });
 
@@ -392,11 +422,19 @@ export class ToolsRegistry {
       category: 'SYSTEM',
       inputSchema: z.object({}),
       handler: async () => {
+        // HeartbeatSystem exposes `getLastHealth`, `getUptime`,
+        // `getPulseCount`, and `isRunning`. The earlier `getStatus` /
+        // `getLastReport` names did not exist on the class, so this
+        // tool was always returning sentinel values and silently
+        // breaking any liveness / monitoring automation that read it.
         const { HeartbeatSystem } = await import('./heartbeat');
+        const lastHealth = HeartbeatSystem.getLastHealth();
         return {
-          status: (HeartbeatSystem as any).getStatus?.() ?? 'UNKNOWN',
-          uptime_ms: (HeartbeatSystem as any).getUptime?.() ?? 0,
-          last_report: (HeartbeatSystem as any).getLastReport?.() ?? null,
+          running: HeartbeatSystem.isRunning(),
+          status: lastHealth?.status ?? (HeartbeatSystem.isRunning() ? 'ALIVE' : 'DEAD'),
+          uptime_ms: HeartbeatSystem.getUptime(),
+          pulse_count: HeartbeatSystem.getPulseCount(),
+          last_health: lastHealth,
         };
       },
     });
@@ -406,11 +444,23 @@ export class ToolsRegistry {
       description_ar: 'بدء نبض النظام',
       description_en: 'Start the system heartbeat',
       category: 'SYSTEM',
+      // `start()` itself takes no args; the `mission_id` is preserved
+      // in the input schema for caller observability (it is logged via
+      // the trustchain by the heartbeat itself once it is running).
       inputSchema: z.object({ mission_id: z.string().default('system') }),
-      handler: async ({ mission_id }) => {
+      handler: async ({ mission_id: _mission_id }) => {
         const { HeartbeatSystem } = await import('./heartbeat');
-        await (HeartbeatSystem as any).start?.(mission_id);
-        return { started: true, status: (HeartbeatSystem as any).getStatus?.() ?? 'UNKNOWN' };
+        if (!HeartbeatSystem.isRunning()) {
+          await HeartbeatSystem.start();
+        }
+        const lastHealth = HeartbeatSystem.getLastHealth();
+        return {
+          started: true,
+          running: HeartbeatSystem.isRunning(),
+          status: lastHealth?.status ?? 'ALIVE',
+          uptime_ms: HeartbeatSystem.getUptime(),
+          pulse_count: HeartbeatSystem.getPulseCount(),
+        };
       },
     });
 
