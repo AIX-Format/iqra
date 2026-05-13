@@ -19,10 +19,6 @@ vi.mock('@langchain/google-genai', () => ({
   ChatGoogleGenerativeAI: vi.fn().mockImplementation(() => ({})),
 }));
 
-vi.mock('@langchain/anthropic', () => ({
-  ChatAnthropic: vi.fn().mockImplementation(() => ({})),
-}));
-
 vi.mock('@langchain/openai', () => ({
   ChatOpenAI: vi.fn().mockImplementation(() => ({})),
 }));
