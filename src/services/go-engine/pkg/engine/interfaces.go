@@ -41,20 +41,28 @@ type CompressionAnalyzer interface {
 }
 
 // BatchProcessor runs a batch analysis. ProcessBatchParallel and
-// ProcessBatchParallelContext satisfy this contract via free-function
-// adapters in adapters.go. The interface deliberately takes a context.Context
+// ProcessBatchParallelContext satisfy this contract via the adapter
+// defined below. The interface deliberately takes a context.Context
 // so any future implementation (HTTP, gRPC, in-process) can honour cancellation.
 type BatchProcessor interface {
 	Process(ctx context.Context, req BatchAnalysisRequest) BatchAnalysisResponse
 }
 
-// MLELidAnalyzer is the concrete adapter for CalculateLID (k-MLE estimator).
-type MLELidAnalyzer struct{}
+// mleLidAdapter is the concrete adapter for CalculateLID (k-MLE estimator).
+// Unexported to match the pattern used by the other adapters in this file;
+// consumers obtain an instance via NewLIDAnalyzer().
+type mleLidAdapter struct{}
 
 // Analyze satisfies LIDAnalyzer.
-func (MLELidAnalyzer) Analyze(query []float64, corpus [][]float64, k int) LIDResult {
+func (mleLidAdapter) Analyze(query []float64, corpus [][]float64, k int) LIDResult {
 	return CalculateLID(query, corpus, k)
 }
+
+// NewLIDAnalyzer returns the default k-MLE LID implementation. When the
+// TwoNN estimator lands in #H6 it will become a peer of this constructor
+// (e.g. NewTwoNNLIDAnalyzer), and the caller will choose which seam to
+// instantiate without changing the LIDAnalyzer interface itself.
+func NewLIDAnalyzer() LIDAnalyzer { return mleLidAdapter{} }
 
 // shannonAdapter is the concrete adapter for CalculateShannonHEL.
 type shannonAdapter struct{}

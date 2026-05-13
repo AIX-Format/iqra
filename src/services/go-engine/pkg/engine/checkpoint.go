@@ -99,8 +99,7 @@ func WriteCheckpoint(c AgentCheckpoint) (string, error) {
 		return "", fmt.Errorf("atomic rename checkpoint: %w", err)
 	}
 
-	abs, _ := filepath.Abs(final)
-	return abs, nil
+	return filepath.Abs(final)
 }
 
 // LoadCheckpoint reads a previously-written checkpoint from disk. Returns

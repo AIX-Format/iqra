@@ -14,7 +14,7 @@ import (
 )
 
 func TestLIDAnalyzer_MLEImplementsInterface(t *testing.T) {
-	var a LIDAnalyzer = MLELidAnalyzer{}
+	var a LIDAnalyzer = NewLIDAnalyzer()
 	query := []float64{0.1, 0.2, 0.3, 0.4}
 	corpus := [][]float64{
 		{1, 0, 0, 0}, {2, 0, 0, 0}, {3, 0, 0, 0}, {4, 0, 0, 0},
