@@ -49,19 +49,40 @@ const CYCLE_MAP: Record<number, Script[]> = {
   // دورات 7-30 ستُعبّأ في الأسابيع التالية.
 };
 
+/**
+ * Reads the current cycle number from .iqra/cycle.txt, defaulting to 1 when the file is missing or invalid.
+ *
+ * @returns The cycle number between 1 and 30 read from the file; `1` if the file does not exist or contains an invalid value.
+ */
 function readCycle(): number {
   if (!fs.existsSync(CYCLE_FILE)) return 1;
   const n = parseInt(fs.readFileSync(CYCLE_FILE, 'utf-8').trim(), 10);
   return Number.isFinite(n) && n >= 1 && n <= CYCLE_LENGTH ? n : 1;
 }
 
+/**
+ * Persist the given cycle number to the cycle file, creating the parent directory if it does not exist.
+ *
+ * @param n - The cycle number to store (expected to be between 1 and CYCLE_LENGTH)
+ */
 function writeCycle(n: number): void {
   fs.mkdirSync(path.dirname(CYCLE_FILE), { recursive: true });
   fs.writeFileSync(CYCLE_FILE, `${n}\n`);
 }
 
 // 🤖 NOTE: cycleOverride ضروري عند تسجيل cycle-completed بعد writeCycle(next)،
-// وإلا تسرّب الرقم الجديد إلى نبضة الدورة المنتهية.
+/**
+ * Append a timestamped pulse event as a single JSON line to the pulses log.
+ *
+ * The written object always includes `timestamp`, `action`, and `cycle`. If
+ * `cycleOverride` is provided its value is recorded as `cycle`; otherwise the
+ * current cycle is read from disk and recorded. Additional fields from `meta`
+ * are merged into the pulse object.
+ *
+ * @param action - A short string identifying the pulse action (e.g., `"cycle-started"`).
+ * @param meta - Extra key/value pairs to include in the pulse object.
+ * @param cycleOverride - Optional explicit cycle number to record instead of reading the current cycle.
+ */
 function appendPulse(
   action: string,
   meta: Record<string, unknown> = {},
@@ -77,6 +98,12 @@ function appendPulse(
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
+/**
+ * Executes a mapped script using `npx tsx` and logs its start and any failure.
+ *
+ * @param script - Script object whose `path` is executed and whose `name` is used in log messages
+ * @returns `true` if the script completed successfully, `false` if execution failed
+ */
 function runScript(script: Script): boolean {
   console.log(`\n▶️  ${script.name} (${script.path})`);
   try {
@@ -88,6 +115,11 @@ function runScript(script: Script): boolean {
   }
 }
 
+/**
+ * Orchestrates a single cycle run: reads the current cycle, executes its scheduled scripts in order, advances and persists the next cycle, and records start/completion pulses.
+ *
+ * The function logs progress to the console, appends `cycle-started` and `cycle-completed` events to the pulses log (including per-script results and the next cycle), and, if any script failed, logs a warning and exits the process with code 0 to avoid failing the surrounding workflow.
+ */
 function main(): void {
   const cycle = readCycle();
   const scripts = CYCLE_MAP[cycle] || [];

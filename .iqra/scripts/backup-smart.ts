@@ -46,7 +46,13 @@ function* walkSync(dir: string): Generator<string> {
 }
 
 // 🤖 NOTE: نتحقق من القيمة قبل استخدامها — cycle.txt قد يفسد بـ git merge
-// أو تحرير يدوي. نرفض كل ما ليس عدداً صحيحاً ضمن [1, CYCLE_LENGTH].
+/**
+ * Read and validate the current cycle number stored in the cycle file.
+ *
+ * If `.iqra/cycle.txt` exists, parse its contents as an integer and accept it only if it is between 1 and CYCLE_LENGTH inclusive; otherwise treat the cycle as 1.
+ *
+ * @returns The validated cycle number as a string (a value between "1" and `String(CYCLE_LENGTH)`), or "1" if the file is missing or contains an invalid value.
+ */
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
   const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
@@ -54,6 +60,16 @@ function readCycle(): string {
   return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
+/**
+ * Record an event ("pulse") in the persistent pulses log.
+ *
+ * The pulse will include a timestamp, the provided `action`, the current cycle from `readCycle()`,
+ * and any additional fields merged from `meta`. The pulse is appended as a single JSON line to the
+ * configured pulses file.
+ *
+ * @param action - A short name identifying the event
+ * @param meta - Additional arbitrary fields to include in the pulse object
+ */
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   const pulse = {
     timestamp: new Date().toISOString(),
@@ -91,8 +107,11 @@ async function* streamSoulFiles(soulDir: string): AsyncGenerator<Buffer> {
 }
 
 /**
- * يضغط ويختم في تمريرة واحدة: input → gzip → [tee → sha256] → file.
- * الهاش يُحسَب تدفقياً على البايتات المضغوطة الخارجة.
+ * Create a gzip-compressed file from a stream of buffers and produce a SHA-256 checksum of the compressed bytes.
+ *
+ * @param source - An async iterable that yields the raw file/data chunks to be compressed
+ * @param outPath - Filesystem path where the gzip output will be written
+ * @returns An object with `hash` set to the SHA-256 hex digest computed over the gzip-compressed bytes and `bytes` set to the total number of compressed bytes written
  */
 async function compressAndSeal(
   source: AsyncIterable<Buffer>,
@@ -112,6 +131,14 @@ async function compressAndSeal(
   return { hash: hasher.digest('hex'), bytes };
 }
 
+/**
+ * Create gzip-compressed archives for each configured soul directory, prune old backups, and record a completion pulse.
+ *
+ * Ensures backup and pulse directories exist, skips missing or empty soul directories, and for each archived soul
+ * writes a compressed `.iqra.gz` plus a corresponding `.seal` file containing the archive's SHA-256 hex.
+ * Partially written archives are removed on failure. After archiving, files in the backup directory older than the
+ * retention window are deleted. Appends a `backup-completed` pulse containing counts of created archives and cleaned files.
+ */
 async function iqraBackup(): Promise<void> {
   fs.mkdirSync(IQRA_BACKUP, { recursive: true });
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });

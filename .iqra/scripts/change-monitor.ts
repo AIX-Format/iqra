@@ -20,7 +20,15 @@ const OUTPUT = '.iqra/performance/changes.md';
 const CYCLE_LENGTH = 30;
 
 // 🤖 NOTE: تحقق من قيمة cycle.txt — نقبل فقط عدداً صحيحاً ضمن [1, CYCLE_LENGTH].
-// يحمي تقارير التغييرات والنبضات من metadata فاسدة.
+/**
+ * Read and validate the current cycle value from the cycle file.
+ *
+ * Reads the cycle value from CYCLE_FILE and returns it as a string if it is
+ * an integer between 1 and CYCLE_LENGTH. If the file is missing or contains
+ * an invalid value, returns `'1'`.
+ *
+ * @returns The validated cycle value as a string; `'1'` when missing or invalid.
+ */
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
   const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
@@ -28,6 +36,12 @@ function readCycle(): string {
   return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
+/**
+ * Appends a pulse entry to the pulses JSONL file recording an action and optional metadata.
+ *
+ * @param action - Short identifier of the action to record (for example, `"changes-monitored"`)
+ * @param meta - Additional fields to merge into the pulse object written to the file
+ */
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
   const pulse = { timestamp: new Date().toISOString(), action, cycle: readCycle(), ...meta };
@@ -38,6 +52,14 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
 // نرفعه لـ 64MB حتى المستودعات الكبيرة تعطي ملخصاً صحيحاً.
 const EXEC_MAX_BUFFER = 64 * 1024 * 1024;
 
+/**
+ * Runs a shell command and returns its trimmed standard output.
+ *
+ * If execution fails, logs a warning and returns an empty string.
+ *
+ * @param cmd - The shell command to run
+ * @returns The command's stdout trimmed of surrounding whitespace, or an empty string if execution fails
+ */
 function safeExec(cmd: string): string {
   try {
     return execSync(cmd, {
@@ -52,6 +74,11 @@ function safeExec(cmd: string): string {
   }
 }
 
+/**
+ * Generate a Markdown report of git activity from the last 24 hours, write it to the configured output, and record a JSONL pulse.
+ *
+ * The report includes the current cycle and timestamp, a table of commits, and a capped list of affected files. This function writes the report file, appends a pulse entry with commit and file counts, and logs the output path and commit count to the console.
+ */
 function monitorChanges(): void {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 

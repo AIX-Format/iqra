@@ -39,6 +39,11 @@ function* walkMd(dir: string): Generator<string> {
 
 const CYCLE_LENGTH = 30;
 
+/**
+ * Get the current cycle number from the cycle file, defaulting to 1 when the file is missing or contains an invalid value.
+ *
+ * @returns The cycle number as a string between "1" and "30"; returns "1" if the cycle file is absent or contains a value outside that range or otherwise invalid.
+ */
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
   const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
@@ -46,12 +51,26 @@ function readCycle(): string {
   return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
+/**
+ * Record an event pulse to the persistent pulses log.
+ *
+ * Ensures the pulses file directory exists and appends a newline-delimited JSON object containing an ISO timestamp, the provided `action`, the current cycle, and any supplied metadata.
+ *
+ * @param action - Event name or action identifier to record
+ * @param meta - Additional metadata to include in the pulse
+ */
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
   const pulse = { timestamp: new Date().toISOString(), action, cycle: readCycle(), ...meta };
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
+/**
+ * Determine which IQRA content category a Markdown file belongs to based on its path.
+ *
+ * @param file - File path (absolute or relative). Path separators are normalized for cross-platform matching.
+ * @returns `'manifest'` if the path contains `00-manifest`, `'knowledge'` if it contains `knowledge_base`, `'skill'` if it contains `08-skills` or `08-cognitive`, `'layer'` if it begins with `src/lib/iqra/`, otherwise `'root'`.
+ */
 function classify(file: string): 'manifest' | 'knowledge' | 'skill' | 'layer' | 'root' {
   // تطبيع المسار إلى posix-style لضمان عمل startsWith/includes على Windows أيضاً.
   const normalized = file.split(path.sep).join('/');
@@ -62,6 +81,15 @@ function classify(file: string): 'manifest' | 'knowledge' | 'skill' | 'layer' | 
   return 'root';
 }
 
+/**
+ * Generate the IQRA_INDEX.md documentation index at the repository root.
+ *
+ * Scans the configured directories and any present root marker Markdown files for candidates,
+ * classifies them into manifest, knowledge, skill, layer, and root sections, and builds a
+ * categorized Markdown index with per-section counts and an overall total. Writes the index to
+ * the configured OUTPUT file, records an `index-generated` pulse containing the total file count,
+ * and prints a completion message to the console.
+ */
 function generateIqraIndex(): void {
   const all: string[] = [];
   for (const dir of SCAN_DIRS) {

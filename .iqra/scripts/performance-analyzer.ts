@@ -32,6 +32,11 @@ function* walk(dir: string): Generator<string> {
 
 const CYCLE_LENGTH = 30;
 
+/**
+ * Read the current cycle number from the configured cycle file, falling back to `'1'` when missing or invalid.
+ *
+ * @returns `'1'` if the cycle file is missing or does not contain an integer in the range 1..CYCLE_LENGTH, otherwise the cycle number as a string
+ */
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
   const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
@@ -39,12 +44,30 @@ function readCycle(): string {
   return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
+/**
+ * Record an event pulse to the configured pulses file and ensure its directory exists.
+ *
+ * Appends a single JSON line containing `timestamp`, `action`, `cycle`, and any provided `meta` fields to the pulses file at `PULSES`.
+ *
+ * @param action - A short identifier describing the event
+ * @param meta - Additional fields to include in the pulse record
+ */
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
   const pulse = { timestamp: new Date().toISOString(), action, cycle: readCycle(), ...meta };
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
+/**
+ * Generate a weekly performance report for the repository and record a pulse.
+ *
+ * Scans repository files (respecting the configured walk rules), aggregates total files and bytes,
+ * computes per-extension counts and byte totals, and collects files larger than HEAVY_THRESHOLD.
+ * Writes a markdown report to `OUTPUT` containing overall statistics, a per-extension table,
+ * and a sorted list of heavy files (capped at 30 with a truncation note). Also appends a JSONL
+ * pulse record to the pulses file with `totalFiles`, `totalBytes`, and `heavyCount`, and logs
+ * the generated report path and counts to the console.
+ */
 function analyzeIqraPerformance(): void {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 

@@ -33,6 +33,11 @@ function* walkMd(dir: string): Generator<string> {
 
 const CYCLE_LENGTH = 30;
 
+/**
+ * Load and validate the cycle number used for pulse metadata.
+ *
+ * @returns The cycle as a string when `.iqra/cycle.txt` contains an integer between 1 and CYCLE_LENGTH; otherwise returns `'1'`.
+ */
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
   const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
@@ -40,6 +45,12 @@ function readCycle(): string {
   return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
+/**
+ * Appends a timestamped pulse record to the pulses JSONL file.
+ *
+ * @param action - Short identifier for the pulse event
+ * @param meta - Additional arbitrary metadata to include in the pulse record
+ */
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
   const pulse = { timestamp: new Date().toISOString(), action, cycle: readCycle(), ...meta };
@@ -47,8 +58,10 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
 }
 
 /**
- * يحسب SHA-256 تدفقياً بدون تحميل الملف كاملاً في الذاكرة.
- * 🤖 NOTE: هذا حماية من ملفات .md الضخمة (لقطات، logs، إلخ).
+ * Compute the SHA-256 hash of a file by streaming its contents.
+ *
+ * @param file - Path to the file to hash
+ * @returns The hex-encoded SHA-256 digest of the file contents, or `null` if the file cannot be read
  */
 async function streamHash(file: string): Promise<string | null> {
   const hasher = crypto.createHash('sha256');
@@ -61,6 +74,11 @@ async function streamHash(file: string): Promise<string | null> {
   }
 }
 
+/**
+ * Scan the workspace for Markdown files, detect groups with identical content, and write a duplicate report.
+ *
+ * Recursively walks from the current directory for `*.md` files (skipping configured directories), computes a content SHA-256 for each file, groups files that share the same hash, and writes a Markdown report to the configured output path. The function does not modify or delete any scanned files. After writing the report it appends a pulse record with metadata (scanned count and duplicate group count) and prints a one-line summary to stdout.
+ */
 async function findDuplicates(): Promise<void> {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 
