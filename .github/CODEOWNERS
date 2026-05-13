@@ -40,8 +40,9 @@
 /.github/workflows/                     @Moeabdelaziz007
 
 # ── محرك النمو (IQRA Growth Engine) ──────────────────────────────────
+# 🤖 NOTE: ملف workflow الـ growth-engine يُضاف في PR #25 (feat/iqra-growth-engine-week1).
+# لا نُسجّل مساره هنا بشكل خاص لأن '/.github/workflows/' أعلاه يغطيه ضمناً عند إنشائه.
 /.iqra/                                 @Moeabdelaziz007
-/.github/workflows/iqra-growth-engine.yml  @Moeabdelaziz007
 
 # ── package metadata ─────────────────────────────────────────────────
 /package.json                           @Moeabdelaziz007
