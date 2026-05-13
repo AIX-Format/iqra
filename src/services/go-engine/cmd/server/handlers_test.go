@@ -58,7 +58,9 @@ func TestEvolveHandler_RespondsImmediately(t *testing.T) {
 		t.Fatalf("status: %d", w.Code)
 	}
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Status != "accepted" {
 		t.Errorf("Status: got %q want accepted", resp.Status)
 	}
@@ -101,7 +103,9 @@ func TestShannonHandler(t *testing.T) {
 		t.Fatalf("status: %d body: %s", w.Code, w.Body.String())
 	}
 	var resp Response
-	json.Unmarshal(w.Body.Bytes(), &resp)
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Status != "success" {
 		t.Errorf("Status: %q", resp.Status)
 	}
