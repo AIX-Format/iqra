@@ -102,31 +102,69 @@ async function aixManifestResponse(domain: string, rawPersonaId: string) {
     publicKey = bundle.publicKey;
   }
 
+  // Resolve the per-persona stable UUID. Env override stays the
+  // first-class operator hook; persona.uuid is the real fallback. We
+  // deliberately do NOT use a zero-UUID — that would let any peer's
+  // ingestion code dedupe two distinct agents under the same meta.id.
+  const metaId = process.env.IQRA_IDENTITY_UUID ?? persona.uuid;
+
+  const securityCapabilities = persona.aixCapabilities.tools.concat(
+    persona.aixCapabilities.a2a_methods.map((m) => `a2a:${m}`),
+  );
+
+  const apis: Record<string, unknown> = {
+    endpoints: persona.aixCapabilities.endpoints.map((e) => ({
+      method: e.method,
+      url: `https://${domain}${e.path}`,
+      purpose: e.purpose,
+    })),
+    a2a: {
+      protocol: 'axiom-a2a-v1',
+      methods: persona.aixCapabilities.a2a_methods,
+    },
+  };
+  if (persona.aixCapabilities.mcp_servers && persona.aixCapabilities.mcp_servers.length > 0) {
+    (apis as any).mcp_servers = persona.aixCapabilities.mcp_servers;
+  }
+
+  const skills = persona.aixCapabilities.tools.map((tool) => ({
+    name: tool,
+    layer: 'iqra/12-infrastructure/tools_registry',
+  }));
+
   const manifest = exportManifest({
     owner_id: ownerId,
     publicKey,
     meta: {
-      // Pinned to a real source-of-truth constant. `npm_package_version`
-      // is not reliably populated in Vercel, Docker, or direct `node`/
-      // `tsx` invocations, so we do not read it.
+      // Pinned source-of-truth constants. `npm_package_version` is not
+      // reliably populated on Vercel / Docker / direct invocations.
       version: IQRA_VERSION,
       format_version: AIX_FORMAT_VERSION,
-      id: process.env.IQRA_IDENTITY_UUID ?? '00000000-0000-4000-8000-000000000000',
+      id: metaId,
       name: persona.name,
       description: persona.description,
       created: process.env.IQRA_IDENTITY_CREATED ?? new Date().toISOString(),
       author: 'Mohamed Abdelaziz — AMRIKYY AI Solutions',
       license: 'MIT',
-      homepage: `https://${AXIOM_AUTHORITY}`,
+      // Per-persona agent page on the sovereign authority. The path
+      // ($AXIOM/agents/<id>) is the canonical discovery URL for this
+      // specific agent, not a generic project homepage.
+      homepage: `https://${domain}/agents/${ownerId}`,
+      repository: 'https://github.com/Moeabdelaziz007/iqra',
       framework: 'iqra',
       language: 'ar+en',
-      tags: persona.specialization,
+      runtime_version: IQRA_VERSION,
+      // Tight, capability-anchored tags from the persona definition.
+      tags: persona.aixTags,
     },
     persona: {
       role: persona.role,
-      instructions: persona.personalityOverride ?? persona.description,
       style: 'sovereign',
       tone: 'reverent',
+      // Real contractual instructions per persona — not a recopy of
+      // meta.description and not the verbose system prompt.
+      instructions: persona.aixInstructions,
+      constraints: persona.aixCapabilities.compliance.map((c) => `Honor ${c}`),
     },
     verification: { status: 'sovereign', trust_level: 3 },
     pi_network: process.env.PI_APP_ID
@@ -138,10 +176,18 @@ async function aixManifestResponse(domain: string, rawPersonaId: string) {
       : undefined,
     security: {
       level: 3,
-      capabilities: ['trustchain', 'damir_filter', 'doctrinal_guard', 'tawbah_loop'],
-      compliance: ['IQRA_SUPREME', 'MITHAQ', 'DASTUR'],
+      // Capability strings now reflect the actual tools each persona
+      // can invoke plus the A2A methods it answers, not a generic
+      // four-string placeholder.
+      capabilities: securityCapabilities,
+      compliance: persona.aixCapabilities.compliance,
     },
   });
+
+  // Attach the richer optional sections directly so peers reading the
+  // manifest get concrete endpoint URLs + tool inventory.
+  manifest.apis = apis;
+  if (skills.length > 0) manifest.skills = { tools: skills };
 
   const signed = signManifest(manifest, privateKey);
   return NextResponse.json(signed, {

@@ -48,12 +48,49 @@ async function cmdKeygen(): Promise<number> {
 }
 
 async function cmdEmit(personaId: string): Promise<number> {
-  const persona = PERSONA_REGISTRY[personaId] ?? PERSONA_REGISTRY['iqra-core'];
-  const bareId = personaId.replace(/^iqra-/, '');
+  // Resolve persona by short ('core') or namespaced ('iqra-core') id.
+  const candidates = [personaId, personaId.startsWith('iqra-') ? personaId : `iqra-${personaId}`];
+  const persona =
+    candidates.map((c) => PERSONA_REGISTRY[c]).find((p) => p !== undefined) ??
+    PERSONA_REGISTRY['iqra-core'];
+  const bareId = persona.id.replace(/^iqra-/, '');
+
   const persisted = readPrivateKey();
   const bundle = persisted
     ? SovereignDID.fromPrivateKey(bareId, AXIOM_AUTHORITY, persisted)
     : await SovereignDID.generateBundle(bareId, AXIOM_AUTHORITY);
+
+  // Per-persona meta.id: precedence is env override > persona.uuid (stable
+  // pre-baked UUID v4). Falling back to a zero-UUID would land the same
+  // id on every agent and break manifest identity.
+  const metaId = process.env.IQRA_IDENTITY_UUID ?? persona.uuid;
+
+  // Real, capability-grounded tags + skills section per persona.
+  const tags = persona.aixTags;
+  const securityCapabilities = persona.aixCapabilities.tools.concat(
+    persona.aixCapabilities.a2a_methods.map((m) => `a2a:${m}`),
+  );
+
+  // Apis block: every endpoint becomes an entry in AIX `apis` section.
+  const apis: Record<string, unknown> = {
+    endpoints: persona.aixCapabilities.endpoints.map((e) => ({
+      method: e.method,
+      url: `https://${AXIOM_AUTHORITY}${e.path}`,
+      purpose: e.purpose,
+    })),
+    a2a: {
+      protocol: 'axiom-a2a-v1',
+      methods: persona.aixCapabilities.a2a_methods,
+    },
+  };
+  if (persona.aixCapabilities.mcp_servers && persona.aixCapabilities.mcp_servers.length > 0) {
+    (apis as any).mcp_servers = persona.aixCapabilities.mcp_servers;
+  }
+
+  const skills = persona.aixCapabilities.tools.map((tool) => ({
+    name: tool,
+    layer: 'iqra/12-infrastructure/tools_registry',
+  }));
 
   const manifest = exportManifest({
     owner_id: bareId,
@@ -61,26 +98,34 @@ async function cmdEmit(personaId: string): Promise<number> {
     meta: {
       version: IQRA_VERSION,
       format_version: AIX_FORMAT_VERSION,
-      id: process.env.IQRA_IDENTITY_UUID ?? '00000000-0000-4000-8000-000000000000',
+      id: metaId,
       name: persona.name,
       description: persona.description,
       created: process.env.IQRA_IDENTITY_CREATED ?? new Date().toISOString(),
       author: 'Mohamed Abdelaziz — AMRIKYY AI Solutions',
       license: 'MIT',
-      homepage: `https://${AXIOM_AUTHORITY}`,
+      // Per-persona discovery page rooted on the sovereign authority.
+      homepage: `https://${AXIOM_AUTHORITY}/agents/${bareId}`,
+      repository: 'https://github.com/Moeabdelaziz007/iqra',
       framework: 'iqra',
       language: 'ar+en',
-      tags: persona.specialization,
+      runtime_version: IQRA_VERSION,
+      tags,
     },
     persona: {
       role: persona.role,
-      instructions: persona.personalityOverride ?? persona.description,
+      style: 'sovereign',
+      tone: 'reverent',
+      // Real persona instructions — the contractual surface, NOT a
+      // recopy of meta.description or the system prompt.
+      instructions: persona.aixInstructions,
+      constraints: persona.aixCapabilities.compliance.map((c) => `Honor ${c}`),
     },
     verification: { status: 'sovereign', trust_level: 3 },
     security: {
       level: 3,
-      capabilities: ['trustchain', 'damir_filter', 'doctrinal_guard', 'tawbah_loop'],
-      compliance: ['IQRA_SUPREME', 'MITHAQ', 'DASTUR'],
+      capabilities: securityCapabilities,
+      compliance: persona.aixCapabilities.compliance,
     },
     pi_network: process.env.PI_APP_ID
       ? {
@@ -91,6 +136,12 @@ async function cmdEmit(personaId: string): Promise<number> {
       : undefined,
   });
 
+  // Attach the richer optional sections directly. exportManifest's
+  // typed input only covers the required + commonly-built sections;
+  // these are passed through to the AIX schema's open sections.
+  manifest.apis = apis;
+  if (skills.length > 0) manifest.skills = { tools: skills };
+
   const signed = signManifest(manifest, bundle.privateKey);
 
   const outDir = path.join(process.cwd(), '.iqra', 'aix');
@@ -99,6 +150,7 @@ async function cmdEmit(personaId: string): Promise<number> {
   fs.writeFileSync(outPath, JSON.stringify(signed, null, 2));
   console.log(`✅ AIX manifest emitted → ${outPath}`);
   console.log(`   identity: ${signed.identity_layer.id}`);
+  console.log(`   meta.id:  ${signed.meta.id}`);
   console.log(`   checksum: ${signed.security.checksum}`);
   if (!persisted) {
     console.warn('⚠️  IQRA_IDENTITY_PRIVATE_KEY_B64URL not set — generated ephemeral key.');
