@@ -58,8 +58,10 @@ jobs:
       - name: Reject committed binaries
         run: |
           # Defence-in-depth: even with .gitignore, fail CI if anyone
-          # ever re-commits the compiled engine binaries.
-          for f in go-engine iqra-engine; do
+          # ever re-commits a compiled binary. Patterns mirror the
+          # entries in the repo-root .gitignore for src/services/go-engine.
+          shopt -s nullglob
+          for f in go-engine iqra-engine engine *.exe *.test; do
             if [ -f "$f" ] && file "$f" | grep -qE 'ELF|Mach-O|PE32'; then
               echo "::error::Compiled binary $f committed to the repo. Delete it; CI builds the binary on-demand."
               exit 1
