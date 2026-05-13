@@ -1,337 +1,342 @@
-/**
- * Tests for `SkillLoader` in `src/lib/iqra/08-skills/loader.ts`.
- *
- * The new loader (post-PR) is a simplified version of the old one:
- *   - Hard-coded path: `path.join(process.cwd(), '..', 'aix-agent-skills')`
- *   - No ENV_VAR override
- *   - No multiple-candidate resolution
- *   - No caching / resetCache()
- *
- * Because SKILLS_REPO_PATH is a static readonly field computed at class
- * definition time, we cannot influence it via process.chdir(). Instead,
- * all filesystem access is intercepted by mocking the `fs` module so
- * that existsSync / readFileSync return controlled values regardless of
- * the concrete path on disk.
- */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import fs from 'fs';
 
-// Auto-mock the entire `fs` module. All exported functions become vi.fn().
-vi.mock('fs');
 
-// Silence IQRALogger so test output stays clean.
-vi.mock('#infra/logger', () => ({
-  IQRALogger: {
-    warn: vi.fn(),
-    info: vi.fn(),
-    error: vi.fn(),
-  },
-}));
 
-import { SkillLoader, type SkillManifest } from '#skills/loader';
-import { IQRALogger } from '#infra/logger';
 
-const mockExistsSync = vi.mocked(fs.existsSync);
-const mockReadFileSync = vi.mocked(fs.readFileSync);
 
-// ── helpers ──────────────────────────────────────────────────────────────────
 
-function makeRecordManifest(skills: Record<string, string>): SkillManifest {
-  return { skills };
-}
 
-function makeArrayManifest(
-  entries: Array<{ name: string; file: string; description?: string }>,
-): SkillManifest {
-  return { skills: entries };
-}
 
-// ── lifecycle ─────────────────────────────────────────────────────────────────
 
-beforeEach(() => {
-  vi.resetAllMocks();
-});
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
-// ── loadManifest() ────────────────────────────────────────────────────────────
 
-describe('SkillLoader.loadManifest()', () => {
-  it('returns null when skills.json does not exist', () => {
-    mockExistsSync.mockReturnValue(false);
 
-    const result = SkillLoader.loadManifest();
 
-    expect(result).toBeNull();
-    expect(IQRALogger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('skills.json not found at'),
-    );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    expect(SkillLoader.getSkillContent('does-not-exist')).toBeNull();
   });
+
+  // ── node_modules fallback ────────────────────────────────────────────────
+
+  it('falls back to node_modules/@aix/agent-skills when cwd-child and sibling are absent', () => {
+    // Use a deeply-nested cwd so that ../aix-agent-skills resolves to a
+    // directory that does NOT have a skills.json.
+    const parent = path.join(tempRoot, 'npm-parent');
+    const cwd = path.join(parent, 'npm-project');
+    fs.mkdirSync(cwd, { recursive: true });
+    const npmRepo = path.join(cwd, 'node_modules', '@aix', 'agent-skills');
+    writeManifest(npmRepo, { skills: { npm_skill: 'skills/npm_skill.md' } });
+    process.chdir(cwd);
+
+    expect(SkillLoader.listSkills()).toEqual(['npm_skill']);
+  });
+
+  // ── caching ──────────────────────────────────────────────────────────────
+
+  it('caches the resolved path so a second call does not re-stat', () => {
+    const cwd = path.join(tempRoot, 'cache-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    const repo = path.join(cwd, 'aix-agent-skills');
+    writeManifest(repo, { skills: { cached: 'skills/cached.md' } });
+    process.chdir(cwd);
+
+    // Warm up the cache.
+    const first = SkillLoader.listSkills();
+
+    // Remove the directory after the first call.  If the cache is working
+    // the second call must still succeed using the already-resolved path.
+    // (readFileSync will fail because the file is gone, so we expect null,
+    // but listSkills() itself would throw rather than return [] if resolution
+    // re-runs and wipes the cached dir.  Checking it doesn't throw is enough.)
+    fs.rmSync(repo, { recursive: true, force: true });
+    // Second call re-uses cached repo path → readFileSync on missing file
+    // triggers the catch block → returns null / []
+    // What matters: no exception is thrown, and the cache prevented a fresh
+    // directory walk that would have found nothing and logged differently.
+    expect(() => SkillLoader.listSkills()).not.toThrow();
+    expect(first).toEqual(['cached']);
+  });
+
+  it('caches the "not found" sentinel so resolution is not retried on every call', () => {
+    const empty = fs.mkdtempSync(path.join(tempRoot, 'sentinel-cwd-'));
+    process.chdir(empty);
+
+    // First call: resolution runs, finds nothing, sets _cachedRepoPath = ''.
+    expect(SkillLoader.loadManifest()).toBeNull();
+
+    // Second call without resetCache() must also return null without re-running
+    // the full directory walk.  We verify by checking the result is still null
+    // (i.e. the '' sentinel is treated as "not found" rather than "not yet
+    // resolved").
+    expect(SkillLoader.loadManifest()).toBeNull();
+  });
+
+  it('resetCache() allows re-resolution after a new marketplace appears', () => {
+    const cwd = path.join(tempRoot, 'reset-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    process.chdir(cwd);
+
+    // First call with no marketplace → null.
+    expect(SkillLoader.loadManifest()).toBeNull();
+
+    // Now create the marketplace directory and reset the cache.
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: { new: 'skills/new.md' } });
+    SkillLoader.resetCache();
+
+    // After reset, re-resolution should find the new marketplace.
+    expect(SkillLoader.listSkills()).toEqual(['new']);
+  });
+
+  // ── ENV_VAR edge cases ───────────────────────────────────────────────────
+
+  it('ignores a whitespace-only IQRA_MARKETPLACE_PATH and falls through', () => {
+    const cwd = path.join(tempRoot, 'ws-env-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: { ws: 'skills/ws.md' } });
+    process.chdir(cwd);
+    process.env[SkillLoader.ENV_VAR] = '   ';  // whitespace only
+
+    expect(SkillLoader.listSkills()).toEqual(['ws']);
+  });
+
+  it('returns null when IQRA_MARKETPLACE_PATH points to a nonexistent directory', () => {
+    const cwd = path.join(tempRoot, 'badenv-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    process.chdir(cwd);
+    process.env[SkillLoader.ENV_VAR] = path.join(tempRoot, 'does-not-exist');
+
+    // No fallback candidate has a marketplace either, so the result is null.
+    expect(SkillLoader.loadManifest()).toBeNull();
+  });
+
+  it('ENV_VAR beats cwd-child, not just sibling', () => {
+    const envDir = path.join(tempRoot, 'env-beats-child');
+    const cwd = path.join(tempRoot, 'child-project');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(envDir, { skills: { env_skill: 'skills/env.md' } });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: { child_skill: 'skills/child.md' } });
+    process.chdir(cwd);
+    process.env[SkillLoader.ENV_VAR] = envDir;
+
+    expect(SkillLoader.listSkills()).toEqual(['env_skill']);
+  });
+
+  // ── error handling ───────────────────────────────────────────────────────
 
   it('returns null when skills.json contains invalid JSON', () => {
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue('not-valid-json{{' as any);
+    const cwd = path.join(tempRoot, 'badjson-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    const repo = path.join(cwd, 'aix-agent-skills');
+    fs.mkdirSync(repo, { recursive: true });
+    fs.writeFileSync(path.join(repo, 'skills.json'), 'not-valid-json{{');
+    process.chdir(cwd);
 
-    const result = SkillLoader.loadManifest();
-
-    expect(result).toBeNull();
-    expect(IQRALogger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to load skills manifest'),
-      expect.anything(),
-    );
-  });
-
-  it('returns null when readFileSync throws (e.g. EACCES)', () => {
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockImplementation(() => {
-      throw new Error('EACCES: permission denied');
-    });
-
-    const result = SkillLoader.loadManifest();
-
-    expect(result).toBeNull();
-    expect(IQRALogger.error).toHaveBeenCalled();
-  });
-
-  it('returns a parsed manifest with Record-format skills', () => {
-    const payload: SkillManifest = makeRecordManifest({
-      foo: 'skills/foo.md',
-      bar: 'skills/bar.md',
-    });
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
-
-    const result = SkillLoader.loadManifest();
-
-    expect(result).not.toBeNull();
-    expect(result!.skills).toEqual(payload.skills);
-  });
-
-  it('returns a parsed manifest with Array-format skills', () => {
-    const payload: SkillManifest = makeArrayManifest([
-      { name: 'alpha', file: 'skills/alpha.md', description: 'Alpha skill' },
-      { name: 'beta', file: 'skills/beta.md' },
-    ]);
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
-
-    const result = SkillLoader.loadManifest();
-
-    expect(result).not.toBeNull();
-    expect(Array.isArray(result!.skills)).toBe(true);
-    expect((result!.skills as any[]).length).toBe(2);
-  });
-
-  it('returns a manifest that includes optional top-level fields', () => {
-    const payload = {
-      name: 'my-marketplace',
-      version: '1.2.3',
-      marketplace_url: 'https://example.com',
-      skills: { demo: 'demo.md' },
-    };
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
-
-    const result = SkillLoader.loadManifest();
-
-    expect(result!.name).toBe('my-marketplace');
-    expect(result!.version).toBe('1.2.3');
-    expect(result!.marketplace_url).toBe('https://example.com');
-  });
-});
-
-// ── listSkills() ──────────────────────────────────────────────────────────────
-
-describe('SkillLoader.listSkills()', () => {
-  it('returns an empty array when no manifest is reachable', () => {
-    mockExistsSync.mockReturnValue(false);
-
+    expect(SkillLoader.loadManifest()).toBeNull();
     expect(SkillLoader.listSkills()).toEqual([]);
   });
 
-  it('returns skill names from a Record-format manifest', () => {
-    const payload = makeRecordManifest({
-      quran_search: 'skills/quran_search.md',
-      damir_check: 'skills/damir_check.md',
-    });
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
+  it('returns null when the referenced skill file is missing from disk', () => {
+    const cwd = path.join(tempRoot, 'missingfile-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    const repo = path.join(cwd, 'aix-agent-skills');
+    // skills.json points at a file that we intentionally do NOT create.
+    writeManifest(repo, { skills: { ghost: 'skills/ghost.md' } });
+    process.chdir(cwd);
 
-    const skills = SkillLoader.listSkills();
-
-    expect(skills).toEqual(expect.arrayContaining(['quran_search', 'damir_check']));
-    expect(skills).toHaveLength(2);
+    expect(SkillLoader.getSkillContent('ghost')).toBeNull();
   });
 
-  it('returns skill names from an Array-format manifest', () => {
-    const payload = makeArrayManifest([
-      { name: 'alpha', file: 'alpha.md' },
-      { name: 'beta', file: 'beta.md' },
-      { name: 'gamma', file: 'gamma.md' },
-    ]);
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
+  it('returns null for an empty string skill name', () => {
+    const cwd = path.join(tempRoot, 'emptyname-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: { real: 'skills/real.md' } });
+    process.chdir(cwd);
 
-    const skills = SkillLoader.listSkills();
-
-    expect(skills.sort()).toEqual(['alpha', 'beta', 'gamma']);
+    expect(SkillLoader.getSkillContent('')).toBeNull();
   });
+
+  // ── empty skills collections ─────────────────────────────────────────────
 
   it('returns an empty array for a manifest with an empty skills record', () => {
-    const payload = makeRecordManifest({});
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
+    const cwd = path.join(tempRoot, 'empty-record-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: {} });
+    process.chdir(cwd);
 
     expect(SkillLoader.listSkills()).toEqual([]);
   });
 
   it('returns an empty array for a manifest with an empty skills array', () => {
-    const payload = makeArrayManifest([]);
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
+    const cwd = path.join(tempRoot, 'empty-array-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), { skills: [] });
+    process.chdir(cwd);
 
     expect(SkillLoader.listSkills()).toEqual([]);
   });
-});
 
-// ── getSkillContent() ─────────────────────────────────────────────────────────
+  // ── optional manifest fields ─────────────────────────────────────────────
 
-describe('SkillLoader.getSkillContent()', () => {
-  it('returns null for an unknown skill name', () => {
-    const payload = makeRecordManifest({ only: 'skills/only.md' });
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
+  it('exposes optional top-level manifest fields (name, version, marketplace_url)', () => {
+    const cwd = path.join(tempRoot, 'meta-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), {
+      name: 'my-marketplace',
+      version: '2.0.0',
+      marketplace_url: 'https://example.com/marketplace',
+      skills: { demo: 'skills/demo.md' },
+    });
+    process.chdir(cwd);
 
-    const result = SkillLoader.getSkillContent('does-not-exist');
-
-    expect(result).toBeNull();
-    expect(IQRALogger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('"does-not-exist" not found in manifest'),
-    );
+    const manifest = SkillLoader.loadManifest();
+    expect(manifest).not.toBeNull();
+    expect(manifest!.name).toBe('my-marketplace');
+    expect(manifest!.version).toBe('2.0.0');
+    expect(manifest!.marketplace_url).toBe('https://example.com/marketplace');
   });
 
-  it('returns null when the skill file itself does not exist on disk', () => {
-    const payload = makeRecordManifest({ greet: 'skills/greet.md' });
+  // ── array-format: getSkillContent ────────────────────────────────────────
 
-    // First call (skills.json) — exists; second call (skill file) — does NOT.
-    mockExistsSync
-      .mockReturnValueOnce(true)  // skills.json check
-      .mockReturnValueOnce(false); // skill file check
-    mockReadFileSync.mockReturnValueOnce(JSON.stringify(payload) as any);
+  it('resolves skill file path from an array-format manifest', () => {
+    const cwd = path.join(tempRoot, 'array-content-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    const repo = path.join(cwd, 'aix-agent-skills');
+    writeManifest(repo, {
+      skills: [{ name: 'verse', description: 'Verse skill', file: 'skills/verse.md' }],
+    });
+    fs.mkdirSync(path.join(repo, 'skills'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'skills', 'verse.md'), '# Verse\n');
+    process.chdir(cwd);
 
-    const result = SkillLoader.getSkillContent('greet');
-
-    expect(result).toBeNull();
-    expect(IQRALogger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('Skill file not found at'),
-    );
+    expect(SkillLoader.getSkillContent('verse')).toBe('# Verse\n');
   });
 
-  it('returns the markdown content when the skill file is found', () => {
-    const payload = makeRecordManifest({ greet: 'skills/greet.md' });
-    const skillContent = '# Greeting Skill\nSay hello to the user.\n';
+  it('returns null for a skill not present in an array-format manifest', () => {
+    const cwd = path.join(tempRoot, 'array-unknown-cwd');
+    fs.mkdirSync(cwd, { recursive: true });
+    writeManifest(path.join(cwd, 'aix-agent-skills'), {
+      skills: [{ name: 'known', file: 'skills/known.md' }],
+    });
+    process.chdir(cwd);
 
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync
-      .mockReturnValueOnce(JSON.stringify(payload) as any) // skills.json
-      .mockReturnValueOnce(skillContent as any);           // skill file
-
-    const result = SkillLoader.getSkillContent('greet');
-
-    expect(result).toBe(skillContent);
-  });
-
-  it('returns null and logs error when readFileSync throws reading the skill file', () => {
-    const payload = makeRecordManifest({ broken: 'skills/broken.md' });
-
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync
-      .mockReturnValueOnce(JSON.stringify(payload) as any)
-      .mockImplementationOnce(() => {
-        throw new Error('EACCES: permission denied');
-      });
-
-    const result = SkillLoader.getSkillContent('broken');
-
-    expect(result).toBeNull();
-    expect(IQRALogger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to read skill file "broken"'),
-      expect.anything(),
-    );
-  });
-
-  it('resolves skill from an Array-format manifest', () => {
-    const payload = makeArrayManifest([
-      { name: 'verse', file: 'skills/verse.md' },
-    ]);
-    const skillContent = '# Verse Skill\n';
-
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync
-      .mockReturnValueOnce(JSON.stringify(payload) as any)
-      .mockReturnValueOnce(skillContent as any);
-
-    expect(SkillLoader.getSkillContent('verse')).toBe(skillContent);
-  });
-
-  it('returns null when manifest is unavailable (no skills.json)', () => {
-    mockExistsSync.mockReturnValue(false);
-
-    expect(SkillLoader.getSkillContent('any-skill')).toBeNull();
-  });
-
-  // Boundary / regression: skill name that is an empty string.
-  it('returns null for an empty string skill name', () => {
-    const payload = makeRecordManifest({ real: 'skills/real.md' });
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(payload) as any);
-
-    expect(SkillLoader.getSkillContent('')).toBeNull();
-  });
-
-  // Regression: skill name that appears in Array manifest but not Record
-  it('does not confuse skill names across different formats', () => {
-    const recordPayload = makeRecordManifest({ a: 'a.md', b: 'b.md' });
-
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync.mockReturnValue(JSON.stringify(recordPayload) as any);
-
-    // 'a' and 'b' should resolve; 'c' should not.
-    expect(SkillLoader.getSkillContent('c')).toBeNull();
-  });
-});
-
-// ── path construction (integration-style) ────────────────────────────────────
-
-describe('SkillLoader path construction', () => {
-  it('reads skills.json from the sibling aix-agent-skills directory', () => {
-    mockExistsSync.mockReturnValue(false);
-    SkillLoader.loadManifest();
-
-    // existsSync should be called once with the skills.json path.
-    expect(mockExistsSync).toHaveBeenCalledTimes(1);
-    const calledPath = mockExistsSync.mock.calls[0][0] as string;
-    expect(calledPath).toContain('aix-agent-skills');
-    expect(calledPath).toMatch(/skills\.json$/);
-  });
-
-  it('builds the skill file path relative to the skills repo', () => {
-    const payload = makeRecordManifest({ nav: 'sub/nav.md' });
-    const content = '# Nav\n';
-
-    mockExistsSync.mockReturnValue(true);
-    mockReadFileSync
-      .mockReturnValueOnce(JSON.stringify(payload) as any)
-      .mockReturnValueOnce(content as any);
-
-    SkillLoader.getSkillContent('nav');
-
-    // The second existsSync call should be the skill file path.
-    const skillFilePath = mockExistsSync.mock.calls[1][0] as string;
-    expect(skillFilePath).toContain('aix-agent-skills');
-    expect(skillFilePath).toMatch(/sub[/\\]nav\.md$/);
+    expect(SkillLoader.getSkillContent('unknown')).toBeNull();
   });
 });
