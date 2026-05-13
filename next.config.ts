@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
-const nextConfig: import('next').NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['sharp'],
-  },
+const nextConfig = {
+  serverExternalPackages: ['@lancedb/lancedb', 'sharp'],
   typescript: {
-    ignoreBuildErrors: true,
+    // ignoreBuildErrors: true,
   },
   transpilePackages: ['bcrypt'],
-}
+};
 
 export default nextConfig;

@@ -12,92 +12,119 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "allowImportingTsExtensions": true,
-        "baseUrl": ".",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
+      "#manifest/*": [
+        "./src/lib/iqra/00-manifest/*"
+      ],
+      "#01-core/*": [
+        "./src/lib/iqra/01-core/*"
       ],
       "#core/*": [
-        "./lib/iqra/01-core/*"
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#iqra-core/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#errors/*": [
+        "./src/lib/iqra/01-core/*"
+      ],
+      "#orchestrator/*": [
+        "./src/lib/iqra/01-core/*"
       ],
       "#workers/*": [
-        "./lib/iqra/02-workers/*"
+        "./src/lib/iqra/02-workers/*"
+      ],
+      "#03-memory/*": [
+        "./src/lib/iqra/03-memory/*"
       ],
       "#memory/*": [
-        "./lib/iqra/03-memory/*"
+        "./src/lib/iqra/03-memory/*"
       ],
       "#quran/*": [
-        "./lib/iqra/04-quran/*"
+        "./src/lib/iqra/04-quran/*"
       ],
       "#rewards/*": [
-        "./lib/iqra/05-rewards/*"
+        "./src/lib/iqra/05-rewards/*"
+      ],
+      "#06-security/*": [
+        "./src/lib/iqra/06-security/*"
       ],
       "#security/*": [
-        "./lib/iqra/06-security/*"
+        "./src/lib/iqra/06-security/*"
       ],
       "#llm/*": [
-        "./lib/iqra/07-llm/*"
+        "./src/lib/iqra/07-llm/*"
       ],
       "#skills/*": [
-        "./lib/iqra/08-skills/*"
+        "./src/lib/iqra/08-skills/*"
+      ],
+      "#cognitive/*": [
+        "./src/lib/iqra/08-cognitive/*"
       ],
       "#evolution/*": [
-        "./lib/iqra/09-evolution/*"
+        "./src/lib/iqra/09-evolution/*"
       ],
       "#topology/*": [
-        "./lib/iqra/10-topology/*"
+        "./src/lib/iqra/10-topology/*"
       ],
       "#trading/*": [
-        "./lib/iqra/11-trading/*"
+        "./src/lib/iqra/11-trading/*"
       ],
       "#infra/*": [
-        "./lib/iqra/12-infrastructure/*"
+        "./src/lib/iqra/12-infrastructure/*"
       ],
       "#utils/*": [
-        "./lib/iqra/13-utils/*"
+        "./src/lib/iqra/13-utils/*"
       ],
-      "#scripts/*": [
-        "./scripts/*"
+      "#agents/*": [
+        "./src/lib/iqra/01-core/agents/*"
       ],
       "#connectors/*": [
         "./src/connectors/*"
       ],
-      "#errors/*": [
-        "./src/errors/*"
+      "#scripts/*": [
+        "./src/scripts_v2/*"
       ],
-      "#iqra-core/*": [
-        "./iqra-core/*"
+      "#tests/*": [
+        "./src/tests/*"
       ],
-      "#agents/*": [
-        "./agents/*"
+      "#services/*": [
+        "./src/services/*"
       ],
       "#schema/*": [
-        "./schema/*"
+        "./src/schema/*"
       ],
-      "#orchestrator/*": [
-        "./orchestrator/*"
+      "#sovereign_orchestrator": [
+        "./src/lib/iqra/01-core/sovereign_orchestrator.ts"
+      ],
+      "@/*": [
+        "./src/*"
       ]
     },
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "dist",
+    ".gemini",
+    "typescript_errors.log"
   ]
 }

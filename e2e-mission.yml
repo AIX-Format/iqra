@@ -8,5 +8,5 @@ provider: google
 allowed_tools:
   - search
   - read_file
-status: running
+status: failed
 dev_mode: false
