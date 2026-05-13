@@ -28,6 +28,7 @@ const IQRA_BACKUP = '.iqra/memory/backups';
 const PULSES = '.iqra/pulses.jsonl';
 const CYCLE_FILE = '.iqra/cycle.txt';
 const MEMORY_RETENTION_DAYS = 30;
+const CYCLE_LENGTH = 30;
 
 const SOUL_DIRS = [
   'src/lib/iqra/00-manifest',
@@ -44,9 +45,13 @@ function* walkSync(dir: string): Generator<string> {
   }
 }
 
+// 🤖 NOTE: نتحقق من القيمة قبل استخدامها — cycle.txt قد يفسد بـ git merge
+// أو تحرير يدوي. نرفض كل ما ليس عدداً صحيحاً ضمن [1, CYCLE_LENGTH].
 function readCycle(): string {
   if (!fs.existsSync(CYCLE_FILE)) return '1';
-  return fs.readFileSync(CYCLE_FILE, 'utf-8').trim() || '1';
+  const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
+  const n = Number.parseInt(raw, 10);
+  return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {

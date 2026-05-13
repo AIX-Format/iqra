@@ -31,8 +31,13 @@ function* walkMd(dir: string): Generator<string> {
   }
 }
 
+const CYCLE_LENGTH = 30;
+
 function readCycle(): string {
-  return fs.existsSync(CYCLE_FILE) ? fs.readFileSync(CYCLE_FILE, 'utf-8').trim() : '1';
+  if (!fs.existsSync(CYCLE_FILE)) return '1';
+  const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
+  const n = Number.parseInt(raw, 10);
+  return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {

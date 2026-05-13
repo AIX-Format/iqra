@@ -17,9 +17,15 @@ import { execSync } from 'child_process';
 const PULSES = '.iqra/pulses.jsonl';
 const CYCLE_FILE = '.iqra/cycle.txt';
 const OUTPUT = '.iqra/performance/changes.md';
+const CYCLE_LENGTH = 30;
 
+// 🤖 NOTE: تحقق من قيمة cycle.txt — نقبل فقط عدداً صحيحاً ضمن [1, CYCLE_LENGTH].
+// يحمي تقارير التغييرات والنبضات من metadata فاسدة.
 function readCycle(): string {
-  return fs.existsSync(CYCLE_FILE) ? fs.readFileSync(CYCLE_FILE, 'utf-8').trim() : '1';
+  if (!fs.existsSync(CYCLE_FILE)) return '1';
+  const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
+  const n = Number.parseInt(raw, 10);
+  return Number.isInteger(n) && n >= 1 && n <= CYCLE_LENGTH ? String(n) : '1';
 }
 
 function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
