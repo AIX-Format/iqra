@@ -2,13 +2,13 @@
  * Unit Tests: PR branding asset changes
  *
  * Covers changes introduced in this PR:
- *   - .iqra/cycle.txt        — cycle counter decremented from 15 → 14
- *   - package.json           — new "aix" metadata block added
- *   - assets/aix-footer-quote-v2.svg   — new SVG asset
- *   - assets/aix-stack-diagram-v2.svg  — new SVG asset
- *   - assets/aix-stack-header-v2.svg   — new SVG asset
- *   - assets/axi-mascot.svg            — new SVG asset
- *   - README.md              — structural / content updates
+ *   - .iqra/cycle.txt       : cycle counter decremented from 15 → 14
+ *   - package.json          : new "aix" metadata block added
+ *   - assets/aix-footer-quote-v2.svg  : new SVG asset
+ *   - assets/aix-stack-diagram-v2.svg : new SVG asset
+ *   - assets/aix-stack-header-v2.svg  : new SVG asset
+ *   - assets/axi-mascot.svg           : new SVG asset
+ *   - README.md             : structural / content updates
  */
 
 import { describe, it, expect } from 'vitest';
@@ -51,7 +51,7 @@ describe('.iqra/cycle.txt', () => {
   });
 });
 
-// ── package.json — aix metadata block ────────────────────────────────────────
+// ── package.json: aix metadata block ────────────────────────────────────────
 describe('package.json aix metadata block', () => {
   const pkg = readJson('package.json') as Record<string, unknown>;
   const aix = pkg['aix'] as Record<string, string> | undefined;
