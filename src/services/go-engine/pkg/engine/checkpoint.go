@@ -154,7 +154,10 @@ func ReplayCheckpoint(ctx context.Context, path string) error {
 		Summary:         calculateSummary(combined),
 	}
 
-	body, _ := json.MarshalIndent(merged, "", "  ")
+	body, err := json.MarshalIndent(merged, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal merged result: %w", err)
+	}
 	fmt.Printf("resumed batch result:\n%s\n", string(body))
 	return nil
 }
