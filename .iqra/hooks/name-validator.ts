@@ -104,7 +104,7 @@ function shouldSkip(filePath: string): boolean {
 
 function getStagedFiles(): string[] {
   try {
-    const out = execSync('git diff --cached --name-only --diff-filter=A', {
+    const out = execSync('git diff --cached --name-only --diff-filter=AR', {
       encoding: 'utf-8',
     });
     return out.split('\n').filter(Boolean);
