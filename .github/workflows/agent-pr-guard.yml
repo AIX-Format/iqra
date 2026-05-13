@@ -69,8 +69,10 @@ jobs:
         run: |
           # حد افتراضي: 1000 سطر. PRs أكبر تتطلب prefix صريح.
           LIMIT=1000
-          # الـ tags المسموح بها للـ PRs الكبيرة
-          if echo "$PR_TITLE" | grep -qE '^(refactor|restructure|chore\(deps\)|migration|initial):'; then
+          # 🤖 NOTE: الـ prefixes المسموح بها مقصورة على ما توثّقه AGENTS.md
+          # ('refactor:' و 'restructure:' فقط). السابق كان يقبل migration:/initial:
+          # /chore(deps): أيضاً، وهذا يفتح ثغرة لتجاوز الحد بـ tag غير موثّق.
+          if echo "$PR_TITLE" | grep -qE '^(refactor|restructure):'; then
             echo "✅ Title bears large-scope prefix — size $TOTAL allowed."
             exit 0
           fi
@@ -147,28 +149,52 @@ jobs:
             exit 0
           fi
 
-          # افحص كل ملف محمي: existed_in_base ؟
+          # 🤖 NOTE: BOOTSTRAP_ALLOWLIST — ملفات الحوكمة الميتا التي يُسمَح
+          # بإنشائها أول مرة بدون موافقة (هكذا نبنيها). كل ما عداها يتطلب
+          # موافقة سواء كان creation أو modification — منع إضافة ملفات
+          # سيادية جديدة (مثل بند manifest جديد) بدون مراجعة.
+          BOOTSTRAP_ALLOWLIST_RE='^(AGENTS\.md|\.github/CODEOWNERS)$'
+
+          # افحص كل ملف محمي: existed_in_base ؟ في الـ allowlist ؟
           MODIFIED_PROTECTED=""
-          CREATED_PROTECTED=""
+          BOOTSTRAP_CREATED=""
+          UNAUTHORIZED_CREATED=""
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             if git cat-file -e "$BASE_SHA:$f" 2>/dev/null; then
+              # موجود في BASE → modification
               MODIFIED_PROTECTED="$MODIFIED_PROTECTED$f"$'\n'
+            elif echo "$f" | grep -qE "$BOOTSTRAP_ALLOWLIST_RE"; then
+              # creation لملف bootstrap → مسموح
+              BOOTSTRAP_CREATED="$BOOTSTRAP_CREATED$f"$'\n'
             else
-              CREATED_PROTECTED="$CREATED_PROTECTED$f"$'\n'
+              # creation لملف سيادي خارج الـ allowlist → يحتاج موافقة (treat as MOD)
+              UNAUTHORIZED_CREATED="$UNAUTHORIZED_CREATED$f"$'\n'
             fi
           done <<< "$PROTECTED_HITS"
 
-          if [ -n "$CREATED_PROTECTED" ]; then
-            echo "🌱 ملفات محمية جديدة (إنشاء أول مرة — مسموح):"
-            echo "$CREATED_PROTECTED" | sed '/^$/d; s/^/  - /'
+          if [ -n "$BOOTSTRAP_CREATED" ]; then
+            echo "🌱 ملفات bootstrap الحوكمة (إنشاء أول مرة — مسموح):"
+            echo "$BOOTSTRAP_CREATED" | sed '/^$/d; s/^/  - /'
             echo ""
           fi
 
-          if [ -z "$MODIFIED_PROTECTED" ]; then
-            echo "✅ كل اللمسات على ملفات محمية كانت إنشاءات جديدة — بلا حجب."
+          # نضمّ unauthorized creations مع modifications: كلاهما يحتاج موافقة.
+          BLOCKING="${MODIFIED_PROTECTED}${UNAUTHORIZED_CREATED}"
+
+          if [ -z "$BLOCKING" ]; then
+            echo "✅ كل اللمسات على ملفات محمية ضمن قائمة الـ bootstrap — بلا حجب."
             exit 0
           fi
+
+          if [ -n "$UNAUTHORIZED_CREATED" ]; then
+            echo "🆕 ملفات سيادية جديدة تحتاج موافقة (ليست في bootstrap allowlist):"
+            echo "$UNAUTHORIZED_CREATED" | sed '/^$/d; s/^/  - /'
+            echo ""
+          fi
+
+          # alias للسطر التالي للوضوح
+          MODIFIED_PROTECTED="$BLOCKING"
 
           echo "🔒 ملفات سيادية موجودة عُدِّلت:"
           echo "$MODIFIED_PROTECTED" | sed '/^$/d; s/^/  - /'
