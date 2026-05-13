@@ -76,10 +76,10 @@ func NewJobID() string {
 	if _, err := rand.Read(b[:]); err != nil {
 		// crypto/rand failure is exceptional; fall back to a still-unique-ish
 		// time-based encoding so the engine never panics on shutdown path.
-		// Use uint64(UnixNano) so %016x produces exactly 16 lowercase hex
-		// chars and never a leading sign or extra digits (a current nano
-		// timestamp is ~19 hex digits when treated as a signed int64).
-		return fmt.Sprintf("%d-%016x", time.Now().Unix(), uint64(time.Now().UnixNano()))
+		// Mask UnixNano to 64 bits (8 bytes) so %016x produces exactly 16
+		// lowercase hex chars and never a leading sign or extra digits.
+		nanoMasked := uint64(time.Now().UnixNano()) & 0xFFFFFFFFFFFFFFFF
+		return fmt.Sprintf("%d-%016x", time.Now().Unix(), nanoMasked)
 	}
 	return fmt.Sprintf("%d-%x", time.Now().Unix(), b[:])
 }
