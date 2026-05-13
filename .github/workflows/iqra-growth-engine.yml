@@ -1,0 +1,82 @@
+# .github/workflows/iqra-growth-engine.yml
+#
+# 🧠 IQRA Growth Engine
+#
+# محرك النمو الذاتي. يقرأ .iqra/cycle.txt، ينفذ سكريبتات الدورة الحالية،
+# يحرك العداد، ويعمل commit/push للنتائج (مع [skip ci] لمنع الحلقة).
+#
+# 🤖 NOTE TO FUTURE AI AGENTS:
+#   - الحلقة الذاتية محمية بـ: (1) شرط `if` على head_commit.message، و
+#     (2) إضافة [skip ci] في commit message التلقائي.
+#   - لا تستبدل GITHUB_TOKEN بـ PAT بدون سبب — الـ token الافتراضي كافٍ
+#     لأن نطاق الـ workflow محصور في .iqra/, IQRA_INDEX.md.
+#   - concurrency.group يمنع تشغيل دورتين متوازيتين (لا نريد سباق على cycle.txt).
+#   - إذا احتجت Blacksmith runners مستقبلاً: استبدل ubuntu-latest بـ
+#     blacksmith-4vcpu-ubuntu-2404. لكن هذا المحرك خفيف، GitHub-hosted كافٍ.
+
+name: 🧠 IQRA Growth Engine
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # يومي عند منتصف الليل UTC
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: iqra-growth-engine
+  cancel-in-progress: false
+
+jobs:
+  grow:
+    name: 🌱 IQRA Cycle
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # تجنّب الحلقة الذاتية: لا تشغل عند commits من المحرك نفسه
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 30
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install minimal dependencies
+        run: npm ci --no-audit --no-fund --prefer-offline || npm install --no-audit --no-fund
+
+      - name: Ensure .iqra structure
+        run: |
+          mkdir -p .iqra/{scripts,hooks,intelligence,social,economics,innovation,memory/backups,performance}
+          if [ ! -f .iqra/cycle.txt ]; then
+            echo "1" > .iqra/cycle.txt
+          fi
+
+      - name: 🧠 Run IQRA Growth Cycle
+        run: npx tsx .iqra/scripts/run-cycle.ts
+
+      - name: Commit growth artifacts
+        run: |
+          git config user.name "IQRA Growth Engine"
+          git config user.email "growth@iqra.sovereign"
+
+          # ضع فقط الملفات المتعقبة (.iqra/scripts, .iqra/cycle.txt, IQRA_INDEX.md, .iqra/performance حسب .gitignore)
+          git add .iqra/cycle.txt IQRA_INDEX.md .iqra/performance 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "💤 لا تغييرات لحفظها في هذه الدورة"
+            exit 0
+          fi
+
+          CYCLE=$(cat .iqra/cycle.txt | tr -d '[:space:]')
+          git commit -m "🧠 IQRA growth cycle → $CYCLE [skip ci]"
+          git push

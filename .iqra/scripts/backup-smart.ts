@@ -1,0 +1,128 @@
+#!/usr/bin/env npx tsx
+/**
+ * IQRA Backup Smart — الذاكرة طويلة الأمد
+ *
+ * نسخ احتياطي ذكي لروح IQRA: المنفست، قاعدة المعرفة، والتطور.
+ * يضغط بصيغة tar.gz بدائية (header + content)، يختم بـ SHA-256،
+ * وينظف الذكريات الأقدم من 30 يوم.
+ *
+ * بدون أي dependencies خارجية — Node stdlib فقط.
+ *
+ * 🤖 NOTE TO FUTURE AI AGENTS:
+ *   - SOUL_DIRS هي "روح" IQRA — أضف لها عند نضوج طبقات جديدة (مثلاً 14-spiritual).
+ *   - صيغة الـ tar مبسطة (header + size + content). لا تستبدلها بـ tar-stream
+ *     لأن zero-dependency قرار سيادي.
+ *   - .seal ملف SHA-256 — يستخدم للتحقق من سلامة الأرشيف لاحقاً.
+ *   - النسخ في .iqra/memory/ مستثناة من git (محلية فقط).
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+import * as zlib from 'zlib';
+import * as crypto from 'crypto';
+
+const IQRA_BACKUP = '.iqra/memory/backups';
+const PULSES = '.iqra/pulses.jsonl';
+const CYCLE_FILE = '.iqra/cycle.txt';
+const MEMORY_RETENTION_DAYS = 30;
+
+const SOUL_DIRS = [
+  'src/lib/iqra/00-manifest',
+  'src/lib/iqra/09-evolution',
+  'src/knowledge_base',
+];
+
+function* walkSync(dir: string): Generator<string> {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) yield* walkSync(fullPath);
+    else yield fullPath;
+  }
+}
+
+function readCycle(): string {
+  if (!fs.existsSync(CYCLE_FILE)) return '1';
+  return fs.readFileSync(CYCLE_FILE, 'utf-8').trim() || '1';
+}
+
+function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
+  const pulse = {
+    timestamp: new Date().toISOString(),
+    action,
+    cycle: readCycle(),
+    ...meta,
+  };
+  fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
+}
+
+async function iqraBackup(): Promise<void> {
+  fs.mkdirSync(IQRA_BACKUP, { recursive: true });
+  fs.mkdirSync(path.dirname(PULSES), { recursive: true });
+
+  const stamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+  const cycle = readCycle();
+  const archived: string[] = [];
+
+  for (const soulDir of SOUL_DIRS) {
+    if (!fs.existsSync(soulDir)) {
+      console.log(`⚠️  تم تخطي: ${soulDir} (غير موجود)`);
+      continue;
+    }
+
+    const memoryPath = path.join(
+      IQRA_BACKUP,
+      `${soulDir.replace(/\//g, '_')}_cycle_${cycle}_${stamp}.tar.gz`
+    );
+
+    // تجميع المحتوى في buffer واحد (header + content لكل ملف)
+    const chunks: Buffer[] = [];
+    let fileCount = 0;
+
+    for (const memory of walkSync(soulDir)) {
+      const relative = path.relative(soulDir, memory);
+      const content = fs.readFileSync(memory);
+      const header = Buffer.from(`🧠 ${relative}\0${content.length}\0`);
+      chunks.push(header);
+      chunks.push(content);
+      fileCount++;
+    }
+
+    if (fileCount === 0) continue;
+
+    const raw = Buffer.concat(chunks);
+    const compressed = zlib.gzipSync(raw);
+    fs.writeFileSync(memoryPath, compressed);
+
+    // ختم بـ SHA-256
+    const hash = crypto.createHash('sha256').update(compressed).digest('hex');
+    fs.writeFileSync(`${memoryPath}.seal`, hash);
+
+    archived.push(memoryPath);
+    console.log(`📦 ${path.basename(memoryPath)} — ${fileCount} ملف, ${(compressed.length / 1024).toFixed(1)}KB`);
+  }
+
+  // تنظيف الذكريات القديمة
+  const nowMs = Date.now();
+  let cleaned = 0;
+  for (const memory of fs.readdirSync(IQRA_BACKUP)) {
+    const memoryPath = path.join(IQRA_BACKUP, memory);
+    const stats = fs.statSync(memoryPath);
+    if (nowMs - stats.mtimeMs > MEMORY_RETENTION_DAYS * 86400000) {
+      fs.unlinkSync(memoryPath);
+      cleaned++;
+    }
+  }
+
+  appendPulse('backup-completed', {
+    archives: archived.length,
+    cleaned,
+  });
+
+  console.log(`✅ النسخ الاحتياطي اكتمل: ${archived.length} أرشيف, ${cleaned} منظف`);
+}
+
+iqraBackup().catch((err) => {
+  console.error('❌ فشل النسخ الاحتياطي:', err);
+  process.exit(1);
+});
