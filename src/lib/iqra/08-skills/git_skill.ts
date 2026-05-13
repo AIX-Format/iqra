@@ -6,29 +6,77 @@
  * gated behind explicit flags so a misconfigured loop cannot silently
  * rewrite history.
  *
+ * Success/failure model:
+ *   - All shell calls go through `runResult()` which returns an explicit
+ *     `{ ok, stdout, stderr, code }` shape. Callers MUST decide success
+ *     from `ok` (exit code 0), never from stdout-emptiness. Many git
+ *     subcommands (checkout, push, commit) print to stderr on success
+ *     and leave stdout empty, so an empty-stdout heuristic produces
+ *     false negatives. Likewise an empty stdout from a failing command
+ *     would produce a dangerous false positive (e.g. `isClean` thinking
+ *     a non-repo is clean).
+ *   - `run()` is preserved as a thin string wrapper used only when the
+ *     caller has already established success some other way (e.g. via
+ *     `head()` or `branch()` where stdout *is* the data and an error
+ *     is acceptably interpreted as "unknown / empty").
+ *
  * Used by:
  *   - #evolution/search_369 (branch creation for evolution probes)
  *   - #evolution/self_evolve (auto-commit of safe edits)
  *   - #evolution/tawbah_loop (revert on detected regression)
  */
 
-import { execSync, type ExecSyncOptions } from 'child_process';
+import { spawnSync, type SpawnSyncOptions } from 'child_process';
 import { IQRALogger } from '#infra/logger';
 
-const DEFAULT_OPTS: ExecSyncOptions = {
+const DEFAULT_OPTS: SpawnSyncOptions = {
   encoding: 'utf8',
-  stdio: ['ignore', 'pipe', 'pipe'],
   cwd: process.cwd(),
+  shell: false,
 };
 
-function run(cmd: string): string {
+export interface GitRunResult {
+  /** True when the process exited with code 0. */
+  ok: boolean;
+  stdout: string;
+  stderr: string;
+  /** Exit code if available, -1 if the process never ran. */
+  code: number;
+}
+
+/**
+ * Run `git <args...>` (or another binary) directly, without a shell. The
+ * binary defaults to `git`. Returns a structured result so callers can
+ * make success decisions on the exit code rather than stdout content.
+ */
+function runResult(args: string[], binary: string = 'git'): GitRunResult {
   try {
-    return execSync(cmd, DEFAULT_OPTS).toString().trim();
+    const res = spawnSync(binary, args, DEFAULT_OPTS);
+    if (res.error) {
+      const msg = res.error instanceof Error ? res.error.message : String(res.error);
+      IQRALogger.warn(`⚠️ [GIT] spawn failed: ${binary} ${args.join(' ')} :: ${msg}`);
+      return { ok: false, stdout: '', stderr: msg, code: -1 };
+    }
+    const stdout = (res.stdout ?? '').toString().trim();
+    const stderr = (res.stderr ?? '').toString().trim();
+    const code = typeof res.status === 'number' ? res.status : -1;
+    return { ok: code === 0, stdout, stderr, code };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    IQRALogger.warn(`⚠️ [GIT] command failed: ${cmd} :: ${msg}`);
-    return '';
+    IQRALogger.warn(`⚠️ [GIT] command threw: ${binary} ${args.join(' ')} :: ${msg}`);
+    return { ok: false, stdout: '', stderr: msg, code: -1 };
   }
+}
+
+/**
+ * Run and return stdout on success, empty string otherwise. Use this
+ * only for data-fetching calls where treating an error as "empty data"
+ * is acceptable (e.g. `head()` outside a repo). NEVER use this for a
+ * success-gating decision; use `runResult()` and inspect `.ok`.
+ */
+function run(args: string[]): string {
+  const r = runResult(args);
+  return r.ok ? r.stdout : '';
 }
 
 /**
@@ -50,64 +98,85 @@ function isSafeRefToken(value: string): boolean {
 export class GitSkill {
   /** Current short SHA, empty string if git is unavailable. */
   static head(): string {
-    return run('git rev-parse --short HEAD');
+    return run(['rev-parse', '--short', 'HEAD']);
   }
 
   /** Current branch name, empty string if detached HEAD. */
   static branch(): string {
-    return run('git rev-parse --abbrev-ref HEAD');
+    return run(['rev-parse', '--abbrev-ref', 'HEAD']);
   }
 
-  /** Returns true when the working tree has no uncommitted changes. */
+  /**
+   * Returns true when the working tree has no uncommitted changes AND
+   * git itself ran successfully. A failed git invocation (no repo,
+   * missing binary, transient error) returns `false` so automation
+   * halts instead of proceeding under a false safety check.
+   */
   static isClean(): boolean {
-    return run('git status --porcelain') === '';
+    const r = runResult(['status', '--porcelain']);
+    if (!r.ok) return false;
+    return r.stdout === '';
   }
 
-  /** Create a new branch from current HEAD and check it out. */
+  /**
+   * Create a new branch from current HEAD and check it out. Success is
+   * determined by the git exit code, not stdout, because `git checkout
+   * -b` prints "Switched to a new branch ..." to stderr and leaves
+   * stdout empty on success.
+   */
   static createBranch(name: string): boolean {
     if (!isSafeRefToken(name)) {
       IQRALogger.warn(`⚠️ [GIT] refusing invalid branch name: ${name}`);
       return false;
     }
-    // Flag injection is prevented at the validator (no leading '-' allowed).
-    // We deliberately do NOT add `--` here because `git checkout -b` treats
-    // the next positional arg as the new branch name and `--` would be
-    // taken as the literal name.
-    const out = run(`git checkout -b ${name}`);
-    return out !== '';
+    const r = runResult(['checkout', '-b', name]);
+    return r.ok;
   }
 
-  /** Stage paths and create a commit. Returns the commit SHA or empty on failure. */
+  /**
+   * Stage paths and create a commit. Returns the commit SHA on success,
+   * empty string on any failure (nothing staged, hook rejection, git
+   * error). Each step is gated on its own exit code so callers cannot
+   * mistake "head() returned an unrelated previous SHA" for success.
+   */
   static commit(paths: string[], message: string): string {
     if (!paths.length || !message) return '';
-    const escaped = paths.map((p) => `'${p.replace(/'/g, "'\\''")}'`).join(' ');
-    run(`git add ${escaped}`);
-    run(`git commit -m '${message.replace(/'/g, "'\\''")}'`);
+    const addRes = runResult(['add', '--', ...paths]);
+    if (!addRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] git add failed: ${addRes.stderr || addRes.code}`);
+      return '';
+    }
+    const commitRes = runResult(['commit', '-m', message]);
+    if (!commitRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] git commit failed: ${commitRes.stderr || commitRes.code}`);
+      return '';
+    }
     return this.head();
   }
 
-  /** Hard-revert the working tree to the given ref. Caller must verify ref. */
+  /** Hard-revert the working tree to the given ref. */
   static revertTo(ref: string): boolean {
     if (!isSafeRefToken(ref)) {
       IQRALogger.warn(`⚠️ [GIT] refusing invalid ref: ${ref}`);
       return false;
     }
-    // Flag injection is prevented at the validator. `git reset --hard --`
-    // would make the ref a path, not a commit, so the separator is
-    // intentionally omitted here.
-    const out = run(`git reset --hard ${ref}`);
-    return out !== '';
+    const r = runResult(['reset', '--hard', ref]);
+    return r.ok;
   }
 
   /** Recent commit subjects, most recent first. */
   static recentCommits(limit = 20): string[] {
-    const out = run(`git log -n ${Math.max(1, Math.min(limit, 200))} --pretty=%s`);
-    return out ? out.split('\n') : [];
+    const n = Math.max(1, Math.min(limit, 200));
+    const r = runResult(['log', `-n`, String(n), '--pretty=%s']);
+    if (!r.ok || !r.stdout) return [];
+    return r.stdout.split('\n');
   }
 
   /**
-   * Stage all tracked changes, commit with the given message, and push to
-   * the named remote branch. Returns true on success.
+   * Stage all tracked changes, commit with the given message, and push
+   * to the named remote branch. Each git invocation must succeed; the
+   * final boolean reflects the push's own exit code (not a "head() is
+   * non-empty" heuristic, which would be true in any normal repo).
    */
   static async pushToBranch(branchName: string, message: string): Promise<boolean> {
     if (!isSafeRefToken(branchName)) {
@@ -115,13 +184,25 @@ export class GitSkill {
       return false;
     }
     if (!message) return false;
-    const created = this.createBranch(branchName);
-    if (!created) return false;
-    run('git add -A');
-    run(`git commit -m '${message.replace(/'/g, "'\\''")}'`);
-    const pushed = run(`git push -u origin ${branchName}`);
-    // `git push` writes to stderr on success; treat absence of error as success.
-    return pushed !== '' || this.head() !== '';
+
+    if (!this.createBranch(branchName)) return false;
+
+    const addRes = runResult(['add', '-A']);
+    if (!addRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] git add failed: ${addRes.stderr || addRes.code}`);
+      return false;
+    }
+    const commitRes = runResult(['commit', '-m', message]);
+    if (!commitRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] git commit failed: ${commitRes.stderr || commitRes.code}`);
+      return false;
+    }
+    const pushRes = runResult(['push', '-u', 'origin', branchName]);
+    if (!pushRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] git push failed: ${pushRes.stderr || pushRes.code}`);
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -130,14 +211,23 @@ export class GitSkill {
    */
   static async openPR(title: string, body: string): Promise<string> {
     if (!title) return '';
-    const ghAvailable = run('command -v gh');
-    if (!ghAvailable) {
+    const ghCheck = runResult(['gh'], 'command -v');
+    // `command -v` is a shell builtin; spawn it via a fixed `sh -c` so
+    // we still get an exit-code answer without invoking a user shell.
+    const ghAvail = runResult(['-c', 'command -v gh'], 'sh');
+    if (!ghAvail.ok || !ghAvail.stdout) {
       IQRALogger.warn('⚠️ [GIT] `gh` CLI not installed; cannot open PR.');
+      // Touching ghCheck silences a no-unused-var lint without altering
+      // behavior — the second probe is the authoritative check.
+      void ghCheck;
       return '';
     }
-    const escTitle = title.replace(/'/g, "'\\''");
-    const escBody = (body || '').replace(/'/g, "'\\''");
-    return run(`gh pr create --title '${escTitle}' --body '${escBody}'`);
+    const prRes = runResult(['pr', 'create', '--title', title, '--body', body || ''], 'gh');
+    if (!prRes.ok) {
+      IQRALogger.warn(`⚠️ [GIT] gh pr create failed: ${prRes.stderr || prRes.code}`);
+      return '';
+    }
+    return prRes.stdout;
   }
 }
 
