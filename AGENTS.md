@@ -77,9 +77,9 @@ Do not run `npm audit fix --force`. The breaking-change risk is real and any dep
 ## Commit & PR conventions
 
 - **Commit messages**: short imperative subject (Arabic or English is fine), wrap at ~72 chars. No trailers referencing AI models (a commit-msg hook handles attribution). Do not add `Co-authored-by: <model>`.
-- **PR titles**: `<scope>(<area>): <short description>` (e.g. `feat(iqra-growth): add license checker`). Match the local convention if a neighbouring PR shows it.
+- **PR titles**: default to `<scope>(<area>): <short description>` (e.g. `feat(iqra-growth): add license checker`). Match the local convention if a neighbouring PR shows it. **Exception**: oversized PRs (see Size guard below) must use the guard-recognised prefix `refactor:` or `restructure:` instead of the default pattern (e.g. `refactor: flatten iqra layer hierarchy`).
 - **PR body**: opening paragraph (what + why) → optional "How it works" bullets → closing paragraph (safety, compatibility, observability). Max 3 sections. Do **not** add a file-by-file change list.
-- **Size guard**: a single PR should rarely exceed 1 000 added/removed lines. Larger PRs are blocked by `.github/workflows/agent-pr-guard.yml` unless the title carries the `refactor:` or `restructure:` prefix and the body explains why.
+- **Size guard**: a single PR should rarely exceed 1 000 added/removed lines. Larger PRs are blocked by `.github/workflows/agent-pr-guard.yml` unless the title carries the `refactor:` or `restructure:` prefix **and** the body explains why. This prefix replaces the default `<scope>(<area>):` pattern — do not combine the two.
 
 ## Testing rules
 
