@@ -97,24 +97,49 @@ jobs:
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels) }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # نستخرج الملفات المغيّرة (بما فيها R للـ renames)
+          # patterns محمية
+          PROTECTED='^(IQRA_SUPREME\.md|AGENTS\.md|\.husky/pre-commit|tsconfig\.json|\.github/CODEOWNERS|src/lib/iqra/00-manifest/|iqra-core/(DAST|MITHAQ|MURAQABAH|FITRAH|RULES|POWERS|WISDOM_7|TAWBAH))'
+
+          # 🤖 NOTE: نُميّز بين modification لملف سيادي *موجود* (يحتاج إذن)
+          # و *creation* لملف جديد (يُسمَح: هكذا نبني الحوكمة أول مرة).
+          # نفحص كل ملف محمي تغيّر: لو كان موجوداً في BASE → modification → نحجب
+          # لو لم يكن موجوداً في BASE → creation → نسمح.
           CHANGED=$(git diff --name-only --diff-filter=AMDR "$BASE_SHA...$HEAD_SHA")
           echo "Changed files:"
           echo "$CHANGED" | sed 's/^/  - /'
           echo ""
 
-          # patterns محمية
-          PROTECTED='^(IQRA_SUPREME\.md|AGENTS\.md|\.husky/pre-commit|tsconfig\.json|\.github/CODEOWNERS|src/lib/iqra/00-manifest/|iqra-core/(DAST|MITHAQ|MURAQABAH|FITRAH|RULES|POWERS|WISDOM_7|TAWBAH))'
-
-          HIT=$(echo "$CHANGED" | grep -E "$PROTECTED" || true)
-
-          if [ -z "$HIT" ]; then
-            echo "✅ لا ملفات محمية معدّلة."
+          PROTECTED_HITS=$(echo "$CHANGED" | grep -E "$PROTECTED" || true)
+          if [ -z "$PROTECTED_HITS" ]; then
+            echo "✅ لا ملفات محمية في الـ diff."
             exit 0
           fi
 
-          echo "🔒 الملفات المحمية المعدّلة:"
-          echo "$HIT" | sed 's/^/  - /'
+          # افحص كل ملف محمي: existed_in_base ؟
+          MODIFIED_PROTECTED=""
+          CREATED_PROTECTED=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if git cat-file -e "$BASE_SHA:$f" 2>/dev/null; then
+              MODIFIED_PROTECTED="$MODIFIED_PROTECTED$f"$'\n'
+            else
+              CREATED_PROTECTED="$CREATED_PROTECTED$f"$'\n'
+            fi
+          done <<< "$PROTECTED_HITS"
+
+          if [ -n "$CREATED_PROTECTED" ]; then
+            echo "🌱 ملفات محمية جديدة (إنشاء أول مرة — مسموح):"
+            echo "$CREATED_PROTECTED" | sed '/^$/d; s/^/  - /'
+            echo ""
+          fi
+
+          if [ -z "$MODIFIED_PROTECTED" ]; then
+            echo "✅ كل اللمسات على ملفات محمية كانت إنشاءات جديدة — بلا حجب."
+            exit 0
+          fi
+
+          echo "🔒 ملفات سيادية موجودة عُدِّلت:"
+          echo "$MODIFIED_PROTECTED" | sed '/^$/d; s/^/  - /'
           echo ""
 
           # تحقق من الإذن: title prefix `sovereign:` + label `sovereign-approved`
@@ -126,7 +151,7 @@ jobs:
             exit 0
           fi
 
-          echo "::error::PR يلمس ملفات سيادية محمية بدون إذن."
+          echo "::error::PR يعدّل ملفات سيادية موجودة بدون إذن."
           echo "::error::إذا كان التغيير متعمّداً، يلزم:"
           echo "::error::  1. وضع 'sovereign:' أو 'manifest:' في بداية عنوان الـ PR."
           echo "::error::  2. إضافة label 'sovereign-approved' (يحتاج موافقة maintainer)."
