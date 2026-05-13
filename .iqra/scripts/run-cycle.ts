@@ -60,9 +60,20 @@ function writeCycle(n: number): void {
   fs.writeFileSync(CYCLE_FILE, `${n}\n`);
 }
 
-function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
+// 🤖 NOTE: cycleOverride ضروري عند تسجيل cycle-completed بعد writeCycle(next)،
+// وإلا تسرّب الرقم الجديد إلى نبضة الدورة المنتهية.
+function appendPulse(
+  action: string,
+  meta: Record<string, unknown> = {},
+  cycleOverride?: number
+): void {
   fs.mkdirSync(path.dirname(PULSES), { recursive: true });
-  const pulse = { timestamp: new Date().toISOString(), action, cycle: readCycle(), ...meta };
+  const pulse = {
+    timestamp: new Date().toISOString(),
+    action,
+    cycle: cycleOverride ?? readCycle(),
+    ...meta,
+  };
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
@@ -84,7 +95,7 @@ function main(): void {
   console.log(`\n🧠 IQRA Growth Engine — Cycle ${cycle} / ${CYCLE_LENGTH}`);
   console.log(`📋 سكريبتات مجدولة: ${scripts.length}`);
 
-  appendPulse('cycle-started', { scriptCount: scripts.length });
+  appendPulse('cycle-started', { scriptCount: scripts.length }, cycle);
 
   const results: Array<{ name: string; ok: boolean }> = [];
   for (const script of scripts) {
@@ -95,11 +106,16 @@ function main(): void {
   const next = (cycle % CYCLE_LENGTH) + 1;
   writeCycle(next);
 
-  appendPulse('cycle-completed', {
-    completedCycle: cycle,
-    nextCycle: next,
-    results,
-  });
+  // مرّر cycle الأصلي صراحةً — readCycle() الآن يعيد next.
+  appendPulse(
+    'cycle-completed',
+    {
+      completedCycle: cycle,
+      nextCycle: next,
+      results,
+    },
+    cycle
+  );
 
   console.log(`\n✅ الدورة ${cycle} اكتملت. التالية: ${next}`);
   const failed = results.filter((r) => !r.ok).length;

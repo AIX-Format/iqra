@@ -69,8 +69,12 @@ jobs:
           git config user.name "IQRA Growth Engine"
           git config user.email "growth@iqra.sovereign"
 
-          # ضع فقط الملفات المتعقبة (.iqra/scripts, .iqra/cycle.txt, IQRA_INDEX.md, .iqra/performance حسب .gitignore)
-          git add .iqra/cycle.txt IQRA_INDEX.md .iqra/performance 2>/dev/null || true
+          # كل مسار يُضاف منفرداً مع || true لأن الـ artifacts اختيارية:
+          # في دورة backup فقط، IQRA_INDEX.md و .iqra/performance قد لا يتغيرا.
+          # بدون هذه الحماية فشل أي git add يمنع staging الباقي.
+          git add .iqra/cycle.txt || true
+          [ -f IQRA_INDEX.md ] && git add IQRA_INDEX.md || true
+          [ -d .iqra/performance ] && git add .iqra/performance || true
 
           if git diff --staged --quiet; then
             echo "💤 لا تغييرات لحفظها في هذه الدورة"
@@ -79,4 +83,13 @@ jobs:
 
           CYCLE=$(cat .iqra/cycle.txt | tr -d '[:space:]')
           git commit -m "🧠 IQRA growth cycle → $CYCLE [skip ci]"
-          git push
+
+          # rebase قبل push لأن main قد تحرّك بين checkout و push (workflows متوازية).
+          # محاولات قليلة لتجاوز السباقات النادرة.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "⚠️ push failed (attempt $attempt), retrying..."
+            sleep 3
+          done
+          echo "❌ فشل push بعد 3 محاولات"
+          exit 1

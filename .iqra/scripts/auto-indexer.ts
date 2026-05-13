@@ -48,10 +48,12 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
 }
 
 function classify(file: string): 'manifest' | 'knowledge' | 'skill' | 'layer' | 'root' {
-  if (file.includes('00-manifest')) return 'manifest';
-  if (file.includes('knowledge_base')) return 'knowledge';
-  if (file.includes('08-skills') || file.includes('08-cognitive')) return 'skill';
-  if (file.startsWith('src/lib/iqra/')) return 'layer';
+  // تطبيع المسار إلى posix-style لضمان عمل startsWith/includes على Windows أيضاً.
+  const normalized = file.split(path.sep).join('/');
+  if (normalized.includes('00-manifest')) return 'manifest';
+  if (normalized.includes('knowledge_base')) return 'knowledge';
+  if (normalized.includes('08-skills') || normalized.includes('08-cognitive')) return 'skill';
+  if (normalized.startsWith('src/lib/iqra/')) return 'layer';
   return 'root';
 }
 

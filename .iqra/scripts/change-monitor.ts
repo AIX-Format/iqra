@@ -28,10 +28,20 @@ function appendPulse(action: string, meta: Record<string, unknown> = {}): void {
   fs.appendFileSync(PULSES, JSON.stringify(pulse) + '\n');
 }
 
+// 🤖 NOTE: maxBuffer الافتراضي 1MB يقطع git log الكبيرة بصمت.
+// نرفعه لـ 64MB حتى المستودعات الكبيرة تعطي ملخصاً صحيحاً.
+const EXEC_MAX_BUFFER = 64 * 1024 * 1024;
+
 function safeExec(cmd: string): string {
   try {
-    return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
-  } catch {
+    return execSync(cmd, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      maxBuffer: EXEC_MAX_BUFFER,
+    }).trim();
+  } catch (err) {
+    // لا نخفي الفشل بصمت — نسجله للتشخيص دون كسر الدورة.
+    console.warn(`⚠️ safeExec failed: ${cmd}`, err instanceof Error ? err.message : err);
     return '';
   }
 }

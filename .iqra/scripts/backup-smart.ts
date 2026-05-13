@@ -129,9 +129,11 @@ async function iqraBackup(): Promise<void> {
     }
     if (!hasFiles) continue;
 
+    // .iqra.gz — صيغة داخلية مخصصة (header + size + content مضغوطة بـ gzip).
+    // ليست tar حقيقياً، لذا الامتداد يعكس الواقع لا يدّعيه.
     const memoryPath = path.join(
       IQRA_BACKUP,
-      `${soulDir.replace(/\//g, '_')}_cycle_${cycle}_${stamp}.tar.gz`
+      `${soulDir.replace(/\//g, '_')}_cycle_${cycle}_${stamp}.iqra.gz`
     );
 
     try {
@@ -164,6 +166,7 @@ async function iqraBackup(): Promise<void> {
     } catch {
       continue; // ملف اختفى بين readdir و stat (race condition)
     }
+    if (!stats.isFile()) continue; // تجاهل المجلدات والـ symlinks
     if (nowMs - stats.mtimeMs > MEMORY_RETENTION_DAYS * 86400000) {
       try {
         fs.unlinkSync(memoryPath);
