@@ -43,6 +43,12 @@ if [ ! -x "$TSX_BIN" ]; then
   exit 1
 fi
 
+# تحسين: تخطي الفحص إذا لم تكن هناك ملفات staged
+if [ -z "$(git diff --cached --name-only)" ]; then
+  echo "✅ [IQRA] لا توجد ملفات staged — تخطي الـ guards."
+  exit 0
+fi
+
 FAIL=0
 
 echo "🛡️ [IQRA] name-validator..."
