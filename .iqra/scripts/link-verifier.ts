@@ -71,7 +71,7 @@ function checkFile(file: string): Broken[] {
       pattern.lastIndex = 0;
       let m: RegExpExecArray | null;
       while ((m = pattern.exec(line)) !== null) {
-        const target = m[2];
+        const target = decodeURIComponent(m[2]);
         if (isExternal(target) || isAnchor(target)) continue;
 
         // تنظيف الـ anchor من المسار
