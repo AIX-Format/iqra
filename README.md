@@ -1,13 +1,15 @@
 <!-- ════════════════ AIX SOVEREIGN STACK · UNIFIED BRANDING ════════════════ -->
 
 <div align="center">
-  <img src="./assets/aix-stack-header.svg" alt="The AIX Sovereign Stack — L1 PROTOCOL · L2 RUNTIME · L3 MARKETPLACE" width="100%"/>
+  <img src="./assets/aix-stack-header-v2.svg" alt="The AIX Sovereign Stack · Echo369: L0 Root · L1 Protocol · L2 Runtime · L3 Marketplace · L4-L6 Satellites" width="100%"/>
 </div>
 
 <div align="center">
 
+[![AIX Stack](https://img.shields.io/badge/AIX%20STACK-Echo369-39FF14?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/aix-format/blob/main/AXIOM.md)
+[![Spec](https://img.shields.io/badge/SPEC-AIX%2F1.0-39FF14?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/aix-format/blob/main/AXIOM.md)
 [![Layer](https://img.shields.io/badge/LAYER-L2%20%C2%B7%20RUNTIME-39FF14?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/iqra)
-[![Stack](https://img.shields.io/badge/AIX%20STACK-v0.369.0-39FF14?style=for-the-badge&labelColor=050505)](https://github.com/Moeabdelaziz007/aix-format)
+[![Version](https://img.shields.io/badge/version-v0.3.69-39FF14?style=for-the-badge&labelColor=050505)](./package.json)
 [![License](https://img.shields.io/badge/LICENSE-Apache_2.0-39FF14?style=for-the-badge&labelColor=050505)](./LICENSE)
 
 </div>
@@ -20,7 +22,13 @@
 
 <div align="center">
 
-[**← L1 · PROTOCOL · `aix-format`**](https://github.com/Moeabdelaziz007/aix-format) &nbsp;·&nbsp; **🟢 L2 · RUNTIME · `iqra` · YOU ARE HERE** &nbsp;·&nbsp; [**L3 · MARKETPLACE · `aix-agent-skills` →**](https://github.com/Moeabdelaziz007/aix-agent-skills)
+**Sovereign Stack** &nbsp;·&nbsp; [**← L1 · PROTOCOL · `aix-format`**](https://github.com/Moeabdelaziz007/aix-format) &nbsp;·&nbsp; **🟢 L2 · RUNTIME · `iqra` · YOU ARE HERE** &nbsp;·&nbsp; [**L3 · MARKETPLACE · `aix-agent-skills` →**](https://github.com/Moeabdelaziz007/aix-agent-skills)
+
+</div>
+
+<div align="center">
+
+<sub>Root Authority · [**L0 · `axiomid-project` ↑**](https://github.com/Moeabdelaziz007/axiomid-project) &nbsp;·&nbsp; Satellites · [**L4 · `AlphaAxiom` ↓**](https://github.com/Moeabdelaziz007/AlphaAxiom) &nbsp;·&nbsp; [**L5 · `PiWorker-OS` ↓**](https://github.com/Moeabdelaziz007/PiWorker-OS) &nbsp;·&nbsp; [**L6 · `GemClaw` ↓**](https://github.com/Moeabdelaziz007/GemClaw)</sub>
 
 </div>
 
@@ -63,11 +71,13 @@ IQRA operates through seven recursive layers of intelligence, ensuring every act
 
 ## 🌐 THE STACK | المنظومة المتكاملة
 
-IQRA is **L2** of the AIX Sovereign Stack — the runtime engine that executes the [`aix-format`](https://github.com/Moeabdelaziz007/aix-format) protocol and consumes skills from the [`aix-agent-skills`](https://github.com/Moeabdelaziz007/aix-agent-skills) marketplace.
+IQRA is **L2** of the AIX Sovereign Stack: the runtime engine that executes the [`aix-format`](https://github.com/Moeabdelaziz007/aix-format) protocol and consumes skills from the [`aix-agent-skills`](https://github.com/Moeabdelaziz007/aix-agent-skills) marketplace. Around the stack sits a **root authority** (L0) and a tier of **satellite layers** (L4-L6) that ride the protocol.
 
 <div align="center">
-  <img src="./assets/aix-stack-diagram.svg" alt="AIX Stack Topology — L1 Protocol, L2 Runtime, L3 Marketplace" width="100%"/>
+  <img src="./assets/aix-stack-diagram-v2.svg" alt="AIX Stack Topology · Echo369: Root Authority, Sovereign Core, Satellite Layers" width="100%"/>
 </div>
+
+#### Sovereign Stack (the three core repos)
 
 | Layer | Repo | Role | Status |
 |:---:|:---|:---|:---:|
@@ -77,30 +87,41 @@ IQRA is **L2** of the AIX Sovereign Stack — the runtime engine that executes t
 
 > The three repositories are **one project in three layers**. The protocol is the contract, the runtime is the engine, the marketplace is the catalog. Same constitution, same TrustChain, same palette, same author.
 
+#### Extended Ecosystem (root authority + satellites)
+
+Outside the strict L1/L2/L3 chain sits the root authority and a tier of satellite layers. They consume the stack and ride the protocol; they do NOT define it. See [`AXIOM.md §4.5`](https://github.com/Moeabdelaziz007/aix-format/blob/main/AXIOM.md) for the full doctrine and [`AIX_STACK_VERSIONING.md`](https://github.com/Moeabdelaziz007/aix-format/blob/main/AIX_STACK_VERSIONING.md) for the independent-SemVer + `Echo369` codename rule.
+
+| Tier | Repo | Role |
+|:---:|:---|:---|
+| 👑 **L0** | [`axiomid-project`](https://github.com/Moeabdelaziz007/axiomid-project) | **Root Authority** · sole issuer of `did:axiom:axiomid.app:*` · proprietary |
+| 💹 **L4** | [`AlphaAxiom`](https://github.com/Moeabdelaziz007/AlphaAxiom) | **Satellite · Trading** · MT5/Bybit/EVM adapters · skill plugin runtime |
+| π **L5** | [`PiWorker-OS`](https://github.com/Moeabdelaziz007/PiWorker-OS) | **Satellite · Pi** · Pi Network workers · Pi SDK · KYC anchor |
+| 🎙️ **L6** | [`GemClaw`](https://github.com/Moeabdelaziz007/GemClaw) | **Satellite · Voice** · voice forge · Gemini Live · Firebase |
+
 ---
 
 ## 📚 Documentation (وثائق شاملة)
 
 ### 🏗️ Architecture & Design (معمارية النظام)
-- **[📜 الدستور — DASTŪR.md](./src/lib/iqra/00-manifest/DASTŪR.md)** — القواعد الحاكمة والأساسات
-- **[⚖️ الميثاق — MĪTHĀQ.md](./src/lib/iqra/00-manifest/MĪTHĀQ.md)** — بروتوكولات الثقة والتعاون
-- **[🧩 الشورى — SHŪRĀ.md](./src/lib/iqra/00-manifest/SHŪRĀ.md)** — آلية اتخاذ القرار بين الوكلاء
-- **[🌀 التطور — METAMORPHOSIS.md](./src/lib/iqra/00-manifest/METAMORPHOSIS.md)** — قوانين التطور الذاتي والتعلم
-- **[🛠️ سوق المهارات — Skills Marketplace](https://github.com/Moeabdelaziz007/aix-agent-skills)** — مستودع المهارات اللامركزي (للوكلاء والبشر)
+- **[📜 الدستور: DASTŪR.md](./src/lib/iqra/00-manifest/DASTŪR.md)**: القواعد الحاكمة والأساسات
+- **[⚖️ الميثاق: MĪTHĀQ.md](./src/lib/iqra/00-manifest/MĪTHĀQ.md)**: بروتوكولات الثقة والتعاون
+- **[🧩 الشورى: SHŪRĀ.md](./src/lib/iqra/00-manifest/SHŪRĀ.md)**: آلية اتخاذ القرار بين الوكلاء
+- **[🌀 التطور: METAMORPHOSIS.md](./src/lib/iqra/00-manifest/METAMORPHOSIS.md)**: قوانين التطور الذاتي والتعلم
+- **[🛠️ سوق المهارات: Skills Marketplace](https://github.com/Moeabdelaziz007/aix-agent-skills)**: مستودع المهارات اللامركزي (للوكلاء والبشر)
 
 ### 🔧 Technical Reference
-- **[docs/TOOLS_REFERENCE.md](./docs/TOOLS_REFERENCE.md)** — مرجع الأدوات والقدرات
-- **[CLEANUP_PROGRESS_SUMMARY.md](./CLEANUP_PROGRESS_SUMMARY.md)** — تقدم تنظيف الكود
+- **[docs/TOOLS_REFERENCE.md](./docs/TOOLS_REFERENCE.md)**: مرجع الأدوات والقدرات
+- **[CLEANUP_PROGRESS_SUMMARY.md](./CLEANUP_PROGRESS_SUMMARY.md)**: تقدم تنظيف الكود
 
 ### 📊 Analysis & Reports
-- **[DEAD_CODE_ANALYSIS.md](./DEAD_CODE_ANALYSIS.md)** — تحليل الملفات الميتة
-- **[IMPORT_FIXES_NEEDED.md](./IMPORT_FIXES_NEEDED.md)** — قائمة الاستيرادات المطلوبة
+- **[DEAD_CODE_ANALYSIS.md](./DEAD_CODE_ANALYSIS.md)**: تحليل الملفات الميتة
+- **[IMPORT_FIXES_NEEDED.md](./IMPORT_FIXES_NEEDED.md)**: قائمة الاستيرادات المطلوبة
 
 ---
 
 ## ✦ What is IQRA?
 
-IQRA is a **multi-agent AI operating system** that runs missions, learns from every cycle, and enforces ethical constraints at the engine level — not as an afterthought.
+IQRA is a **multi-agent AI operating system** that runs missions, learns from every cycle, and enforces ethical constraints at the engine level: not as an afterthought.
 
 > Every action is logged. Every intent is checked. Every discovery is rewarded.
 
@@ -145,7 +166,7 @@ User Input
 
 ### 🤖 Multi-Agent Orchestration
 Sequential worker chain with strict handoff contracts.
-Each agent has a defined role — no overlap, no self-approval.
+Each agent has a defined role: no overlap, no self-approval.
 
 `Planner → Researcher → Builder → Validator → Reporter`
 
@@ -153,7 +174,7 @@ Each agent has a defined role — no overlap, no self-approval.
 <td width="50%">
 
 ### 🔐 Ethics Engine (Damir)
-Built on **Graded Linear Logic** — every action consumes real resources exactly once.
+Built on **Graded Linear Logic**: every action consumes real resources exactly once.
 
 - Intent checked before execution
 - No hallucination, no deception
@@ -195,7 +216,7 @@ Computational linguistics on Arabic sacred text.
 - Shannon entropy (H_EL < 0.9685 bit = Quran signature)
 - Topological resonance scoring
 - Persistent homology H0 / H1
-- Local SQLite DB — works offline
+- Local SQLite DB: works offline
 
 </td>
 <td width="50%">
@@ -232,7 +253,7 @@ cp .env.example .env
 # Required: GROQ_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY
 # Optional: UPSTASH_REDIS_REST_URL, QDRANT_URL
 
-# 3. Local mode — 8GB RAM friendly
+# 3. Local mode: 8GB RAM friendly
 ollama pull gemma3:4b
 IQRA_LLM_LOCAL=true npm run dev
 
@@ -285,8 +306,8 @@ npx vercel --prod
 
 ### A2A discovery endpoints
 
-- `/.well-known/agent-card.json` — agent capabilities + methods
-- `/.well-known/did.json` — `did:web` document for sovereign identity
+- `/.well-known/agent-card.json`: agent capabilities + methods
+- `/.well-known/did.json`: `did:web` document for sovereign identity
 
 ### Pi Browser domain claim
 
@@ -478,7 +499,7 @@ iqra/
 
 <br/>
 
-**IQRA** — Built for truth. Engineered for accountability. 🤍
+**IQRA**: Built for truth. Engineered for accountability. 🤍
 
 <br/>
 
@@ -501,7 +522,13 @@ iqra/
 </div>
 
 <div align="center">
-  <img src="./assets/aix-footer-quote.svg" alt="AIX Stack — King isn't Born, he is Made." width="100%"/>
+
+<sub>L0 · [`axiomid-project`](https://github.com/Moeabdelaziz007/axiomid-project) &nbsp;·&nbsp; L4 · [`AlphaAxiom`](https://github.com/Moeabdelaziz007/AlphaAxiom) &nbsp;·&nbsp; L5 · [`PiWorker-OS`](https://github.com/Moeabdelaziz007/PiWorker-OS) &nbsp;·&nbsp; L6 · [`GemClaw`](https://github.com/Moeabdelaziz007/GemClaw)</sub>
+
+</div>
+
+<div align="center">
+  <img src="./assets/aix-footer-quote-v2.svg" alt="AIX Stack · Echo369: King isn't Born, he is Made." width="100%"/>
 </div>
 
 <!-- ════════════════ /AIX SOVEREIGN STACK · FOOTER ════════════════ -->
