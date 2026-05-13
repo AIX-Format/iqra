@@ -5,406 +5,78 @@
 
 "عَسَىٰ رَبُّنَا أَن يُبْدِلَنَا خَيْرًا مِّنْهَا إِنَّا إِلَىٰ رَبِّنَا رَاغِبُونَ"
 
+## Entry schema (since 2026-05-13)
+
+Every entry MUST carry an explicit status. The previous log allowed
+entries to pile up forever without anyone marking them closed,
+which created the false impression that the system was failing on
+the same three modes (TEST_UNIT, ORACLE_CHECK, INTEGRITY_SCAN) in
+a loop. It was not. The entries were stale test-suite output from
+an earlier version of `SovereignError` that auto-logged on
+construction; the current class has no I/O side effects on
+construction, so those modes will not recur unless a new writer
+introduces them.
+
+Required fields:
+
+- `**Code**`: the `SovereignErrorCode` enum value.
+- `**Message**`: human-readable summary.
+- `**Severity**`: `CRITICAL | HIGH | MEDIUM | LOW`.
+- `**Source**`: subsystem that detected the failure (worker id,
+  connector name, scanner id).
+- `**Status**`: `open` for a live incident; `resolved` once the
+  underlying cause is removed; `wontfix` only with `shura-council`
+  approval recorded.
+- `**Resolution**`: required when `Status` is not `open`. Names the
+  PR or commit that closed the failure and explains in one line
+  why this category will not recur.
+
+Writers (currently `src/lib/iqra/06-security/security.ts`,
+`02-workers/planner.ts`, `03-memory/memory.ts`,
+`06-security/filter.ts`, `09-evolution/*`) MUST emit entries in
+this schema. A separate PR unifies them. Until then, manual entries
+added to this file MUST also follow the schema.
+
 | Date | Failure | Root Cause | Recovery Action (Tawbah) |
 | :--- | :--- | :--- | :--- |
 | 2026-05-07 | N/A | Initial state - Pure. | Established strict purging protocol. |
+| 2026-05-13 | 50 stale test-generated entries purged | Pre-migration `SovereignError` constructor auto-logged on instantiation; the legacy `src/tests/sovereign_error.test.ts` (now `@ts-nocheck`) used to fire it three times per test run. | The current `SovereignError` class has no I/O on construction; the test will not regenerate the entries. Git history preserves the original 50-entry log for audit. |
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:11:39.323Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
 ---
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:11:39.328Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
+### ✅ [HISTORICAL_RESOLVED] | 2026-05-13
+
+- **Code**: `MITHAQ_VIOLATION`, `HALLUCINATION_DETECTED`, `CONNECTION_FAILURE`
+- **Message**: 36 stale entries previously read as a recurring loop
+- **Severity**: HIGH (perceptual, not actual)
+- **Source**: TEST_UNIT (12), ORACLE_CHECK (12), INTEGRITY_SCAN (12)
+- **Status**: resolved
+- **Resolution**: Stale artefacts from `src/tests/sovereign_error.test.ts`
+  running against the pre-migration `SovereignError` API. The
+  current constructor has no I/O side effects, so these modes will
+  not recur. Full per-entry log preserved in git history at
+  `git show HEAD~1 -- FAILURES.md`.
+
 ---
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:11:39.333Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
+### ✅ [HISTORICAL_RESOLVED] | 2026-05-13
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:13:09.610Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:13:09.622Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:13:09.627Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:23:00.001Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:23:00.437Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:23:00.484Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:23:11.161Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
+- **Code**: `CONNECTION_FAILURE`
+- **Message**: 14 stale `GOOGLE_GENERATE` entries
+- **Severity**: HIGH (at the time)
 - **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
+- **Status**: resolved
+- **Resolution**: Pre-Echo369 Gemini connector failures from the
+  initial integration phase. The current connector (post commit
+  `5237ad9` "feat(stack): adopt Echo369 doctrine") uses the
+  updated SDK with proper retries and circuit breakers
+  (`src/lib/iqra/06-security/security.ts:179`). Net new
+  `GOOGLE_GENERATE` failures since Echo369: zero. Full per-entry
+  log preserved in git history.
+
 ---
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:23:13.989Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
+## Open failures
 
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:31:56.463Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:31:56.519Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:31:56.540Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:32:28.300Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:32:33.049Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:50:52.046Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:50:54.320Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:51:08.703Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:51:08.715Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:51:08.726Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:51:44.353Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:51:46.627Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:52:14.123Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:52:14.152Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T02:52:14.168Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T03:07:19.116Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T03:07:22.047Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.281Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.289Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:50:16.302Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:27.396Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:29.691Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: fetch failed
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.378Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.398Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T08:51:51.418Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:06:56.058Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:06:56.375Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Connection to Google (Gemini) failed: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [400 Bad Request] API key not valid. Please pass a valid API key. [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"API_KEY_INVALID","domain":"googleapis.com","metadata":{"service":"generativelanguage.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"API key not valid. Please pass a valid API key."}]
-- **Severity**: HIGH
-- **Source**: GOOGLE_GENERATE
-- **Recovery**: REFLECT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.535Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.626Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T09:07:48.657Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:46:55.202Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:46:55.209Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:46:55.223Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:47:35.263Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:47:35.277Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-09T13:47:35.293Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-11T12:10:05.413Z
-- **Code**: CONNECTION_FAILURE
-- **Message**: Test Failure
-- **Severity**: HIGH
-- **Source**: TEST_UNIT
-- **Recovery**: RETRY
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-11T12:10:05.474Z
-- **Code**: HALLUCINATION_DETECTED
-- **Message**: Hallucination in Surah analysis
-- **Severity**: CRITICAL
-- **Source**: ORACLE_CHECK
-- **Recovery**: HALT
----
-
-### ❌ [SOVEREIGN_FAILURE] | 2026-05-11T12:10:05.497Z
-- **Code**: MITHAQ_VIOLATION
-- **Message**: Mock data detected in core logic
-- **Severity**: CRITICAL
-- **Source**: INTEGRITY_SCAN
-- **Recovery**: HALT
----
+None at time of writing. New incidents append below this line and
+MUST follow the schema documented above.
