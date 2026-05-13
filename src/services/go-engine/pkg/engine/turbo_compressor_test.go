@@ -57,6 +57,26 @@ func TestTurboQuantCompress_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestTurboQuantCompress_ClampsBitsAboveEight(t *testing.T) {
+	// Per the MaxQuantBits contract: bits > 8 must be clamped down to 8
+	// rather than silently corrupting the codebook via int8 truncation.
+	in := []float64{0, 0.25, 0.5, 0.75, 1.0}
+	r := TurboQuantCompress(in, 16)
+	// CompressedSize is len(compressed) * bits, where bits has been
+	// clamped to MaxQuantBits. We can read the effective bits back out
+	// by dividing.
+	effectiveBits := r.CompressedSize / len(r.Compressed)
+	if effectiveBits != MaxQuantBits {
+		t.Errorf("bits=16 must clamp to MaxQuantBits=%d; got effective bits=%d",
+			MaxQuantBits, effectiveBits)
+	}
+	// Round-trip must still succeed cleanly.
+	rec := DecompressTurboQuant(r.Compressed, r.Codebook)
+	if len(rec) != len(in) {
+		t.Errorf("decompressed length: got %d want %d", len(rec), len(in))
+	}
+}
+
 func TestTurboQuantCompress_DegenerateRange(t *testing.T) {
 	// All-zero input: range_ becomes 0 and the function takes the
 	// fallback path. Compressed length must still match input.
