@@ -75,7 +75,7 @@ export class LeagueManager {
     const result = await connector.generate(prompt);
     try {
       // Extract JSON from response
-      const jsonStr = result.match(/\{.*\}/s)?.[0] || '{"isStable":false, "exploitsFound":[], "recommendations":["Parse error"]}';
+      const jsonStr = result.content.match(/\{.*\}/s)?.[0] || '{"isStable":false, "exploitsFound":[], "recommendations":["Parse error"]}';
       return JSON.parse(jsonStr);
     } catch {
       return { isStable: false, exploitsFound: exploits, recommendations: ['Failed to parse auditor verdict'] };

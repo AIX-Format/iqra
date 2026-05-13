@@ -137,7 +137,7 @@ export class RewardEngine {
       multiplier_value: multiplier,
     };
 
-    const ledgerId = RewardLedger.record(entry);
+    const ledgerId = await RewardLedger.record(entry);
 
     try {
       await IQRAMemory.grantReward('direct_reward', { total, level });

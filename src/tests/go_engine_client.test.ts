@@ -1,6 +1,6 @@
 // tests/go_engine_client.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GoEngineClient } from '../lib/iqra/quran/go_engine_client';
+import { GoEngineClient } from '#quran/go_engine_client';
 
 // Mock global fetch
 global.fetch = vi.fn();

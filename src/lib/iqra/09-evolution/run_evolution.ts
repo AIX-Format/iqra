@@ -39,7 +39,8 @@ async function cycle() {
       await logProgress("⚠️ Critical Non-Resonance! Initiating Tawbah Protocol Revert.");
     }
   } catch (e) {
-    await logProgress(`❌ FATAL SOVEREIGN ERROR: ${e.message}`);
+    const msg = e instanceof Error ? e.message : String(e);
+    await logProgress(`❌ FATAL SOVEREIGN ERROR: ${msg}`);
     // In real scenario: halt process or restart kernel
   }
 }

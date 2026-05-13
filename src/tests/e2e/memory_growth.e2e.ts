@@ -9,7 +9,7 @@ import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
 import { runMission } from '#01-core/mission-runner';
-import { RewardLedger } from '../../ledger/reward-ledger';
+import { RewardLedger } from '#rewards/ledger';
 import { IQRAMemory } from '#03-memory/memory';
 import { PatternMemory } from '#memory/pattern_memory';
 

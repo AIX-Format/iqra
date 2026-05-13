@@ -6,10 +6,10 @@
  * Real filesystem writes — no mocks.
  */
 import { describe, it, expect, afterAll } from 'vitest';
-import { SovereignEngine } from '../lib/iqra/sovereign';
+import { SovereignEngine } from '#core/sovereign';
 import { SovereignEvolution } from '#evolution/evolution';
 import { IQRAMemory } from '#memory/memory';
-import { appendToTrustChain } from '../lib/iqra/security';
+import { appendToTrustChain } from '#security/security';
 import fs from 'fs';
 import path from 'path';
 

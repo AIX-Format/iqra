@@ -33,13 +33,12 @@ export class MCTSEngine {
   private config: MCTSConfig;
   private root: MCTSNode | null = null;
 
-  constructor(config: MCTSConfig) {
+  constructor(config: Partial<MCTSConfig> = {}) {
     this.config = {
-      simulations: 1000,
-      exploration: 1.41,  // √2
-      rollout_depth: 10,
-      time_limit: 5000,
-      ...config
+      simulations: config.simulations ?? 1000,
+      exploration: config.exploration ?? 1.41,  // √2
+      rollout_depth: config.rollout_depth ?? 10,
+      time_limit: config.time_limit ?? 5000,
     };
   }
 

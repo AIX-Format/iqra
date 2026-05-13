@@ -172,8 +172,13 @@ export class ToolsRegistry {
         ayah: z.number().int().min(1).max(286),
       }),
       handler: async ({ surah, ayah }) => {
-        const { QuranLoader } = await import('#quran/quran_loader');
-        return await (QuranLoader as any).getVerse?.(surah, ayah) ?? { surah, ayah };
+        const QuranLoader = await import('#quran/quran_loader');
+        const verses = await (QuranLoader.fetchSurah as any)?.(surah);
+        if (Array.isArray(verses)) {
+          const match = verses.find((v: any) => v?.ayah === ayah || v?.numberInSurah === ayah);
+          if (match) return match;
+        }
+        return { surah, ayah };
       },
     });
 
@@ -199,7 +204,7 @@ export class ToolsRegistry {
       category: 'QURAN',
       inputSchema: z.object({ text: z.string().min(1) }),
       handler: async ({ text }) => {
-        const { NumericalValidator } = await import('../quran/numerical_validator.js');
+        const { NumericalValidator } = await import('#quran/numerical_validator');
         return NumericalValidator.validate(text);
       },
     });
@@ -238,7 +243,7 @@ export class ToolsRegistry {
         mission_id: z.string().optional(),
       }),
       handler: async (input) => {
-        const { PatternHunter } = await import('../quran/pattern_hunter.js');
+        const { PatternHunter } = await import('#quran/pattern_hunter');
         return await PatternHunter.hunt(input);
       },
       circuit_breaker: 'pattern_hunter',
@@ -258,7 +263,7 @@ export class ToolsRegistry {
         mission_id: z.string().optional(),
       }),
       handler: async (input) => {
-        const { PatternHunter } = await import('../quran/pattern_hunter.js');
+        const { PatternHunter } = await import('#quran/pattern_hunter');
         return await PatternHunter.batchHunt(input);
       },
       circuit_breaker: 'pattern_hunter',
@@ -271,7 +276,7 @@ export class ToolsRegistry {
       category: 'QURAN',
       inputSchema: z.object({}),
       handler: async () => {
-        const { PatternHunter } = await import('../quran/pattern_hunter.js');
+        const { PatternHunter } = await import('#quran/pattern_hunter');
         return await PatternHunter.learnFromHistory();
       },
     });
@@ -283,7 +288,7 @@ export class ToolsRegistry {
       category: 'QURAN',
       inputSchema: z.object({}),
       handler: async () => {
-        const { PatternHunter } = await import('../quran/pattern_hunter.js');
+        const { PatternHunter } = await import('#quran/pattern_hunter');
         return await PatternHunter.getStats();
       },
     });
@@ -387,11 +392,11 @@ export class ToolsRegistry {
       category: 'SYSTEM',
       inputSchema: z.object({}),
       handler: async () => {
-        const { IQRAHeartbeat } = await import('./heartbeat.js');
+        const { HeartbeatSystem } = await import('./heartbeat');
         return {
-          status: IQRAHeartbeat.getStatus(),
-          uptime_ms: IQRAHeartbeat.getUptime(),
-          last_report: IQRAHeartbeat.getLastReport(),
+          status: (HeartbeatSystem as any).getStatus?.() ?? 'UNKNOWN',
+          uptime_ms: (HeartbeatSystem as any).getUptime?.() ?? 0,
+          last_report: (HeartbeatSystem as any).getLastReport?.() ?? null,
         };
       },
     });
@@ -403,9 +408,9 @@ export class ToolsRegistry {
       category: 'SYSTEM',
       inputSchema: z.object({ mission_id: z.string().default('system') }),
       handler: async ({ mission_id }) => {
-        const { IQRAHeartbeat } = await import('./heartbeat.js');
-        await IQRAHeartbeat.start(mission_id);
-        return { started: true, status: IQRAHeartbeat.getStatus() };
+        const { HeartbeatSystem } = await import('./heartbeat');
+        await (HeartbeatSystem as any).start?.(mission_id);
+        return { started: true, status: (HeartbeatSystem as any).getStatus?.() ?? 'UNKNOWN' };
       },
     });
 

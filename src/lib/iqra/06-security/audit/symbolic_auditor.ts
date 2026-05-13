@@ -63,6 +63,6 @@ export class SymbolicAuditor {
     `;
 
     const formal = await connector.generate(prompt);
-    return formal.toLowerCase();
+    return formal.content.toLowerCase();
   }
 }

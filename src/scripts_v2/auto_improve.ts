@@ -246,7 +246,8 @@ async function callCopilotApi(prompt: string, maxTokens = 1500): Promise<string>
 
   if (googleKey) {
     try {
-      const { default: GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAIMod = await import('@google/generative-ai');
+      const GoogleGenerativeAI = (genAIMod as any).GoogleGenerativeAI ?? (genAIMod as any).default;
       const client = new GoogleGenerativeAI(googleKey);
       const model = client.getGenerativeModel({ model: process.env.GOOGLE_GEMINI_MODEL || 'gemini-2.5-flash' });
       const chat = model.startChat({ history: [] });
