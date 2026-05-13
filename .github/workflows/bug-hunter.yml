@@ -63,4 +63,4 @@ jobs:
           git add signals/
           git commit -m "bug-hunter: monthly fix-commit analysis [skip ci]"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git push origin HEAD:main
+          git push origin HEAD:${{ github.event.repository.default_branch }}
