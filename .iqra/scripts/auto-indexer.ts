@@ -129,7 +129,10 @@ function generateIqraIndex(): void {
     index += `## ${icon} ${title} (${files.length})\n\n`;
     for (const file of files) {
       const name = path.basename(file, '.md');
-      index += `- [${name}](./${file})\n`;
+      // 🤖 NOTE: الـ markdown links تتطلب forward slashes حتى على Windows.
+      // path.sep قد يكون '\' فنُحوّله إلى '/' لضمان أن GitHub يفهم الرابط.
+      const linkPath = file.split(path.sep).join('/');
+      index += `- [${name}](./${linkPath})\n`;
     }
     index += `\n`;
     totalCount += files.length;

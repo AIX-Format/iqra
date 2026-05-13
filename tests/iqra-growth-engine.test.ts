@@ -52,9 +52,14 @@ describe('.iqra/cycle.txt — cycle counter seed', () => {
     expect(n).toBeLessThanOrEqual(30);
   });
 
-  it('initial value committed in the PR is 1', () => {
+  // 🤖 NOTE: لا نُثبّت قيمة بعينها لأن cycle.txt يتقدّم مع كل دورة تشغيل
+  // ناجحة للمحرك. نتحقق من الصيغة والمدى فقط.
+  it('cycle.txt holds a digits-only positive integer within bounds', () => {
     const raw = readText('.iqra/cycle.txt').trim();
-    expect(raw).toBe('1');
+    expect(raw).toMatch(/^\d+$/);
+    const n = parseInt(raw, 10);
+    expect(n).toBeGreaterThanOrEqual(1);
+    expect(n).toBeLessThanOrEqual(30);
   });
 });
 

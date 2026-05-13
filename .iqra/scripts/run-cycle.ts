@@ -56,7 +56,11 @@ const CYCLE_MAP: Record<number, Script[]> = {
  */
 function readCycle(): number {
   if (!fs.existsSync(CYCLE_FILE)) return 1;
-  const n = parseInt(fs.readFileSync(CYCLE_FILE, 'utf-8').trim(), 10);
+  const raw = fs.readFileSync(CYCLE_FILE, 'utf-8').trim();
+  // 🤖 NOTE: parseInt يقبل "12abc" و "15.5" كـ 12 و 15. نرفض الـ partial
+  // numeric strings صراحة للحفاظ على ثبات contract الـ docstring.
+  if (!/^\d+$/.test(raw)) return 1;
+  const n = Number(raw);
   return Number.isFinite(n) && n >= 1 && n <= CYCLE_LENGTH ? n : 1;
 }
 
