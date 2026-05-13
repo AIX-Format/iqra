@@ -23,7 +23,14 @@
     "engine:start": "cd src/services/go-engine && go run .",
     "engine:build": "mkdir -p bin && cd src/services/go-engine && go build -o ../../../bin/iqra-engine .",
     "iqra:simulate": "node --import tsx src/scripts_v2/self_play_simulation.ts",
-    "evolution:soul": "npx tsx scripts/evolution_soul.ts"
+    "evolution:soul": "npx tsx scripts/evolution_soul.ts",
+    "iqra:grow": "npx tsx .iqra/scripts/run-cycle.ts",
+    "iqra:backup": "npx tsx .iqra/scripts/backup-smart.ts",
+    "iqra:index": "npx tsx .iqra/scripts/auto-indexer.ts",
+    "iqra:guard:names": "npx tsx .iqra/hooks/name-validator.ts",
+    "iqra:guard:secrets": "npx tsx .iqra/hooks/secret-guard.ts",
+    "iqra:guard:size": "npx tsx .iqra/hooks/size-guard.ts",
+    "iqra:guard:all": "npx tsx .iqra/hooks/name-validator.ts --all && npx tsx .iqra/hooks/secret-guard.ts --all && npx tsx .iqra/hooks/size-guard.ts --all"
   },
   "repository": {
     "type": "git",
