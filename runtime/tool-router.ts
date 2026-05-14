@@ -4,10 +4,10 @@
  * Routes execution to the appropriate skill or tool based on the Gatekeeper's validation.
  */
 
-import { IQRALogger } from '../src/lib/iqra/12-infrastructure/logger';
-import { GitSkill } from '../src/lib/iqra/08-skills/git_skill';
-import { GhostSearch } from './ghost-search';
-import { ToolsRegistry } from '../src/lib/iqra/12-infrastructure/tools_registry';
+import { IQRALogger } from '#infra/logger';
+import { GitSkill } from '#skills/git_skill';
+import { GhostSearch } from '#runtime/ghost-search';
+import { ToolsRegistry } from '#infra/tools_registry';
 
 export class ToolRouter {
   private ghostSearch: GhostSearch;

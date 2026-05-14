@@ -86,6 +86,9 @@
       "#aix/*": [
         "./src/lib/iqra/14-aix/*"
       ],
+      "#runtime/*": [
+        "./runtime/*"
+      ],
       "#agents/*": [
         "./src/lib/iqra/01-core/agents/*"
       ],
@@ -122,6 +125,7 @@
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "runtime/**/*.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

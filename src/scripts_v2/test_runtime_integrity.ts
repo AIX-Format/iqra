@@ -1,39 +1,36 @@
-// @ts-nocheck — legacy integration probe. The #runtime/* modules referenced
-// here predate the 12-infrastructure restructure (May 2026) and were never
-// re-ported. Kept in tree as documentation of the original sovereign-gateway
-// shape; excluded from strict type checks until a real port lands.
-
 /**
  * 🧪 Runtime Integrity Test — اختبار سلامة نظام التشغيل
- * 
- * Verifies the 7-loop cognitive cycle and sovereign governance.
+ *
+ * Verifies the 7-loop cognitive cycle and sovereign governance by exercising
+ * the SovereignGateway (constitutional entry point) and TopologicalMemoryBridge
+ * (episodic persistence) end-to-end against the live runtime.
  */
 
-import { Orchestrator } from '#runtime/sovereign-gateway';
-import { MemoryEngine, MemoryType } from '#runtime/topological-memory-bridge';
+import { SovereignGateway } from '#runtime/sovereign-gateway';
+import { TopologicalMemoryBridge, MemoryType } from '#runtime/topological-memory-bridge';
 import { IQRALogger } from '#infra/logger';
 import * as fs from 'fs';
 import * as path from 'path';
 
-async function runTest() {
-  const orchestrator = new Orchestrator();
-  const memory = new MemoryEngine();
+async function runTest(): Promise<void> {
+  const gateway = new SovereignGateway();
+  const memory = new TopologicalMemoryBridge();
   const sessionId = `test-${Date.now()}`;
 
   IQRALogger.info("🚀 Starting Runtime Integrity Test...");
 
   try {
-    // Test 1: Research Flow
-    console.log("\n--- [TEST 1: Research Flow] ---");
+    // Test 1: Sovereign Cycle (Research Flow)
+    console.log("\n--- [TEST 1: Sovereign Cycle] ---");
     const researchInput = "Research the latest patterns in agentic memory architecture";
-    const result = await orchestrator.runCycle(researchInput, sessionId);
-    
+    const result = await gateway.runCycle(researchInput, sessionId);
+
     console.log("Result:", JSON.stringify(result, null, 2));
 
-    if (result.reflection.verdict === 'PASS') {
-      console.log("✅ Research cycle passed.");
+    if (result.audit && result.audit.alignmentScore >= 0.5) {
+      console.log("✅ Sovereign cycle passed constitutional audit.");
     } else {
-      console.log("❌ Research cycle failed verdict.");
+      throw new Error("Sovereign cycle failed constitutional audit.");
     }
 
     // Test 2: Memory Persistence
@@ -62,6 +59,7 @@ async function runTest() {
     console.log("\n✨ All integrity tests completed successfully.");
   } catch (error) {
     console.error("💥 Test failed with error:", error);
+    process.exitCode = 1;
   }
 }
 
