@@ -314,18 +314,35 @@ export class SovereignEngine {
     await this.mapQuantumTopology();
   }
 
+  /**
+   * Memory key tracking the timestamp of the last announced anomaly.
+   * Used to deduplicate voice alerts across micro-pulse cycles so a
+   * single L4 report does not loop every 9 seconds.
+   */
+  private static readonly LAST_ANOMALY_ANNOUNCE_KEY = 'system:anomaly:last_announced_ts';
+
   private static async runMicroPulse() {
     // Trading market observation was removed per ADR 0002; the runtime
     // now only consumes anomaly reports written into TrustChain by L4
     // (AlphaAxiom). When L4 writes a high-severity anomaly under
-    // `system:anomaly`, L2 surfaces it via the voice channel.
+    // `system:anomaly`, L2 surfaces it via the voice channel — but only
+    // once per report (deduped by `anomaly.timestamp`).
     const anomaly = await IQRAMemory.get<AnomalyReport>(`system:anomaly`);
-    if (anomaly && anomaly.isAnomaly && anomaly.score > 4.0) {
-      await IQRAVoice.speak(
-        `تنبيه سيادي: رصدت انحرافاً بمقدار ${anomaly.score.toFixed(2)}.`,
-        { provider: 'elevenlabs', autoplay: true },
-      );
+    if (!anomaly || !anomaly.isAnomaly || anomaly.score <= 4.0) {
+      return;
     }
+
+    const lastAnnounced = await IQRAMemory.get<number>(this.LAST_ANOMALY_ANNOUNCE_KEY);
+    if (lastAnnounced && lastAnnounced >= anomaly.timestamp) {
+      // Already announced this (or a newer) report.
+      return;
+    }
+
+    await IQRAVoice.speak(
+      `تنبيه سيادي: رصدت انحرافاً بمقدار ${anomaly.score.toFixed(2)}.`,
+      { provider: 'elevenlabs', autoplay: true },
+    );
+    await IQRAMemory.set(this.LAST_ANOMALY_ANNOUNCE_KEY, anomaly.timestamp);
   }
 
   private static async runWarmPulse() {
@@ -357,9 +374,11 @@ export class SovereignEngine {
     // --- STAGE 1: DETECTION (2) ---
     // Byzantine verification reads the L4-supplied anomaly report
     // from TrustChain; the runtime never fetches market data itself
-    // (ADR 0002).
+    // (ADR 0002). Only enforce the score cutoff when the report is
+    // actually flagged anomalous — a benign report under the same key
+    // must not halt sovereign actions.
     const anomaly = await IQRAMemory.get<AnomalyReport>(`system:anomaly`);
-    const byzantinePass = anomaly ? anomaly.score < 5.0 : true; // High score = risk
+    const byzantinePass = !anomaly || !anomaly.isAnomaly || anomaly.score < 5.0;
     if (!byzantinePass) {
       await IQRAVoice.speak('توقف سيادي. انحراف بيزنطي عالٍ جداً. لن أنفذ هذه المهمة.', { provider: 'elevenlabs', autoplay: true });
       return null;
