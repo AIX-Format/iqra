@@ -70,6 +70,10 @@ jobs:
       - name: 🧬 Run self-heal cycle
         id: heal
         run: |
+          # `set +e` so we can capture the script's exit code rather than
+          # letting the step short-circuit on non-zero. The exit code is then
+          # consumed by the "Healer crash gate" step below — never silently
+          # dropped.
           set +e
           ARGS=""
           if [ "${{ github.event.inputs.skip_tests }}" = "true" ]; then
@@ -78,8 +82,27 @@ jobs:
           npx tsx .iqra/scripts/self-heal.ts $ARGS
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
 
+      - name: 🚨 Healer crash gate
+        # The self-heal script exits 1 only when one of its healers crashed
+        # (spawn failure / signal kill — not just "lint errors remain").
+        # A crash means the patch on disk could be incomplete or
+        # inconsistent, so we annotate and fail the workflow rather than
+        # propose a half-baked PR to humans.
+        if: steps.heal.outputs.exit_code != '0'
+        run: |
+          echo "::error::Self-heal cycle exited with code ${{ steps.heal.outputs.exit_code }} — healer crashed. Refusing to open a healing PR."
+          {
+            echo "## 🚨 Healer crash"
+            echo
+            echo "Self-heal exited with code \`${{ steps.heal.outputs.exit_code }}\`. No healing PR will be opened on this run."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
       - name: 📊 Detect changes
         id: diff
+        # Only inspect the diff if the healer ran cleanly. The gate step
+        # above will have already failed the job otherwise.
+        if: steps.heal.outputs.exit_code == '0'
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -98,7 +121,7 @@ jobs:
           fi
 
       - name: 🌱 Open healing PR
-        if: steps.diff.outputs.changed == 'true'
+        if: steps.heal.outputs.exit_code == '0' && steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

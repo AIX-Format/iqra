@@ -151,6 +151,12 @@ function healEslint(): HealResult {
   // next lint --fix is the project's canonical lint command (per package.json
   // "lint": "next lint"). --fix only rewrites files when the rule is
   // auto-fixable, so this stays idempotent and safe.
+  //
+  // NOTE on `applied`: next lint exits 1 whenever it finds *any* lint error,
+  // even after applying every fix it could. That is a benign "work remains"
+  // signal, not a crash, so we treat it the same as success and only flag
+  // applied=false for the abnormal-termination case (process spawn error,
+  // signal kill, timeout — all normalised to code === -1 in run()).
   const before = listChangedFiles();
   const r = run('npx', ['next', 'lint', '--fix']);
   const after = listChangedFiles();
@@ -158,7 +164,7 @@ function healEslint(): HealResult {
     || after.length !== before.length;
   return {
     name: 'eslint-fix',
-    applied: true,
+    applied: r.code !== -1,
     changed,
     detail: r.ok
       ? `next lint --fix completed${changed ? ' (files changed)' : ' (no changes)'}`
@@ -169,6 +175,8 @@ function healEslint(): HealResult {
 function healReindex(): HealResult {
   // iqra:index is idempotent — it regenerates IQRA_INDEX.md from the layer
   // tree. If the file is already up to date, the script is a no-op.
+  // Unlike the linter, the auto-indexer has no "work remains" exit code;
+  // any non-zero exit is a real crash, so we mirror r.ok directly.
   const before = listChangedFiles();
   const r = run('npx', ['tsx', '.iqra/scripts/auto-indexer.ts']);
   const after = listChangedFiles();
@@ -176,7 +184,7 @@ function healReindex(): HealResult {
     || after.some((p) => !before.includes(p));
   return {
     name: 'reindex',
-    applied: true,
+    applied: r.ok,
     changed,
     detail: r.ok
       ? `auto-indexer completed${changed ? ' (IQRA_INDEX.md regenerated)' : ' (no changes)'}`
@@ -240,11 +248,16 @@ function main(): void {
   const newFiles = filesAfter.filter((f) => !filesBefore.includes(f));
 
   // 3. Decide exit code. Phase-1 considers the cycle a success unless a
-  //    healer itself crashed; persistent probe failures get logged but do
-  //    NOT fail the script — that's the workflow's job (it inspects the
-  //    diff and opens a PR for review).
+  //    healer itself crashed (applied=false means the child process never
+  //    finished cleanly — spawn failure or signal kill). Persistent probe
+  //    failures get logged but do NOT fail the script — that's the
+  //    workflow's job (it inspects the diff and opens a PR for review).
   const healerCrashed = heals.some((h) => !h.applied);
   const exitCode: 0 | 1 = healerCrashed ? 1 : 0;
+  if (healerCrashed) {
+    const crashed = heals.filter((h) => !h.applied).map((h) => h.name).join(', ');
+    console.error(`🚨 [IQRA SELF-HEAL] healer(s) crashed: ${crashed} — exiting with code 1`);
+  }
 
   const summary: Summary = {
     timestamp: new Date().toISOString(),
