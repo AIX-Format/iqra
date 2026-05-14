@@ -77,7 +77,7 @@
     "#utils/*": "./src/lib/iqra/13-utils/*",
     "#aix/*": "./src/lib/iqra/14-aix/*",
     "#agents/*": "./src/lib/iqra/01-core/agents/*",
-    "#runtime/*": "./src/lib/iqra/12-infrastructure/*",
+    "#runtime/*": "./runtime/*",
     "#tests/*": "./src/tests/*",
     "#sovereign_orchestrator": "./src/lib/iqra/01-core/sovereign_orchestrator"
   },
