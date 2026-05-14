@@ -5,7 +5,7 @@
 - [x] Fix Cognitive Memory Topology
 - [x] Establish Sovereign Integrity Checks
 - [/] AI Soul: Context-Aware Evolution Logs
-- [ ] Self-Healing CI/CD Pipeline
+- [/] Self-Healing CI/CD Pipeline (Phase-1: detection + proposal — see `.iqra/SELF_HEALING.md`)
 
 ### 🟡 Phase 2: Resonance & Pattern Discovery
 - [ ] Topological Curiosity Engine Expansion
