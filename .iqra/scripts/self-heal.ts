@@ -188,7 +188,12 @@ function healReindex(): HealResult {
   const before = listChangedFiles();
   const r = run('npx', ['tsx', '.iqra/scripts/auto-indexer.ts']);
   const after = listChangedFiles();
-  const changed = after.length > before.length
+  // Match healEslint exactly so reverts (which shrink the dirty set
+  // without introducing new entries) still register as "changed".
+  // `!==` covers both additions and removals; the `.some(...)` clause
+  // covers the same-size swap case (one file goes from dirty → clean
+  // and a different one goes clean → dirty).
+  const changed = after.length !== before.length
     || after.some((p) => !before.includes(p));
   return {
     name: 'reindex',

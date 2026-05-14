@@ -28,8 +28,12 @@ A small, sovereign healing loop with three pieces:
 
 - ❌ Never commits to `main`. The workflow opens a **PR** from a fresh `auto/healing-<run-id>` branch and waits for human review.
 - ❌ Never uses `git push --force`, `--no-verify`, or any pre-commit-hook bypass.
-- ❌ Never modifies tests or sovereign files (the soul under `src/lib/iqra/00-manifest/`, `iqra-core/DASTŪR.md`, etc.).
+- ❌ Never lets a healing PR carry changes to tests or sovereign files. This is enforced as a *layered defence*, not a single check:
+  1. The healers prefer commands (`next lint --fix`, the auto-indexer) that have no reason to touch the soul under `src/lib/iqra/00-manifest/`, `iqra-core/`, `IQRA_SUPREME.md`, `AGENTS.md`, `tsconfig.json`, or `.husky/pre-commit`.
+  2. The workflow's `🌱 Open healing PR` step explicitly `git checkout HEAD -- <path>`s any of those paths back to their committed state before staging, so even an over-eager fixer cannot smuggle a sovereign change into the proposal.
+  3. The repo's existing `🔒 Protected Paths Guard` workflow runs on every PR and blocks merging anything that touches a sovereign path without a `sovereign:` (or `manifest:`) title prefix **and** the `sovereign-approved` label — a human gate the healer cannot satisfy.
 - ❌ Never installs new dependencies during healing.
+- ❌ Never lets `package-lock.json` drift from `npm install` land in a healing PR. The workflow reverts the lockfile to `HEAD` before staging, then stages the dirty set explicitly (no `git add -A`), so lockfile churn from peer-dep resolution differences is filtered out by construction.
 
 The healer is *deliberately quiet*: if probes pass and no healer changes a byte, the workflow exits with a job summary saying "no changes produced by Phase-1 healers" and no PR is opened.
 
@@ -64,7 +68,12 @@ const HEALERS = [
 ];
 ```
 
-Every new healer **must** be idempotent (running twice on a clean tree is a no-op) and **must not** mutate sovereign files. See `AGENTS.md` § "Files you must never touch without explicit human approval".
+Every new healer **must** be idempotent (running twice on a clean tree is a no-op) and **must not** rely on sovereign files being writable. See `AGENTS.md` § "Files you must never touch without explicit human approval".
+
+### Known Phase-1 limitations
+
+- **Local diagnostics on a dirty worktree** — the per-healer `changed` flag is computed from `git status --porcelain` deltas, so if a healer modifies a file that was *already* dirty (because you ran `npm run iqra:heal` mid-edit), the file is omitted from the `changed_files` summary printed to the console. This only affects the human-readable diagnostic; the actual file mutations and the workflow-level PR detection are independent of this counter. On CI the working tree is always clean at the start of the run, so the gap does not apply there.
+- **Lockfile drift detection lives in the workflow, not the script** — if you invoke `.iqra/scripts/self-heal.ts` directly (rather than through the workflow), no automatic `git checkout HEAD -- package-lock.json` runs. Treat local runs the same way you treat any agent-produced diff: review before committing.
 
 ## Phase-2 outlook (not in this PR)
 
