@@ -59,14 +59,31 @@ export class ToolRouter {
             : { success: false, error: 'git_push: push failed' };
         }
 
-        case 'git_head':
-          return { success: true, data: { sha: GitSkill.head() } };
+        case 'git_head': {
+          // Use the structured *Result so a broken-git situation (no repo,
+          // missing binary) surfaces as success=false instead of being
+          // hidden behind an empty SHA string.
+          const r = GitSkill.headResult();
+          return r.ok
+            ? { success: true, data: { sha: r.stdout } }
+            : { success: false, error: `git_head: ${r.stderr || `exit=${r.code}`}` };
+        }
 
-        case 'git_branch':
-          return { success: true, data: { branch: GitSkill.branch() } };
+        case 'git_branch': {
+          const r = GitSkill.branchResult();
+          return r.ok
+            ? { success: true, data: { branch: r.stdout } }
+            : { success: false, error: `git_branch: ${r.stderr || `exit=${r.code}`}` };
+        }
 
-        case 'git_status':
-          return { success: true, data: { clean: GitSkill.isClean() } };
+        case 'git_status': {
+          // Structured status lets us distinguish "git failed" from
+          // "tree is dirty" — the dirty case is data, not an error.
+          const r = GitSkill.statusResult();
+          return r.ok
+            ? { success: true, data: { clean: r.stdout === '' } }
+            : { success: false, error: `git_status: ${r.stderr || `exit=${r.code}`}` };
+        }
 
         case 'git_create_branch': {
           if (!params?.branch) {
