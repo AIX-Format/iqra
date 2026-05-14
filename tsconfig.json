@@ -77,9 +77,6 @@
       "#topology/*": [
         "./src/lib/iqra/10-topology/*"
       ],
-      "#trading/*": [
-        "./src/lib/iqra/11-trading/*"
-      ],
       "#infra/*": [
         "./src/lib/iqra/12-infrastructure/*"
       ],
