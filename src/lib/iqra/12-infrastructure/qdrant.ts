@@ -1,119 +1,45 @@
 import { randomUUID } from 'crypto';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import fs from 'fs';
+import path from 'path';
 
 /**
- * IQRA Semantic Memory — الذاكرة الدلالية
- * Stores and retrieves knowledge based on meaning.
+ * IQRA Reflection Store — replaces Qdrant per ADR-0001.
+ * Stores reflections locally in JSONL format.
  */
 
-const QDRANT_URL = process.env.QDRANT_URL || 'http://localhost:6333';
-const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-const COLLECTION = 'iqra_memory';
-
-/**
- * BARAKAH Principle: Optimized resource usage.
- * We use the minimum necessary dimensions and results to preserve energy.
- */
-const DEFAULT_LIMIT = 3; 
-
-// Initialize Gemini for embeddings
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || '');
-const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+const REFLECTIONS_PATH = path.join(process.cwd(), '.iqra', 'reflections.jsonl');
 
 export async function storeReflectionInQdrant(content: string, metadata: Record<string, any> = {}) {
-    try {
-        // 1. Ensure the collection exists
-        await fetch(`${QDRANT_URL}/collections/${COLLECTION}`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                ...(QDRANT_API_KEY && { 'api-key': QDRANT_API_KEY })
-            },
-            body: JSON.stringify({
-                vectors: {
-                    size: 768, // Gemini text-embedding-004 dimensions
-                    distance: 'Cosine'
-                }
-            })
-        });
+  try {
+    const dir = path.dirname(REFLECTIONS_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-        // 2. Generate Real Embedding
-        const embedding = await generateEmbedding(content);
+    const entry = JSON.stringify({
+      id: randomUUID(),
+      content,
+      metadata,
+      timestamp: new Date().toISOString(),
+    }) + '\n';
 
-        // 3. Upsert the point
-        const pointId = randomUUID();
-        const payload = {
-            points: [
-                {
-                    id: pointId,
-                    vector: embedding,
-                    payload: {
-                        content,
-                        timestamp: new Date().toISOString(),
-                        topological_resonance: 7, // Default Barakah factor
-                        quantum_state: "SUPERPOSITION",
-                        ...metadata
-                    }
-                }
-            ]
-        };
-
-        const res = await fetch(`${QDRANT_URL}/collections/${COLLECTION}/points?wait=true`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                ...(QDRANT_API_KEY && { 'api-key': QDRANT_API_KEY })
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error(await res.text());
-        console.log(`🧠 [أخوَّة] | Memory stored in Qdrant (ID: ${pointId})`);
-        return pointId;
-    } catch (error) {
-        console.error('❌ [أخوَّة] | Qdrant Error:', error);
-        // Fallback: If local Qdrant is down, we could log to a local file or temporary storage
-        console.warn('⚠️ [أخوَّة] | Falling back to local log storage due to Qdrant failure.');
-        return null;
-    }
+    fs.appendFileSync(REFLECTIONS_PATH, entry, 'utf-8');
+    return null;
+  } catch (error) {
+    console.error('❌ Reflection Store Error:', error);
+    return null;
+  }
 }
 
-export async function searchMemory(query: string, limit: number = DEFAULT_LIMIT) {
-    try {
-        const vector = await generateEmbedding(query);
-        
-        const res = await fetch(`${QDRANT_URL}/collections/${COLLECTION}/points/search`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                ...(QDRANT_API_KEY && { 'api-key': QDRANT_API_KEY })
-            },
-            body: JSON.stringify({
-                vector,
-                limit,
-                with_payload: true
-            })
-        });
-
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        return data.result || [];
-    } catch (error) {
-        console.error('❌ [أخوَّة] | Search Error:', error);
-        return [];
-    }
-}
-
-async function generateEmbedding(text: string): Promise<number[]> {
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-        throw new Error('❌ [MĪTHĀQ Violation] | GOOGLE_GENERATIVE_AI_API_KEY is required. Mocks are forbidden.');
-    }
-
-    try {
-        const result = await embeddingModel.embedContent(text);
-        return result.embedding.values;
-    } catch (error) {
-        console.error('❌ [أخوَّة] | Embedding Generation Failed:', error);
-        throw error; // No fallback allowed
-    }
+export async function searchMemory(query: string, limit: number = 3) {
+  try {
+    if (!fs.existsSync(REFLECTIONS_PATH)) return [];
+    const lines = fs.readFileSync(REFLECTIONS_PATH, 'utf-8').trim().split('\n').filter(Boolean);
+    const entries = lines.map(l => JSON.parse(l));
+    return entries.slice(-limit).map((e: any) => ({
+      id: e.id,
+      payload: { content: e.content, ...e.metadata },
+      score: 0,
+    }));
+  } catch {
+    return [];
+  }
 }

@@ -294,7 +294,7 @@ ${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}
     logToIQRAFile('WISDOM_7.md', wisdom).catch(console.error);
     logToIQRAFile('REFLECTION_7.md', wisdom).catch(console.error);
 
-    // Automatically store the reflection in Qdrant Semantic Memory
+    // Store reflection locally (per ADR-0001: local JSONL replaces Qdrant)
     const { storeReflectionInQdrant } = await import('#infra/qdrant');
     await storeReflectionInQdrant(wisdom).catch(console.error);
 

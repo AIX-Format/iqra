@@ -11,7 +11,7 @@ import { HeartbeatSystem } from '../12-infrastructure/heartbeat'
 import { IQRAMemory } from '#memory/memory';
 import { getPersona, Persona } from '../13-utils/personas'
 import { SovereignDID } from './did'
-import { LanceDBPlugin } from '#memory/lancedb_plugin'
+// LanceDBPlugin removed per ADR-0001 — use MicroMemory (sqlite-vec) for local persistence
 import crypto from 'crypto';
 
 export class SovereignIdentity {
