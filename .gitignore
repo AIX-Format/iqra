@@ -103,3 +103,5 @@ wrangler.toml
 /src/services/go-engine/*.exe
 /src/services/go-engine/*.test
 *.exe
+quran_local.db
+quran_local.db
